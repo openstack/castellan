@@ -32,11 +32,11 @@ import random
 import uuid
 
 from castellan.common import exception
-from castellan.keymgr import key_mgr
-from castellan.keymgr import symmetric_key as sym_key
+from castellan.key_manager import key_manager
+from castellan.key_manager import symmetric_key as sym_key
 
 
-class MockKeyManager(key_mgr.KeyManager):
+class MockKeyManager(key_manager.KeyManager):
 
     """Mocking manager for integration tests.
 

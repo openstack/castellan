@@ -20,7 +20,7 @@ Test cases for the key classes.
 import array
 import binascii
 
-from castellan.keymgr import symmetric_key as sym_key
+from castellan.key_manager import symmetric_key as sym_key
 from castellan.tests import base
 
 

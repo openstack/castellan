@@ -17,10 +17,10 @@
 Key manager implementation that raises NotImplementedError
 """
 
-from castellan.keymgr import key_mgr
+from castellan.key_manager import key_manager
 
 
-class NotImplementedKeyManager(key_mgr.KeyManager):
+class NotImplementedKeyManager(key_manager.KeyManager):
     """Key Manager Interface that raises NotImplementedError for all operations
 
     """

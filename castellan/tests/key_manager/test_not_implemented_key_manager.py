@@ -17,14 +17,14 @@
 Test cases for the not implemented key manager.
 """
 
-from castellan.keymgr import not_implemented_key_mgr
-from castellan.tests.keymgr import test_key_mgr
+from castellan.key_manager import not_implemented_key_manager
+from castellan.tests.key_manager import test_key_manager
 
 
-class NotImplementedKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
+class NotImplementedKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def _create_key_manager(self):
-        return not_implemented_key_mgr.NotImplementedKeyManager()
+        return not_implemented_key_manager.NotImplementedKeyManager()
 
     def test_create_key(self):
         self.assertRaises(NotImplementedError,
