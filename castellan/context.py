@@ -13,10 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_config import cfg
+from oslo_policy import policy
 from oslo_utils import uuidutils
 
 from castellan.openstack.common import local
-from castellan.openstack.common import policy
+
+
+CONF = cfg.CONF
 
 
 class RequestContext(object):
@@ -38,7 +42,7 @@ class RequestContext(object):
         self.owner_is_project = owner_is_project
         self.request_id = uuidutils.generate_uuid()
         self.service_catalog = service_catalog
-        self.policy_enforcer = policy_enforcer or policy.Enforcer()
+        self.policy_enforcer = policy_enforcer or policy.Enforcer(CONF)
         self.is_admin = is_admin
 
         if not hasattr(local.store, 'context'):
