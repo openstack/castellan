@@ -19,7 +19,7 @@ Base SymmetricKey Class
 This module defines the SymmetricKey class.
 """
 
-from castellan.keymgr import key
+from castellan.key_manager import key
 
 
 class SymmetricKey(key.Key):

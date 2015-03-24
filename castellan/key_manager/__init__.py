@@ -1,5 +1,4 @@
-# Copyright 2011 Justin Santa Barbara
-# Copyright 2012 OpenStack Foundation
+# Copyright (c) 2015 The Johns Hopkins University/Applied Physics Laboratory
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,11 +13,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Implementation of a fake key manager."""
+from oslo_config import cfg
+from oslo_utils import importutils
 
 
-from castellan.tests.keymgr import mock_key_mgr
+key_manager_opts = [
+    cfg.StrOpt('api_class',
+               help='The full class name of the key manager API class'),
+]
+
+CONF = cfg.CONF
+CONF.register_opts(key_manager_opts, group='key_manager')
 
 
-def fake_api():
-    return mock_key_mgr.MockKeyManager()
+def API():
+    cls = importutils.import_class(CONF.key_manager.api_class)
+    return cls()
