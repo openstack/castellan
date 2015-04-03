@@ -31,8 +31,8 @@ class KeyManager(object):
     """
 
     @abc.abstractmethod
-    def create_key(self, context, algorithm='AES', length=256,
-                   expiration=None, **kwargs):
+    def create_key(self, context, algorithm, length,
+                   expiration=None):
         """Creates a key.
 
         This method creates a key and returns the key's UUID. If the specified
@@ -42,7 +42,7 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def store_key(self, context, key, expiration=None, **kwargs):
+    def store_key(self, context, key, expiration=None):
         """Stores (i.e., registers) a key with the key manager.
 
         This method stores the specified key and returns its UUID that
@@ -53,7 +53,7 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def copy_key(self, context, key_id, **kwargs):
+    def copy_key(self, context, key_id):
         """Copies (i.e., clones) a key stored by the key manager.
 
         This method copies the specified key and returns the copy's UUID. If
@@ -68,7 +68,7 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def get_key(self, context, key_id, **kwargs):
+    def get_key(self, context, key_id):
         """Retrieves the specified key.
 
         Implementations should verify that the caller has permissions to
@@ -84,7 +84,7 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def delete_key(self, context, key_id, **kwargs):
+    def delete_key(self, context, key_id):
         """Deletes the specified key.
 
         Implementations should verify that the caller has permission to delete
