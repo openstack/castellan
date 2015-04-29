@@ -14,10 +14,10 @@
 #    under the License.
 
 """
-Base Key and SymmetricKey Classes
+Base Key Class
 
-This module defines the Key and SymmetricKey classes. The Key class is the base
-class to represent all encryption keys. The basis for this class was copied
+This module defines the Key class. The Key class is the base class to
+represent all encryption keys. The basis for this class was copied
 from Java.
 """
 
