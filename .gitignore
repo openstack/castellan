@@ -51,3 +51,7 @@ ChangeLog
 *~
 .*.swp
 .*sw?
+
+# generated configuration files
+etc/castellan/castellan.conf.sample
+etc/castellan/castellan-functional.conf.sample

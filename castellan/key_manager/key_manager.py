@@ -31,6 +31,15 @@ class KeyManager(object):
     """
 
     @abc.abstractmethod
+    def __init__(self, configuration):
+        """Instantiate a KeyManager object.
+
+        Creates a KeyManager object with implementation specific details
+        obtained from the supplied configuration.
+        """
+        pass
+
+    @abc.abstractmethod
     def create_key(self, context, algorithm, length, expiration=None):
         """Creates a symmetric key.
 
