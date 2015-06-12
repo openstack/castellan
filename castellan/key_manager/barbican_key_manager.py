@@ -25,8 +25,8 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 
 from castellan.common import exception
+from castellan.common.objects import symmetric_key as sym_key
 from castellan.key_manager import key_manager
-from castellan.key_manager import symmetric_key as key_manager_key
 from castellan.openstack.common import _i18n as u
 
 from six.moves import urllib
@@ -152,8 +152,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         barbican_client = self._get_barbican_client(context)
 
         try:
-            if key.get_algorithm():
-                algorithm = key.get_algorithm()
+            if key.algorithm:
+                algorithm = key.algorithm
             encoded_key = key.get_encoded()
             # TODO(kfarr) add support for objects other than symmetric keys
             secret = barbican_client.secrets.create(payload=encoded_key,
@@ -183,7 +183,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             secret = self._get_secret(context, key_id)
             secret_data = self._get_secret_data(secret)
             # TODO(kfarr) modify to support other types of keys
-            key = key_manager_key.SymmetricKey(secret.algorithm, secret_data)
+            key = sym_key.SymmetricKey(secret.algorithm, secret_data)
             copy_uuid = self.store_key(context, key, secret.expiration)
             return copy_uuid
         except (barbican_exceptions.HTTPAuthError,
@@ -266,7 +266,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
             secret = self._get_secret(context, key_id)
             secret_data = self._get_secret_data(secret)
             # TODO(kfarr) add support for other objects
-            key = key_manager_key.SymmetricKey(secret.algorithm, secret_data)
+            key = sym_key.SymmetricKey(secret.algorithm,
+                                       secret.bit_length,
+                                       secret_data)
             return key
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,

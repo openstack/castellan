@@ -26,14 +26,13 @@ Keys created in one instance will not be accessible from other instances of
 this class.
 """
 
-import array
 import binascii
 import random
 import uuid
 
 from castellan.common import exception
+from castellan.common.objects import symmetric_key as sym_key
 from castellan.key_manager import key_manager
-from castellan.key_manager import symmetric_key as sym_key
 
 
 class MockKeyManager(key_manager.KeyManager):
@@ -52,8 +51,7 @@ class MockKeyManager(key_manager.KeyManager):
     def __init__(self):
         self.keys = {}
 
-    def _generate_hex_key(self, **kwargs):
-        key_length = kwargs.get('key_length', 256)
+    def _generate_hex_key(self, key_length):
         # hex digit => 4 bits
         length = int(key_length / 4)
         hex_encoded = self._generate_password(length=length,
@@ -61,10 +59,12 @@ class MockKeyManager(key_manager.KeyManager):
         return hex_encoded
 
     def _generate_key(self, **kwargs):
-        _hex = self._generate_hex_key(**kwargs)
+        key_length = kwargs.get('key_length', 256)
+        _hex = self._generate_hex_key(key_length)
         return sym_key.SymmetricKey(
             'AES',
-            array.array('B', binascii.unhexlify(_hex)).tolist())
+            key_length,
+            bytes(binascii.unhexlify(_hex)))
 
     def create_key(self, context, **kwargs):
         """Creates a key.

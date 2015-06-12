@@ -14,46 +14,39 @@
 #    under the License.
 
 """
-Base SymmetricKey Class
+Base Passphrase Class
 
-This module defines the SymmetricKey class.
+This module defines the Passphrase class.
 """
 
-from castellan.key_manager import key
+from castellan.common.objects import managed_object
 
 
-class SymmetricKey(key.Key):
-    """This class represents symmetric keys."""
+class Passphrase(managed_object.ManagedObject):
+    """This class represents a passphrase."""
 
-    def __init__(self, alg, key):
-        """Create a new SymmetricKey object.
+    def __init__(self, passphrase):
+        """Create a new Passphrase object.
 
-        The arguments specify the algorithm for the symmetric encryption and
-        the bytes for the key.
+        The expected type for the passphrase is a bytestring.
         """
-        self.alg = alg
-        self.key = key
+        self._passphrase = passphrase
 
-    def get_algorithm(self):
-        """Returns the algorithm for symmetric encryption."""
-        return self.alg
-
-    def get_format(self):
+    @property
+    def format(self):
         """This method returns 'RAW'."""
         return "RAW"
 
     def get_encoded(self):
-        """Returns the key in its encoded format."""
-        return self.key
+        """Returns the data in a bytestring."""
+        return self._passphrase
 
     def __eq__(self, other):
-        if isinstance(other, SymmetricKey):
-            return (self.alg == other.alg and
-                    self.key == other.key)
-        return NotImplemented
+        if isinstance(other, Passphrase):
+            return self._passphrase == other._passphrase
+        else:
+            return False
 
     def __ne__(self, other):
         result = self.__eq__(other)
-        if result is NotImplemented:
-            return result
         return not result

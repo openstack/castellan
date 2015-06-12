@@ -17,13 +17,10 @@
 Test cases for the mock key manager.
 """
 
-import array
-import binascii
-
 from oslo_context import context
 
 from castellan.common import exception
-from castellan.key_manager import symmetric_key as sym_key
+from castellan.common.objects import symmetric_key as sym_key
 from castellan.tests.unit.key_manager import mock_key_manager as mock_key_mgr
 from castellan.tests.unit.key_manager import test_key_manager as test_key_mgr
 
@@ -55,8 +52,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
                           self.key_mgr.create_key, None)
 
     def test_store_and_get_key(self):
-        secret_key = array.array('B', binascii.unhexlify('0' * 64)).tolist()
-        _key = sym_key.SymmetricKey('AES', secret_key)
+        secret_key = bytes(b'0' * 64)
+        _key = sym_key.SymmetricKey('AES', 64 * 8, secret_key)
         key_id = self.key_mgr.store_key(self.context, _key)
 
         actual_key = self.key_mgr.get_key(self.context, key_id)

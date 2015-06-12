@@ -1,4 +1,4 @@
-# Copyright (c) 2015 The Johns Hopkins University/Applied Physics Laboratory
+# Copyright (c) The Johns Hopkins University/Applied Physics Laboratory
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,11 +14,10 @@
 #    under the License.
 
 """
-Base Key Class
+Base ManagedObject Class
 
-This module defines the Key class. The Key class is the base class to
-represent all encryption keys. The basis for this class was copied
-from Java.
+This module defines the ManagedObject class. The ManagedObject class
+is the base class to represent all objects managed by the key manager.
 """
 
 import abc
@@ -27,27 +26,23 @@ import six
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Key(object):
-    """Base class to represent all keys."""
+class ManagedObject(object):
+    """Base class to represent all managed objects."""
 
-    @abc.abstractmethod
-    def get_algorithm(self):
-        """Returns the key's algorithm.
-
-        Returns the key's algorithm. For example, "DSA" indicates that this key
-        is a DSA key and "AES" indicates that this key is an AES key.
-        """
-        pass
-
-    @abc.abstractmethod
-    def get_format(self):
+    @abc.abstractproperty
+    def format(self):
         """Returns the encoding format.
 
-        Returns the key's encoding format or None if this key is not encoded.
+        Returns the object's encoding format or None if this object is not
+        encoded.
         """
         pass
 
     @abc.abstractmethod
     def get_encoded(self):
-        """Returns the key in the format specified by its encoding."""
+        """Returns the encoded object.
+
+        Returns a bytestring object in a format represented in the encoding
+        specified.
+        """
         pass

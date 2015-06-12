@@ -26,8 +26,8 @@ from keystoneclient.v3 import client
 from oslo_context import context
 
 from castellan.common import exception
+from castellan.common.objects import symmetric_key
 from castellan.key_manager import barbican_key_manager
-from castellan.key_manager import symmetric_key
 from castellan.tests.functional import config
 from castellan.tests.functional.key_manager import test_key_manager
 

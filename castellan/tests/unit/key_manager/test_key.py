@@ -14,13 +14,10 @@
 #    under the License.
 
 """
-Test cases for the key classes.
+Test cases for the symmetric key class.
 """
 
-import array
-import binascii
-
-from castellan.key_manager import symmetric_key as sym_key
+from castellan.common.objects import symmetric_key as sym_key
 from castellan.tests import base
 
 
@@ -38,22 +35,28 @@ class KeyTestCase(base.TestCase):
 class SymmetricKeyTestCase(KeyTestCase):
 
     def _create_key(self):
-        return sym_key.SymmetricKey(self.algorithm, self.encoded)
+        return sym_key.SymmetricKey(self.algorithm,
+                                    self.bit_length,
+                                    self.encoded)
 
     def setUp(self):
         self.algorithm = 'AES'
-        self.encoded = array.array('B', binascii.unhexlify('0' * 64)).tolist()
+        self.encoded = bytes(b'0' * 64)
+        self.bit_length = len(self.encoded) * 8
 
         super(SymmetricKeyTestCase, self).setUp()
 
-    def test_get_algorithm(self):
-        self.assertEqual(self.key.get_algorithm(), self.algorithm)
-
     def test_get_format(self):
-        self.assertEqual(self.key.get_format(), 'RAW')
+        self.assertEqual('RAW', self.key.format)
 
     def test_get_encoded(self):
-        self.assertEqual(self.key.get_encoded(), self.encoded)
+        self.assertEqual(self.encoded, self.key.get_encoded())
+
+    def test_get_algorithm(self):
+        self.assertEqual(self.algorithm, self.key.algorithm)
+
+    def test_get_bit_length(self):
+        self.assertEqual(self.bit_length, self.key.bit_length)
 
     def test___eq__(self):
         self.assertTrue(self.key == self.key)

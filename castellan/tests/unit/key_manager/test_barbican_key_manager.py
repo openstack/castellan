@@ -17,13 +17,11 @@
 Test cases for the barbican key manager.
 """
 
-import array
-
 import mock
 
 from castellan.common import exception
+from castellan.common.objects import symmetric_key as key_manager_key
 from castellan.key_manager import barbican_key_manager
-from castellan.key_manager import symmetric_key as key_manager_key
 from castellan.tests.unit.key_manager import test_key_manager
 
 
@@ -75,7 +73,8 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
         def fake_sym_key(alg, key):
             self.mock_symKey.get_encoded.return_value = key
-            self.mock_symKey.get_algorithm.return_value = alg
+            p = mock.PropertyMock(return_value=alg)
+            type(self.mock_symKey).algorithm = p
             return self.mock_symKey
         self.original_key = key_manager_key.SymmetricKey
         key_manager_key.SymmetricKey = fake_sym_key
@@ -184,8 +183,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def test_store_key_base64(self):
         # Create Key to store
-        secret_key = array.array('B', [0x01, 0x02, 0xA0, 0xB3]).tolist()
-        _key = key_manager_key.SymmetricKey('AES', secret_key)
+        secret_key = bytes(b'\x01\x02\xA0\xB3')
+        _key = key_manager_key.SymmetricKey('AES',
+                                            len(secret_key) * 8,
+                                            secret_key)
 
         # Define the return values
         secret = mock.Mock()
@@ -203,7 +204,9 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_store_key_plaintext(self):
         # Create the plaintext key
         secret_key_text = "This is a test text key."
-        _key = key_manager_key.SymmetricKey('AES', secret_key_text)
+        _key = key_manager_key.SymmetricKey('AES',
+                                            len(secret_key_text) * 8,
+                                            secret_key_text)
 
         # Store the Key
         self.key_mgr.store_key(self.ctxt, _key)
