@@ -19,6 +19,8 @@ from oslo_utils import importutils
 
 key_manager_opts = [
     cfg.StrOpt('api_class',
+               default='castellan.key_manager.barbican_key_manager'
+                       '.BarbicanKeyManager',
                help='The full class name of the key manager API class'),
 ]
 

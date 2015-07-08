@@ -54,3 +54,7 @@ class CastellanException(Exception):
 
 class Forbidden(CastellanException):
     message = u._("You are not authorized to complete this action.")
+
+
+class KeyManagerError(CastellanException):
+    message = u._("Key manager error: %(reason)s")
