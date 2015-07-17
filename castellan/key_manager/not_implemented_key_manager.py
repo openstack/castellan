@@ -29,14 +29,17 @@ class NotImplementedKeyManager(key_manager.KeyManager):
                    expiration=None, **kwargs):
         raise NotImplementedError()
 
-    def store_key(self, context, key, expiration=None, **kwargs):
+    def create_key_pair(self, context, algorithm, lengthm, expiration=None):
         raise NotImplementedError()
 
-    def copy_key(self, context, key_id, **kwargs):
+    def store(self, context, managed_object, expiration=None, **kwargs):
         raise NotImplementedError()
 
-    def get_key(self, context, key_id, **kwargs):
+    def copy(self, context, managed_object_id, **kwargs):
         raise NotImplementedError()
 
-    def delete_key(self, context, key_id, **kwargs):
+    def get(self, context, managed_object_id, **kwargs):
+        raise NotImplementedError()
+
+    def delete(self, context, managed_object_id, **kwargs):
         raise NotImplementedError()

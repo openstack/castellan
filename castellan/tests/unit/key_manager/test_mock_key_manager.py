@@ -44,7 +44,7 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
     def test_create_key_with_length(self):
         for length in [64, 128, 256]:
             key_id = self.key_mgr.create_key(self.context, key_length=length)
-            key = self.key_mgr.get_key(self.context, key_id)
+            key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
 
     def test_create_null_context(self):
@@ -54,47 +54,47 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
     def test_store_and_get_key(self):
         secret_key = bytes(b'0' * 64)
         _key = sym_key.SymmetricKey('AES', 64 * 8, secret_key)
-        key_id = self.key_mgr.store_key(self.context, _key)
+        key_id = self.key_mgr.store(self.context, _key)
 
-        actual_key = self.key_mgr.get_key(self.context, key_id)
+        actual_key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(_key, actual_key)
 
     def test_store_null_context(self):
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store_key, None, None)
+                          self.key_mgr.store, None, None)
 
     def test_copy_key(self):
         key_id = self.key_mgr.create_key(self.context)
-        key = self.key_mgr.get_key(self.context, key_id)
+        key = self.key_mgr.get(self.context, key_id)
 
-        copied_key_id = self.key_mgr.copy_key(self.context, key_id)
-        copied_key = self.key_mgr.get_key(self.context, copied_key_id)
+        copied_key_id = self.key_mgr.copy(self.context, key_id)
+        copied_key = self.key_mgr.get(self.context, copied_key_id)
 
         self.assertNotEqual(key_id, copied_key_id)
         self.assertEqual(key, copied_key)
 
     def test_copy_null_context(self):
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.copy_key, None, None)
+                          self.key_mgr.copy, None, None)
 
     def test_get_null_context(self):
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get_key, None, None)
+                          self.key_mgr.get, None, None)
 
     def test_get_unknown_key(self):
-        self.assertRaises(KeyError, self.key_mgr.get_key, self.context, None)
+        self.assertRaises(KeyError, self.key_mgr.get, self.context, None)
 
     def test_delete_key(self):
         key_id = self.key_mgr.create_key(self.context)
-        self.key_mgr.delete_key(self.context, key_id)
+        self.key_mgr.delete(self.context, key_id)
 
-        self.assertRaises(KeyError, self.key_mgr.get_key, self.context,
+        self.assertRaises(KeyError, self.key_mgr.get, self.context,
                           key_id)
 
     def test_delete_null_context(self):
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete_key, None, None)
+                          self.key_mgr.delete, None, None)
 
     def test_delete_unknown_key(self):
-        self.assertRaises(KeyError, self.key_mgr.delete_key, self.context,
+        self.assertRaises(KeyError, self.key_mgr.delete, self.context,
                           None)

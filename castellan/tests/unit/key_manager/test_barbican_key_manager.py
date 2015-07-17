@@ -68,17 +68,6 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr._barbican_client = self.mock_barbican
         self.key_mgr._current_context = self.ctxt
 
-    def _build_mock_symKey(self):
-        self.mock_symKey = mock.Mock()
-
-        def fake_sym_key(alg, key):
-            self.mock_symKey.get_encoded.return_value = key
-            p = mock.PropertyMock(return_value=alg)
-            type(self.mock_symKey).algorithm = p
-            return self.mock_symKey
-        self.original_key = key_manager_key.SymmetricKey
-        key_manager_key.SymmetricKey = fake_sym_key
-
     def test_copy_key(self):
         # Create metadata for original secret
         original_secret_metadata = mock.Mock()
@@ -101,16 +90,13 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.get.return_value = original_secret_metadata
         self.create.return_value = copied_secret
 
-        # Create the mock key
-        self._build_mock_symKey()
-
         # Copy the original
-        self.key_mgr.copy_key(self.ctxt, self.key_id)
+        self.key_mgr.copy(self.ctxt, self.key_id)
 
         # Assert proper methods were called
         self.get.assert_called_once_with(self.secret_ref)
         self.create.assert_called_once_with(
-            payload=self.mock_symKey.get_encoded(),
+            payload=original_secret_metadata.payload,
             algorithm=mock.sentinel.alg,
             expiration=mock.sentinel.expiration)
         copied_secret.store.assert_called_once_with()
@@ -118,7 +104,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_copy_null_context(self):
         self.key_mgr._barbican_client = None
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.copy_key, None, self.key_id)
+                          self.key_mgr.copy, None, self.key_id)
 
     def test_create_key(self):
         # Create order_ref_url and assign return value
@@ -149,15 +135,15 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_delete_null_context(self):
         self.key_mgr._barbican_client = None
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete_key, None, self.key_id)
+                          self.key_mgr.delete, None, self.key_id)
 
     def test_delete_key(self):
-        self.key_mgr.delete_key(self.ctxt, self.key_id)
+        self.key_mgr.delete(self.ctxt, self.key_id)
         self.delete.assert_called_once_with(self.secret_ref)
 
     def test_delete_unknown_key(self):
         self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete_key, self.ctxt, None)
+                          self.key_mgr.delete, self.ctxt, None)
 
     def test_get_key(self):
         original_secret_metadata = mock.Mock()
@@ -167,7 +153,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         original_secret_metadata.payload = original_secret_data
 
         self.mock_barbican.secrets.get.return_value = original_secret_metadata
-        key = self.key_mgr.get_key(self.ctxt, self.key_id)
+        key = self.key_mgr.get(self.ctxt, self.key_id)
 
         self.get.assert_called_once_with(self.secret_ref)
         self.assertEqual(key.get_encoded(), original_secret_data)
@@ -175,11 +161,11 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_get_null_context(self):
         self.key_mgr._barbican_client = None
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get_key, None, self.key_id)
+                          self.key_mgr.get, None, self.key_id)
 
     def test_get_unknown_key(self):
         self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.get_key, self.ctxt, None)
+                          self.key_mgr.get, self.ctxt, None)
 
     def test_store_key_base64(self):
         # Create Key to store
@@ -194,7 +180,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         secret.store.return_value = self.secret_ref
 
         # Store the Key
-        returned_uuid = self.key_mgr.store_key(self.ctxt, _key)
+        returned_uuid = self.key_mgr.store(self.ctxt, _key)
 
         self.create.assert_called_once_with(algorithm='AES',
                                             payload=secret_key,
@@ -209,7 +195,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                                             secret_key_text)
 
         # Store the Key
-        self.key_mgr.store_key(self.ctxt, _key)
+        self.key_mgr.store(self.ctxt, _key)
         self.create.assert_called_once_with(algorithm='AES',
                                             payload=secret_key_text,
                                             expiration=None)
@@ -218,4 +204,4 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_store_null_context(self):
         self.key_mgr._barbican_client = None
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store_key, None, None)
+                          self.key_mgr.store, None, None)

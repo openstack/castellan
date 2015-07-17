@@ -30,18 +30,22 @@ class NotImplementedKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertRaises(NotImplementedError,
                           self.key_mgr.create_key, None)
 
-    def test_store_key(self):
+    def test_create_key_pair(self):
         self.assertRaises(NotImplementedError,
-                          self.key_mgr.store_key, None, None)
+                          self.key_mgr.create_key_pair, None, None, None)
 
-    def test_copy_key(self):
+    def test_store(self):
         self.assertRaises(NotImplementedError,
-                          self.key_mgr.copy_key, None, None)
+                          self.key_mgr.store, None, None)
 
-    def test_get_key(self):
+    def test_copy(self):
         self.assertRaises(NotImplementedError,
-                          self.key_mgr.get_key, None, None)
+                          self.key_mgr.copy, None, None)
 
-    def test_delete_key(self):
+    def test_get(self):
         self.assertRaises(NotImplementedError,
-                          self.key_mgr.delete_key, None, None)
+                          self.key_mgr.get, None, None)
+
+    def test_delete(self):
+        self.assertRaises(NotImplementedError,
+                          self.key_mgr.delete, None, None)

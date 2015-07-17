@@ -36,7 +36,6 @@ from castellan.key_manager import key_manager
 
 
 class MockKeyManager(key_manager.KeyManager):
-
     """Mocking manager for integration tests.
 
     This mock key manager implementation supports all the methods specified
@@ -67,7 +66,7 @@ class MockKeyManager(key_manager.KeyManager):
             bytes(binascii.unhexlify(_hex)))
 
     def create_key(self, context, **kwargs):
-        """Creates a key.
+        """Creates a symmetric key.
 
         This implementation returns a UUID for the created key. A
         Forbidden exception is raised if the specified context is None.
@@ -76,7 +75,10 @@ class MockKeyManager(key_manager.KeyManager):
             raise exception.Forbidden()
 
         key = self._generate_key(**kwargs)
-        return self.store_key(context, key)
+        return self.store(context, key)
+
+    def create_key_pair(self, context, algorithm, length, expiration=None):
+        raise NotImplementedError()
 
     def _generate_key_id(self):
         key_id = str(uuid.uuid4())
@@ -85,26 +87,26 @@ class MockKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def store_key(self, context, key, **kwargs):
+    def store(self, context, managed_object, **kwargs):
         """Stores (i.e., registers) a key with the key manager."""
         if context is None:
             raise exception.Forbidden()
 
         key_id = self._generate_key_id()
-        self.keys[key_id] = key
+        self.keys[key_id] = managed_object
 
         return key_id
 
-    def copy_key(self, context, key_id, **kwargs):
+    def copy(self, context, managed_object_id, **kwargs):
         if context is None:
             raise exception.Forbidden()
 
         copied_key_id = self._generate_key_id()
-        self.keys[copied_key_id] = self.keys[key_id]
+        self.keys[copied_key_id] = self.keys[managed_object_id]
 
         return copied_key_id
 
-    def get_key(self, context, key_id, **kwargs):
+    def get(self, context, managed_object_id, **kwargs):
         """Retrieves the key identified by the specified id.
 
         This implementation returns the key that is associated with the
@@ -114,10 +116,10 @@ class MockKeyManager(key_manager.KeyManager):
         if context is None:
             raise exception.Forbidden()
 
-        return self.keys[key_id]
+        return self.keys[managed_object_id]
 
-    def delete_key(self, context, key_id, **kwargs):
-        """Deletes the key identified by the specified id.
+    def delete(self, context, managed_object_id, **kwargs):
+        """Deletes the object identified by the specified id.
 
         A Forbidden exception is raised if the context is None and a
         KeyError is raised if the UUID is invalid.
@@ -125,7 +127,7 @@ class MockKeyManager(key_manager.KeyManager):
         if context is None:
             raise exception.Forbidden()
 
-        del self.keys[key_id]
+        del self.keys[managed_object_id]
 
     def _generate_password(self, length, symbolgroups):
         """Generate a random password from the supplied symbol groups.

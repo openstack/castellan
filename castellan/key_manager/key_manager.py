@@ -31,70 +31,82 @@ class KeyManager(object):
     """
 
     @abc.abstractmethod
-    def create_key(self, context, algorithm, length,
-                   expiration=None):
-        """Creates a key.
+    def create_key(self, context, algorithm, length, expiration=None):
+        """Creates a symmetric key.
 
-        This method creates a key and returns the key's UUID. If the specified
-        context does not permit the creation of keys, then a NotAuthorized
-        exception should be raised.
+        This method creates a symmetric key and returns the key's UUID. If the
+        specified context does not permit the creation of keys, then a
+        NotAuthorized exception should be raised.
         """
         pass
 
     @abc.abstractmethod
-    def store_key(self, context, key, expiration=None):
-        """Stores (i.e., registers) a key with the key manager.
+    def create_key_pair(self, context, algorithm, length, expiration=None):
+        """Creates an asymmetric key pair.
 
-        This method stores the specified key and returns its UUID that
-        identifies it within the key manager. If the specified context does
-        not permit the creation of keys, then a NotAuthorized exception should
-        be raised.
+        This method creates an asymmetric key pair and returns the pair of key
+        UUIDs. If the specified context does not permit the creation of keys,
+        then a NotAuthorized exception should be raised. The order of the UUIDs
+        will be (private, public).
         """
         pass
 
     @abc.abstractmethod
-    def copy_key(self, context, key_id):
-        """Copies (i.e., clones) a key stored by the key manager.
+    def store(self, context, managed_object, expiration=None):
+        """Stores a managed object with the key manager.
 
-        This method copies the specified key and returns the copy's UUID. If
-        the specified context does not permit copying keys, then a
+        This method stores the specified managed object and returns its UUID
+        that identifies it within the key manager. If the specified context
+        does not permit the creation of keys, then a NotAuthorized exception
+        should be raised.
+        """
+        pass
+
+    @abc.abstractmethod
+    def copy(self, context, managed_object_id):
+        """Copies (i.e., clones) a managed object stored by the key manager.
+
+        This method copies the specified managed object and returns the copy's
+        UUID. If the specified context does not permit copying objects, then a
         NotAuthorized error should be raised.
 
         Implementation note: This method should behave identically to
-            store_key(context, get_key(context, <encryption key UUID>))
+            store(context, get(context, <object UUID>))
         although it is preferable to perform this operation within the key
-        manager to avoid unnecessary handling of the key material.
+        manager to avoid unnecessary handling of the object material.
         """
         pass
 
     @abc.abstractmethod
-    def get_key(self, context, key_id):
-        """Retrieves the specified key.
+    def get(self, context, managed_object_id):
+        """Retrieves the specified managed object.
 
         Implementations should verify that the caller has permissions to
-        retrieve the key by checking the context object passed in as context.
-        If the user lacks permission then a NotAuthorized exception is raised.
+        retrieve the managed object by checking the context object passed in
+        as context. If the user lacks permission then a NotAuthorized
+        exception is raised.
 
-        If the specified key does not exist, then a KeyError should be raised.
-        Implementations should preclude users from discerning the UUIDs of
-        keys that belong to other users by repeatedly calling this method.
-        That is, keys that belong to other users should be considered "non-
-        existent" and completely invisible.
+        If the specified object does not exist, then a KeyError should be
+        raised. Implementations should preclude users from discerning the
+        UUIDs of objects that belong to other users by repeatedly calling
+        this method. That is, objects that belong to other users should be
+        considered "non-existent" and completely invisible.
         """
         pass
 
     @abc.abstractmethod
-    def delete_key(self, context, key_id):
-        """Deletes the specified key.
+    def delete(self, context, managed_object_id):
+        """Deletes the specified managed object.
 
         Implementations should verify that the caller has permission to delete
-        the key by checking the context object (context). A NotAuthorized
-        exception should be raised if the caller lacks permission.
+        the managed object by checking the context object (context). A
+        NotAuthorized exception should be raised if the caller lacks
+        permission.
 
-        If the specified key does not exist, then a KeyError should be raised.
-        Implementations should preclude users from discerning the UUIDs of
-        keys that belong to other users by repeatedly calling this method.
-        That is, keys that belong to other users should be considered "non-
-        existent" and completely invisible.
+        If the specified object does not exist, then a KeyError should be
+        raised. Implementations should preclude users from discerning the
+        UUIDs of objects that belong to other users by repeatedly calling this
+        method. That is, objects that belong to other users should be
+        considered "non-existent" and completely invisible.
         """
         pass

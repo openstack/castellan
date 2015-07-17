@@ -107,7 +107,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return base_url
 
     def create_key(self, context, algorithm, length, expiration=None):
-        """Creates a key.
+        """Creates a symmetric key.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
@@ -135,28 +135,48 @@ class BarbicanKeyManager(key_manager.KeyManager):
             with excutils.save_and_reraise_exception():
                 LOG.error(u._LE("Error creating key: %s"), e)
 
-    def store_key(self, context, key, expiration=None):
-        """Stores (i.e., registers) a key with the key manager.
+    def create_key_pair(self, context, algorithm, length, expiration=None):
+        """Creates an asymmetric key pair.
+
+        Not implemented yet.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
-        :param key: the unencrypted secret data. Known as "payload" to the
-                    barbicanclient api
-        :param expiration: the expiration time of the secret in ISO 8601
-                           format
-        :returns: the UUID of the stored key
+        :param algorithm: the algorithm associated with the secret
+        :param length: the bit length of the secret
+        :param expiration: the date the key will expire
+        :return: TODO: the UUIDs of the new key, in the order (private, public)
+        :raises NotImplementedError: until implemented
         :raises HTTPAuthError: if key creation fails with 401
         :raises HTTPClientError: if key creation failes with 4xx
         :raises HTTPServerError: if key creation fails with 5xx
         """
+        raise NotImplementedError()
+
+    def store(self, context, managed_object, expiration=None):
+        """Stores (i.e., registers) an object with the key manager.
+
+        :param context: contains information of the user and the environment
+            for the request (castellan/context.py)
+        :param managed_object: the unencrypted secret data. Known as "payload"
+            to the barbicanclient api
+        :param expiration: the expiration time of the secret in ISO 8601
+            format
+        :returns: the UUID of the stored object
+        :raises HTTPAuthError: if object creation fails with 401
+        :raises HTTPClientError: if object creation failes with 4xx
+        :raises HTTPServerError: if object creation fails with 5xx
+        """
         barbican_client = self._get_barbican_client(context)
 
         try:
-            if key.algorithm:
-                algorithm = key.algorithm
-            encoded_key = key.get_encoded()
+            if managed_object.algorithm:
+                algorithm = managed_object.algorithm
+            else:
+                algorithm = None
+            encoded_object = managed_object.get_encoded()
             # TODO(kfarr) add support for objects other than symmetric keys
-            secret = barbican_client.secrets.create(payload=encoded_key,
+            secret = barbican_client.secrets.create(payload=encoded_object,
                                                     algorithm=algorithm,
                                                     expiration=expiration)
             secret_ref = secret.store()
@@ -165,32 +185,34 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error storing key: %s"), e)
+                LOG.error(u._LE("Error storing object: %s"), e)
 
-    def copy_key(self, context, key_id):
-        """Copies (i.e., clones) a key stored by barbican.
+    def copy(self, context, managed_object_id):
+        """Copies (i.e., clones) a managed object stored by barbican.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
-        :param key_id: the UUID of the key to copy
-        :return: the UUID of the key copy
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :param managed_object_id: the UUID of the object to copy
+        :return: the UUID of the object copy
+        :raises HTTPAuthError: if object creation fails with 401
+        :raises HTTPClientError: if object creation failes with 4xx
+        :raises HTTPServerError: if object creation fails with 5xx
         """
 
         try:
-            secret = self._get_secret(context, key_id)
+            secret = self._get_secret(context, managed_object_id)
             secret_data = self._get_secret_data(secret)
             # TODO(kfarr) modify to support other types of keys
-            key = sym_key.SymmetricKey(secret.algorithm, secret_data)
-            copy_uuid = self.store_key(context, key, secret.expiration)
+            key = sym_key.SymmetricKey(secret.algorithm,
+                                       secret.bit_length,
+                                       secret_data)
+            copy_uuid = self.store(context, key, secret.expiration)
             return copy_uuid
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error copying key: %s"), e)
+                LOG.error(u._LE("Error copying object: %s"), e)
 
     def _create_secret_ref(self, key_id):
         """Creates the URL required for accessing a secret.
@@ -235,9 +257,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
                      for the request (castellan/context.py)
         :param key_id: UUID of the secret
         :return: the secret's metadata
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :raises HTTPAuthError: if object retrieval fails with 401
+        :raises HTTPClientError: if object retrieval fails with 4xx
+        :raises HTTPServerError: if object retrieval fails with 5xx
         """
 
         barbican_client = self._get_barbican_client(context)
@@ -251,19 +273,21 @@ class BarbicanKeyManager(key_manager.KeyManager):
             with excutils.save_and_reraise_exception():
                 LOG.error(u._LE("Error getting secret metadata: %s"), e)
 
-    def get_key(self, context, key_id):
-        """Retrieves the specified key.
+    def get(self, context, managed_object_id):
+        """Retrieves the specified managed object.
+
+        Currently only supports retrieving symmetric keys.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
-        :param key_id: the UUID of the key to retrieve
+        :param managed_object_id: the UUID of the object to retrieve
         :return: SymmetricKey representation of the key
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :raises HTTPAuthError: if object retrieval fails with 401
+        :raises HTTPClientError: if object retrieval fails with 4xx
+        :raises HTTPServerError: if object retrieval fails with 5xx
         """
         try:
-            secret = self._get_secret(context, key_id)
+            secret = self._get_secret(context, managed_object_id)
             secret_data = self._get_secret_data(secret)
             # TODO(kfarr) add support for other objects
             key = sym_key.SymmetricKey(secret.algorithm,
@@ -274,25 +298,25 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error getting key: %s"), e)
+                LOG.error(u._LE("Error getting object: %s"), e)
 
-    def delete_key(self, context, key_id):
-        """Deletes the specified key.
+    def delete(self, context, managed_object_id):
+        """Deletes the specified managed object.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
-        :param key_id: the UUID of the key to delete
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :param managed_object_id: the UUID of the object to delete
+        :raises HTTPAuthError: if key deletion fails with 401
+        :raises HTTPClientError: if key deletion fails with 4xx
+        :raises HTTPServerError: if key deletion fails with 5xx
         """
         barbican_client = self._get_barbican_client(context)
 
         try:
-            secret_ref = self._create_secret_ref(key_id)
+            secret_ref = self._create_secret_ref(managed_object_id)
             barbican_client.secrets.delete(secret_ref)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error deleting key: %s"), e)
+                LOG.error(u._LE("Error deleting object: %s"), e)
