@@ -24,7 +24,7 @@ import mock
 from castellan.common import exception
 from castellan.key_manager import barbican_key_manager
 from castellan.key_manager import symmetric_key as key_manager_key
-from castellan.tests.key_manager import test_key_manager
+from castellan.tests.unit.key_manager import test_key_manager
 
 
 class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):

@@ -18,7 +18,7 @@ Test cases for the not implemented key manager.
 """
 
 from castellan.key_manager import not_implemented_key_manager
-from castellan.tests.key_manager import test_key_manager
+from castellan.tests.unit.key_manager import test_key_manager
 
 
 class NotImplementedKeyManagerTestCase(test_key_manager.KeyManagerTestCase):

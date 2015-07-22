@@ -24,8 +24,8 @@ from oslo_context import context
 
 from castellan.common import exception
 from castellan.key_manager import symmetric_key as sym_key
-from castellan.tests.key_manager import mock_key_manager as mock_key_mgr
-from castellan.tests.key_manager import test_key_manager as test_key_mgr
+from castellan.tests.unit.key_manager import mock_key_manager as mock_key_mgr
+from castellan.tests.unit.key_manager import test_key_manager as test_key_mgr
 
 
 class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
