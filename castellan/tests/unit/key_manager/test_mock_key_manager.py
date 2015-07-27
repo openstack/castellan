@@ -17,12 +17,31 @@
 Test cases for the mock key manager.
 """
 
+from cryptography.hazmat import backends
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
 from oslo_context import context
 
 from castellan.common import exception
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.tests.unit.key_manager import mock_key_manager as mock_key_mgr
 from castellan.tests.unit.key_manager import test_key_manager as test_key_mgr
+
+
+def get_cryptography_private_key(private_key):
+    crypto_private_key = serialization.load_der_private_key(
+        bytes(private_key.get_encoded()),
+        password=None,
+        backend=backends.default_backend())
+    return crypto_private_key
+
+
+def get_cryptography_public_key(public_key):
+    crypto_public_key = serialization.load_der_public_key(
+        bytes(public_key.get_encoded()),
+        backend=backends.default_backend())
+    return crypto_public_key
 
 
 class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
@@ -47,9 +66,63 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
             key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
 
-    def test_create_null_context(self):
+    def test_create_key_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key, None)
+
+    def test_create_key_pair(self):
+        for length in [2048, 3072, 4096]:
+            private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
+                self.context, 'RSA', length)
+
+            private_key = self.key_mgr.get(self.context, private_key_uuid)
+            public_key = self.key_mgr.get(self.context, public_key_uuid)
+
+            crypto_private_key = get_cryptography_private_key(private_key)
+            crypto_public_key = get_cryptography_public_key(public_key)
+
+            self.assertEqual(length, crypto_private_key.key_size)
+            self.assertEqual(length, crypto_public_key.key_size)
+
+    def test_create_key_pair_encryption(self):
+        private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
+            self.context, 'RSA', 2048)
+
+        private_key = self.key_mgr.get(self.context, private_key_uuid)
+        public_key = self.key_mgr.get(self.context, public_key_uuid)
+
+        crypto_private_key = get_cryptography_private_key(private_key)
+        crypto_public_key = get_cryptography_public_key(public_key)
+
+        message = b'secret plaintext'
+        ciphertext = crypto_public_key.encrypt(
+            message,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None))
+        plaintext = crypto_private_key.decrypt(
+            ciphertext,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA1()),
+                algorithm=hashes.SHA1(),
+                label=None))
+
+        self.assertEqual(message, plaintext)
+
+    def test_create_key_pair_null_context(self):
+        self.assertRaises(exception.Forbidden,
+                          self.key_mgr.create_key_pair, None, 'RSA', 2048)
+
+    def test_create_key_pair_invalid_algorithm(self):
+        self.assertRaises(ValueError,
+                          self.key_mgr.create_key_pair,
+                          self.context, 'DSA', 2048)
+
+    def test_create_key_pair_invalid_length(self):
+        self.assertRaises(ValueError,
+                          self.key_mgr.create_key_pair,
+                          self.context, 'RSA', 10)
 
     def test_store_and_get_key(self):
         secret_key = bytes(b'0' * 64)

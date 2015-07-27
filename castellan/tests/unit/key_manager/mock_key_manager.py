@@ -30,7 +30,13 @@ import binascii
 import random
 import uuid
 
+from cryptography.hazmat import backends
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+
 from castellan.common import exception
+from castellan.common.objects import private_key as pri_key
+from castellan.common.objects import public_key as pub_key
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.key_manager import key_manager
 
@@ -68,8 +74,9 @@ class MockKeyManager(key_manager.KeyManager):
     def create_key(self, context, **kwargs):
         """Creates a symmetric key.
 
-        This implementation returns a UUID for the created key. A
-        Forbidden exception is raised if the specified context is None.
+        This implementation returns a UUID for the created key. The algorithm
+        for the key will always be AES. A Forbidden exception is raised if the
+        specified context is None.
         """
         if context is None:
             raise exception.Forbidden()
@@ -77,8 +84,62 @@ class MockKeyManager(key_manager.KeyManager):
         key = self._generate_key(**kwargs)
         return self.store(context, key)
 
+    def _generate_public_and_private_key(self, length):
+        crypto_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=length,
+            backend=backends.default_backend())
+
+        private_der = crypto_private_key.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption())
+
+        crypto_public_key = crypto_private_key.public_key()
+
+        public_der = crypto_public_key.public_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+
+        private_key = pri_key.PrivateKey(
+            algorithm='RSA',
+            bit_length=length,
+            key=bytearray(private_der))
+
+        public_key = pub_key.PublicKey(
+            algorithm='RSA',
+            bit_length=length,
+            key=bytearray(public_der))
+
+        return private_key, public_key
+
     def create_key_pair(self, context, algorithm, length, expiration=None):
-        raise NotImplementedError()
+        """Creates an asymmetric key pair.
+
+        This implementation returns UUIDs for the created keys in the order:
+            (private, public)
+        Forbidden is raised if the context is None.
+        """
+        if context is None:
+            raise exception.Forbidden()
+
+        if algorithm.lower() != 'rsa':
+            msg = 'Invalid algorithm: {}, only RSA supported'.format(algorithm)
+            raise ValueError(msg)
+
+        valid_lengths = [2048, 3072, 4096]
+
+        if length not in valid_lengths:
+            msg = 'Invalid bit length: {}, only {} supported'.format(
+                length, valid_lengths)
+            raise ValueError(msg)
+
+        private_key, public_key = self._generate_public_and_private_key(length)
+
+        private_key_uuid = self.store(context, private_key)
+        public_key_uuid = self.store(context, public_key)
+
+        return private_key_uuid, public_key_uuid
 
     def _generate_key_id(self):
         key_id = str(uuid.uuid4())
