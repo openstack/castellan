@@ -158,15 +158,6 @@ class MockKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def copy(self, context, managed_object_id, **kwargs):
-        if context is None:
-            raise exception.Forbidden()
-
-        copied_key_id = self._generate_key_id()
-        self.keys[copied_key_id] = self.keys[managed_object_id]
-
-        return copied_key_id
-
     def get(self, context, managed_object_id, **kwargs):
         """Retrieves the key identified by the specified id.
 

@@ -72,21 +72,6 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def copy(self, context, managed_object_id):
-        """Copies (i.e., clones) a managed object stored by the key manager.
-
-        This method copies the specified managed object and returns the copy's
-        UUID. If the specified context does not permit copying objects, then a
-        NotAuthorized error should be raised.
-
-        Implementation note: This method should behave identically to
-            store(context, get(context, <object UUID>))
-        although it is preferable to perform this operation within the key
-        manager to avoid unnecessary handling of the object material.
-        """
-        pass
-
-    @abc.abstractmethod
     def get(self, context, managed_object_id):
         """Retrieves the specified managed object.
 

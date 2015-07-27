@@ -69,44 +69,6 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr._barbican_client = self.mock_barbican
         self.key_mgr._current_context = self.ctxt
 
-    def test_copy_key(self):
-        # Create metadata for original secret
-        original_secret_metadata = mock.Mock()
-        original_secret_metadata.algorithm = mock.sentinel.alg
-        original_secret_metadata.bit_length = mock.sentinel.bit
-        original_secret_metadata.name = mock.sentinel.name
-        original_secret_metadata.expiration = mock.sentinel.expiration
-        original_secret_metadata.mode = mock.sentinel.mode
-        content_types = {'default': 'fake_type'}
-        original_secret_metadata.content_types = content_types
-        original_secret_data = mock.Mock()
-        original_secret_metadata.payload = original_secret_data
-
-        # Create href for copied secret
-        copied_secret = mock.Mock()
-        copied_secret.store.return_value = (
-            'http://http://host:9311/v1/secrets/uuid')
-
-        # Set get and create return values
-        self.get.return_value = original_secret_metadata
-        self.create.return_value = copied_secret
-
-        # Copy the original
-        self.key_mgr.copy(self.ctxt, self.key_id)
-
-        # Assert proper methods were called
-        self.get.assert_called_once_with(self.secret_ref)
-        self.create.assert_called_once_with(
-            payload=original_secret_metadata.payload,
-            algorithm=mock.sentinel.alg,
-            expiration=mock.sentinel.expiration)
-        copied_secret.store.assert_called_once_with()
-
-    def test_copy_null_context(self):
-        self.key_mgr._barbican_client = None
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.copy, None, self.key_id)
-
     def test_create_key(self):
         # Create order_ref_url and assign return value
         order_ref_url = ("http://localhost:9311/v1/orders/"

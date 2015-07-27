@@ -185,33 +185,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
             with excutils.save_and_reraise_exception():
                 LOG.error(u._LE("Error storing object: %s"), e)
 
-    def copy(self, context, managed_object_id):
-        """Copies (i.e., clones) a managed object stored by barbican.
-
-        :param context: contains information of the user and the environment
-                     for the request (castellan/context.py)
-        :param managed_object_id: the UUID of the object to copy
-        :return: the UUID of the object copy
-        :raises HTTPAuthError: if object creation fails with 401
-        :raises HTTPClientError: if object creation failes with 4xx
-        :raises HTTPServerError: if object creation fails with 5xx
-        """
-
-        try:
-            secret = self._get_secret(context, managed_object_id)
-            secret_data = self._get_secret_data(secret)
-            # TODO(kfarr) modify to support other types of keys
-            key = sym_key.SymmetricKey(secret.algorithm,
-                                       secret.bit_length,
-                                       secret_data)
-            copy_uuid = self.store(context, key, secret.expiration)
-            return copy_uuid
-        except (barbican_exceptions.HTTPAuthError,
-                barbican_exceptions.HTTPClientError,
-                barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error copying object: %s"), e)
-
     def _create_secret_ref(self, key_id):
         """Creates the URL required for accessing a secret.
 
