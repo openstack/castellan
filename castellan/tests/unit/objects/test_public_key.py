@@ -14,49 +14,37 @@
 #    under the License.
 
 """
-Test cases for the symmetric key class.
+Test cases for the public key class.
 """
 
-from castellan.common.objects import symmetric_key as sym_key
+from castellan.common.objects import public_key
 from castellan.tests import base
+from castellan.tests import utils
 
 
-class KeyTestCase(base.TestCase):
-
-    def _create_key(self):
-        raise NotImplementedError()
-
-    def setUp(self):
-        super(KeyTestCase, self).setUp()
-
-        self.key = self._create_key()
-
-
-class SymmetricKeyTestCase(KeyTestCase):
+class PublicKeyTestCase(base.KeyTestCase):
 
     def _create_key(self):
-        return sym_key.SymmetricKey(self.algorithm,
-                                    self.bit_length,
-                                    self.encoded)
+        return public_key.PublicKey(self.algorithm, self.length, self.encoded)
 
     def setUp(self):
-        self.algorithm = 'AES'
-        self.encoded = bytes(b'0' * 64)
-        self.bit_length = len(self.encoded) * 8
+        self.algorithm = 'RSA'
+        self.length = 2048
+        self.encoded = bytes(utils.get_public_key_der())
 
-        super(SymmetricKeyTestCase, self).setUp()
-
-    def test_get_format(self):
-        self.assertEqual('RAW', self.key.format)
-
-    def test_get_encoded(self):
-        self.assertEqual(self.encoded, self.key.get_encoded())
+        super(PublicKeyTestCase, self).setUp()
 
     def test_get_algorithm(self):
         self.assertEqual(self.algorithm, self.key.algorithm)
 
-    def test_get_bit_length(self):
-        self.assertEqual(self.bit_length, self.key.bit_length)
+    def test_get_length(self):
+        self.assertEqual(self.length, self.key.bit_length)
+
+    def test_get_format(self):
+        self.assertEqual('SubjectPublicKeyInfo', self.key.format)
+
+    def test_get_encoded(self):
+        self.assertEqual(self.encoded, self.key.get_encoded())
 
     def test___eq__(self):
         self.assertTrue(self.key == self.key)

@@ -20,4 +20,26 @@ from oslotest import base
 
 class TestCase(base.BaseTestCase):
 
-    """Test case base class for all tests."""
+    """Test case base class for all unit tests."""
+
+
+class CertificateTestCase(TestCase):
+
+    def _create_cert(self):
+        raise NotImplementedError()
+
+    def setUp(self):
+        super(CertificateTestCase, self).setUp()
+
+        self.cert = self._create_cert()
+
+
+class KeyTestCase(TestCase):
+
+    def _create_key(self):
+        raise NotImplementedError()
+
+    def setUp(self):
+        super(KeyTestCase, self).setUp()
+
+        self.key = self._create_key()
