@@ -25,6 +25,9 @@ class NotImplementedKeyManager(key_manager.KeyManager):
 
     """
 
+    def __init__(self, configuration=None):
+        super(NotImplementedKeyManager, self).__init__(configuration)
+
     def create_key(self, context, algorithm='AES', length=256,
                    expiration=None, **kwargs):
         raise NotImplementedError()

@@ -18,6 +18,7 @@ Test cases for the barbican key manager.
 """
 
 import mock
+from oslo_config import cfg
 
 from castellan.common import exception
 from castellan.common.objects import symmetric_key as key_manager_key
@@ -28,7 +29,7 @@ from castellan.tests.unit.key_manager import test_key_manager
 class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def _create_key_manager(self):
-        return barbican_key_manager.BarbicanKeyManager()
+        return barbican_key_manager.BarbicanKeyManager(cfg.CONF)
 
     def setUp(self):
         super(BarbicanKeyManagerTestCase, self).setUp()

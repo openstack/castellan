@@ -16,7 +16,6 @@
 from oslo_config import cfg
 from oslo_utils import importutils
 
-
 key_manager_opts = [
     cfg.StrOpt('api_class',
                default='castellan.key_manager.barbican_key_manager'
@@ -24,10 +23,10 @@ key_manager_opts = [
                help='The full class name of the key manager API class'),
 ]
 
-CONF = cfg.CONF
-CONF.register_opts(key_manager_opts, group='key_manager')
 
+def API(configuration=None):
+    conf = configuration or cfg.CONF
+    conf.register_opts(key_manager_opts, group='key_manager')
 
-def API():
-    cls = importutils.import_class(CONF.key_manager.api_class)
-    return cls()
+    cls = importutils.import_class(conf.key_manager.api_class)
+    return cls(configuration=conf)

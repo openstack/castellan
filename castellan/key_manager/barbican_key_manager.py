@@ -35,17 +35,12 @@ barbican_opts = [
     cfg.StrOpt('barbican_endpoint',
                default='http://localhost:9311/',
                help='Use this endpoint to connect to Barbican'),
-    cfg.StrOpt('api_version',
+    cfg.StrOpt('barbican_api_version',
                default='v1',
                help='Version of the Barbican API'),
 ]
 
-CONF = cfg.CONF
 BARBICAN_OPT_GROUP = 'barbican'
-
-CONF.register_opts(barbican_opts, group=BARBICAN_OPT_GROUP)
-
-session.Session.register_conf_options(CONF, BARBICAN_OPT_GROUP)
 
 LOG = logging.getLogger(__name__)
 
@@ -53,9 +48,12 @@ LOG = logging.getLogger(__name__)
 class BarbicanKeyManager(key_manager.KeyManager):
     """Key Manager Interface that wraps the Barbican client API."""
 
-    def __init__(self):
+    def __init__(self, configuration):
         self._barbican_client = None
         self._base_url = None
+        self.conf = configuration
+        self.conf.register_opts(barbican_opts, group=BARBICAN_OPT_GROUP)
+        session.Session.register_conf_options(self.conf, BARBICAN_OPT_GROUP)
 
     def _get_barbican_client(self, context):
         """Creates a client to connect to the Barbican service.
@@ -92,9 +90,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
     def _get_keystone_session(self, context):
         sess = session.Session.load_from_conf_options(
-            CONF, BARBICAN_OPT_GROUP)
+            self.conf, BARBICAN_OPT_GROUP)
 
-        self._barbican_endpoint = CONF.barbican.barbican_endpoint
+        self._barbican_endpoint = self.conf.barbican.barbican_endpoint
 
         auth = token_endpoint.Token(self._barbican_endpoint,
                                     context.auth_token)
@@ -102,8 +100,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return sess
 
     def _create_base_url(self):
-        base_url = urllib.parse.urljoin(self._barbican_endpoint,
-                                        CONF.barbican.api_version)
+        base_url = urllib.parse.urljoin(
+            self._barbican_endpoint, self.conf.barbican.barbican_api_version)
         return base_url
 
     def create_key(self, context, algorithm, length, expiration=None):
