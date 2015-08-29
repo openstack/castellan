@@ -50,7 +50,7 @@ the manager service. We record the key identifier for later usage.
     from castellan import key_manager
 
     manager = key_manager.API()
-    key = manager.store(myapp.context(), stored_key_id)
+    key = manager.get(myapp.context(), stored_key_id)
     if key.get_encoded() == 'super_secret_password':
         myapp.do_secret_stuff()
 
