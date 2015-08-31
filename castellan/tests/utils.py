@@ -14,9 +14,7 @@
 #    under the License.
 
 
-"""
-These utilility functions are borrowed from Barbican's testing utilites.
-"""
+"""These utility functions are borrowed from Barbican's testing utilities."""
 
 
 def get_certificate_der():
