@@ -166,13 +166,15 @@ class BarbicanKeyManager(key_manager.KeyManager):
             endpoint, api_version)
         return base_url
 
-    def create_key(self, context, algorithm, length, expiration=None):
+    def create_key(self, context, algorithm, length,
+                   expiration=None, name=None):
         """Creates a symmetric key.
 
         :param context: contains information of the user and the environment
                         for the request (castellan/context.py)
         :param algorithm: the algorithm associated with the secret
         :param length: the bit length of the secret
+        :param name: the name of the key
         :param expiration: the date the key will expire
         :return: the UUID of the new key
         :raises HTTPAuthError: if key creation fails with 401
@@ -183,6 +185,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         try:
             key_order = barbican_client.orders.create_key(
+                name=name,
                 algorithm=algorithm,
                 bit_length=length,
                 expiration=expiration)
@@ -195,13 +198,15 @@ class BarbicanKeyManager(key_manager.KeyManager):
             with excutils.save_and_reraise_exception():
                 LOG.error(u._LE("Error creating key: %s"), e)
 
-    def create_key_pair(self, context, algorithm, length, expiration=None):
+    def create_key_pair(self, context, algorithm, length,
+                        expiration=None, name=None):
         """Creates an asymmetric key pair.
 
         :param context: contains information of the user and the environment
                         for the request (castellan/context.py)
         :param algorithm: the algorithm associated with the secret
         :param length: the bit length of the secret
+        :param name: the name of the key
         :param expiration: the date the key will expire
         :return: the UUIDs of the new key, in the order (private, public)
         :raises NotImplementedError: until implemented
@@ -215,6 +220,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             key_pair_order = barbican_client.orders.create_asymmetric(
                 algorithm=algorithm,
                 bit_length=length,
+                name=name,
                 expiration=expiration)
 
             order_ref = key_pair_order.submit()
@@ -234,6 +240,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
     def _get_barbican_object(self, barbican_client, managed_object):
         """Converts the Castellan managed_object to a Barbican secret."""
+        name = getattr(managed_object, 'name', None)
+
         try:
             algorithm = managed_object.algorithm
             bit_length = managed_object.bit_length
@@ -248,6 +256,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         secret = barbican_client.secrets.create(payload=payload,
                                                 algorithm=algorithm,
                                                 bit_length=bit_length,
+                                                name=name,
                                                 secret_type=secret_type)
         return secret
 
@@ -287,8 +296,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         :param context: contains information of the user and the environment
             for the request (castellan/context.py)
-        :param managed_object: the unencrypted secret data. Known as "payload"
-            to the barbicanclient api
+        :param managed_object: a secret object with unencrypted payload.
+            Known as "secret" to the barbicanclient api
         :param expiration: the expiration time of the secret in ISO 8601
             format
         :returns: the UUID of the stored object
@@ -421,9 +430,11 @@ class BarbicanKeyManager(key_manager.KeyManager):
         if issubclass(secret_type, key_base_class.Key):
             return secret_type(secret.algorithm,
                                secret.bit_length,
-                               secret_data)
+                               secret_data,
+                               secret.name)
         else:
-            return secret_type(secret_data)
+            return secret_type(secret_data,
+                               secret.name)
 
     def _get_secret(self, context, key_id):
         """Returns the metadata of the secret.

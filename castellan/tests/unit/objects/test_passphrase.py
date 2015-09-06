@@ -24,10 +24,12 @@ from castellan.tests import base
 class PassphraseTestCase(base.TestCase):
 
     def _create_passphrase(self):
-        return passphrase.Passphrase(self.passphrase_data)
+        return passphrase.Passphrase(self.passphrase_data,
+                                     self.name)
 
     def setUp(self):
         self.passphrase_data = bytes(b"secret passphrase")
+        self.name = 'my phrase'
         self.passphrase = self._create_passphrase()
 
         super(PassphraseTestCase, self).setUp()
@@ -38,6 +40,9 @@ class PassphraseTestCase(base.TestCase):
     def test_get_encoded(self):
         self.assertEqual(self.passphrase_data, self.passphrase.get_encoded())
 
+    def test_get_name(self):
+        self.assertEqual(self.name, self.passphrase.name)
+
     def test___eq__(self):
         self.assertTrue(self.passphrase == self.passphrase)
 
@@ -46,6 +51,12 @@ class PassphraseTestCase(base.TestCase):
 
     def test___ne__(self):
         self.assertFalse(self.passphrase != self.passphrase)
+        self.assertFalse(self.name != self.name)
 
         self.assertTrue(self.passphrase is not None)
         self.assertTrue(None != self.passphrase)
+
+    def test___ne__name(self):
+        other_phrase = passphrase.Passphrase(self.passphrase_data,
+                                             "other phrase")
+        self.assertTrue(self.passphrase_data != other_phrase)

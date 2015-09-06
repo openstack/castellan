@@ -25,15 +25,19 @@ from castellan.tests import utils
 class X509TestCase(base.CertificateTestCase):
 
     def _create_cert(self):
-        return x_509.X509(self.data)
+        return x_509.X509(self.data, self.name)
 
     def setUp(self):
         self.data = utils.get_certificate_der()
+        self.name = 'my cert'
 
         super(X509TestCase, self).setUp()
 
     def test_get_format(self):
         self.assertEqual('X.509', self.cert.format)
+
+    def test_get_name(self):
+        self.assertEqual(self.name, self.cert.name)
 
     def test_get_encoded(self):
         self.assertEqual(self.data, self.cert.get_encoded())
@@ -46,6 +50,11 @@ class X509TestCase(base.CertificateTestCase):
 
     def test___ne__(self):
         self.assertFalse(self.cert != self.cert)
+        self.assertFalse(self.name != self.name)
 
         self.assertTrue(self.cert is not None)
         self.assertTrue(None != self.cert)
+
+    def test___ne__name(self):
+        other_x509 = x_509.X509(self.data, "other x509")
+        self.assertTrue(self.cert != other_x509)

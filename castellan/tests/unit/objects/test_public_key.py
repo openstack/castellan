@@ -25,12 +25,16 @@ from castellan.tests import utils
 class PublicKeyTestCase(base.KeyTestCase):
 
     def _create_key(self):
-        return public_key.PublicKey(self.algorithm, self.length, self.encoded)
+        return public_key.PublicKey(self.algorithm,
+                                    self.length,
+                                    self.encoded,
+                                    self.name)
 
     def setUp(self):
         self.algorithm = 'RSA'
         self.length = 2048
         self.encoded = bytes(utils.get_public_key_der())
+        self.name = 'my key'
 
         super(PublicKeyTestCase, self).setUp()
 
@@ -39,6 +43,9 @@ class PublicKeyTestCase(base.KeyTestCase):
 
     def test_get_length(self):
         self.assertEqual(self.length, self.key.bit_length)
+
+    def test_get_name(self):
+        self.assertEqual(self.name, self.key.name)
 
     def test_get_format(self):
         self.assertEqual('SubjectPublicKeyInfo', self.key.format)
@@ -54,6 +61,14 @@ class PublicKeyTestCase(base.KeyTestCase):
 
     def test___ne__(self):
         self.assertFalse(self.key != self.key)
+        self.assertFalse(self.name != self.name)
 
         self.assertTrue(self.key is not None)
         self.assertTrue(None != self.key)
+
+    def test___ne__name(self):
+        other_key = public_key.PublicKey(self.algorithm,
+                                         self.length,
+                                         self.encoded,
+                                         'other key')
+        self.assertTrue(self.key != other_key)

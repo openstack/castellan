@@ -40,7 +40,8 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def create_key(self, context, algorithm, length, expiration=None):
+    def create_key(self, context, algorithm, length,
+                   expiration=None, name=None):
         """Creates a symmetric key.
 
         This method creates a symmetric key and returns the key's UUID. If the
@@ -50,7 +51,8 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def create_key_pair(self, context, algorithm, length, expiration=None):
+    def create_key_pair(self, context, algorithm, length,
+                        expiration=None, name=None):
         """Creates an asymmetric key pair.
 
         This method creates an asymmetric key pair and returns the pair of key

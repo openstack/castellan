@@ -29,6 +29,18 @@ import six
 class ManagedObject(object):
     """Base class to represent all managed objects."""
 
+    def __init__(self, name=None):
+        """Managed Object has a name, defaulted to None."""
+        self._name = name
+
+    @property
+    def name(self):
+        """Returns the name.
+
+        Returns the object's name or None if this object does not have one.
+        """
+        return self._name
+
     @abc.abstractproperty
     def format(self):
         """Returns the encoding format.

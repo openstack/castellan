@@ -25,7 +25,7 @@ from castellan.common.objects import key
 class SymmetricKey(key.Key):
     """This class represents symmetric keys."""
 
-    def __init__(self, algorithm, bit_length, key):
+    def __init__(self, algorithm, bit_length, key, name=None):
         """Create a new SymmetricKey object.
 
         The arguments specify the algorithm and bit length for the symmetric
@@ -34,6 +34,7 @@ class SymmetricKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
+        super(SymmetricKey, self).__init__(name=name)
 
     @property
     def algorithm(self):
@@ -58,7 +59,8 @@ class SymmetricKey(key.Key):
         if isinstance(other, SymmetricKey):
             return (self._alg == other._alg and
                     self._bit_length == other._bit_length and
-                    self._key == other._key)
+                    self._key == other._key and
+                    self._name == other._name)
         else:
             return False
 

@@ -25,12 +25,13 @@ from castellan.common.objects import certificate
 class X509(certificate.Certificate):
     """This class represents X.509 certificates."""
 
-    def __init__(self, data):
+    def __init__(self, data, name=None):
         """Create a new X509 object.
 
         The data should be in a bytestring.
         """
         self._data = data
+        super(X509, self).__init__(name=name)
 
     @property
     def format(self):
@@ -43,7 +44,8 @@ class X509(certificate.Certificate):
 
     def __eq__(self, other):
         if isinstance(other, X509):
-            return (self._data == other._data)
+            return (self._data == other._data and
+                    self._name == other._name)
         else:
             return False
 

@@ -186,6 +186,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         original_secret_metadata.algorithm = mock.sentinel.alg
         original_secret_metadata.bit_length = mock.sentinel.bit
         original_secret_metadata.secret_type = 'symmetric'
+
+        key_name = 'my key'
+        original_secret_metadata.name = key_name
+
         original_secret_data = b'test key'
         original_secret_metadata.payload = original_secret_data
 
@@ -193,6 +197,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         key = self.key_mgr.get(self.ctxt, self.key_id)
 
         self.get.assert_called_once_with(self.secret_ref)
+        self.assertEqual(key_name, key.name)
         self.assertEqual(original_secret_data, key.get_encoded())
 
     def test_get_null_context(self):
@@ -228,7 +233,33 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
         self.create.assert_called_once_with(algorithm='AES',
                                             bit_length=key_length,
+                                            name=None,
                                             payload=secret_key,
+                                            secret_type='symmetric')
+        self.assertEqual(self.key_id, returned_uuid)
+
+    def test_store_key_with_name(self):
+        # Create Key to store
+        secret_key = bytes(b'\x01\x02\xA0\xB3')
+        key_length = len(secret_key) * 8
+        secret_name = 'My Secret'
+        _key = sym_key.SymmetricKey('AES',
+                                    key_length,
+                                    secret_key,
+                                    secret_name)
+
+        # Define the return values
+        secret = mock.Mock()
+        self.create.return_value = secret
+        secret.store.return_value = self.secret_ref
+
+        # Store the Key
+        returned_uuid = self.key_mgr.store(self.ctxt, _key)
+
+        self.create.assert_called_once_with(algorithm='AES',
+                                            bit_length=key_length,
+                                            payload=secret_key,
+                                            name=secret_name,
                                             secret_type='symmetric')
         self.assertEqual(self.key_id, returned_uuid)
 
