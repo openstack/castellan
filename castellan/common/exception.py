@@ -42,7 +42,7 @@ class CastellanException(Exception):
         if not message_arg:
             message_arg = self.message
         try:
-            self.message = message_arg.format(**kwargs)
+            self.message = message_arg % kwargs
         except Exception as e:
             if _FATAL_EXCEPTION_FORMAT_ERRORS:
                 raise e

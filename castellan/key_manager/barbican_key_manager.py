@@ -25,7 +25,6 @@ from keystoneclient.auth import identity
 from keystoneclient import session
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import excutils
 
 from castellan.common import exception
 from castellan.common.objects import key as key_base_class
@@ -90,8 +89,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param context: the user context for authentication
         :return: a Barbican Client object
         :raises Forbidden: if the context is None
-        :raises KeyManagerError: if context is missing tenant or
-                                 tenant is None
+        :raises KeyManagerError: if context is missing tenant or tenant is
+                                 None or error occurs while creating client
         """
 
         # Confirm context is provided, if not raise forbidden
@@ -104,7 +103,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             msg = u._("Unable to create Barbican Client without tenant "
                       "attribute in context object.")
             LOG.error(msg)
-            raise exception.KeyManagerError(msg)
+            raise exception.KeyManagerError(reason=msg)
 
         if self._barbican_client and self._current_context == context:
             return self._barbican_client
@@ -120,8 +119,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 endpoint=self._barbican_endpoint)
 
         except Exception as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error creating Barbican client: %s"), e)
+            LOG.error(u._LE("Error creating Barbican client: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
         self._base_url = self._create_base_url(auth,
                                                sess,
@@ -158,7 +157,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 msg = u._LE(
                     "Could not find discovery information for %s") % endpoint
                 LOG.error(msg)
-                raise exception.KeyManagerError(msg)
+                raise exception.KeyManagerError(reason=msg)
             latest_version = raw_data[-1]
             api_version = latest_version.get('id')
 
@@ -175,9 +174,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param length: the bit length of the secret
         :param expiration: the date the key will expire
         :return: the UUID of the new key
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :raises KeyManagerError: if key creation fails
         """
         barbican_client = self._get_barbican_client(context)
 
@@ -192,8 +189,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error creating key: %s"), e)
+            LOG.error(u._LE("Error creating key: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
     def create_key_pair(self, context, algorithm, length, expiration=None):
         """Creates an asymmetric key pair.
@@ -205,9 +202,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param expiration: the date the key will expire
         :return: the UUIDs of the new key, in the order (private, public)
         :raises NotImplementedError: until implemented
-        :raises HTTPAuthError: if key creation fails with 401
-        :raises HTTPClientError: if key creation failes with 4xx
-        :raises HTTPServerError: if key creation fails with 5xx
+        :raises KeyManagerError: if key pair creation fails
         """
         barbican_client = self._get_barbican_client(context)
 
@@ -229,8 +224,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error creating key pair: %s"), e)
+            LOG.error(u._LE("Error creating key pair: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
     def _get_barbican_object(self, barbican_client, managed_object):
         """Converts the Castellan managed_object to a Barbican secret."""
@@ -292,9 +287,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param expiration: the expiration time of the secret in ISO 8601
             format
         :returns: the UUID of the stored object
-        :raises HTTPAuthError: if object creation fails with 401
-        :raises HTTPClientError: if object creation failes with 4xx
-        :raises HTTPServerError: if object creation fails with 5xx
+        :raises KeyManagerError: if object store fails
         """
         barbican_client = self._get_barbican_client(context)
 
@@ -307,8 +300,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error storing object: %s"), e)
+            LOG.error(u._LE("Error storing object: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
     def _create_secret_ref(self, key_id):
         """Creates the URL required for accessing a secret.
@@ -318,7 +311,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """
         if not key_id:
             msg = "Key ID is None"
-            raise exception.KeyManagerError(msg)
+            raise exception.KeyManagerError(reason=msg)
         base_url = self._base_url
         if base_url[-1] != '/':
             base_url += '/'
@@ -356,7 +349,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                                                          'num_retries':
                                                          number_of_retries}
         LOG.error(msg)
-        raise exception.KeyManagerError(msg)
+        raise exception.KeyManagerError(reason=msg)
 
     def _retrieve_secret_uuid(self, secret_ref):
         """Retrieves the UUID of the secret from the secret_ref.
@@ -432,9 +425,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                         for the request (castellan/context.py)
         :param key_id: UUID of the secret
         :return: the secret's metadata
-        :raises HTTPAuthError: if object retrieval fails with 401
-        :raises HTTPClientError: if object retrieval fails with 4xx
-        :raises HTTPServerError: if object retrieval fails with 5xx
+        :raises KeyManagerError: if object retrieval fails
         """
 
         barbican_client = self._get_barbican_client(context)
@@ -445,8 +436,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error getting secret metadata: %s"), e)
+            LOG.error(u._LE("Error getting secret metadata: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
     def get(self, context, managed_object_id):
         """Retrieves the specified managed object.
@@ -457,18 +448,17 @@ class BarbicanKeyManager(key_manager.KeyManager):
                         for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to retrieve
         :return: SymmetricKey representation of the key
-        :raises HTTPAuthError: if object retrieval fails with 401
-        :raises HTTPClientError: if object retrieval fails with 4xx
-        :raises HTTPServerError: if object retrieval fails with 5xx
+        :raises KeyManagerError: if object retrieval fails
         """
         try:
             secret = self._get_secret(context, managed_object_id)
             return self._get_castellan_object(secret)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
-                barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error getting object: %s"), e)
+                barbican_exceptions.HTTPServerError,
+                exception.KeyManagerError) as e:
+            LOG.error(u._LE("Error getting object: %s"), e)
+            raise exception.KeyManagerError(reason=e)
 
     def delete(self, context, managed_object_id):
         """Deletes the specified managed object.
@@ -476,9 +466,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to delete
-        :raises HTTPAuthError: if key deletion fails with 401
-        :raises HTTPClientError: if key deletion fails with 4xx
-        :raises HTTPServerError: if key deletion fails with 5xx
+        :raises KeyManagerError: if key deletion fails
         """
         barbican_client = self._get_barbican_client(context)
 
@@ -488,5 +476,5 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            with excutils.save_and_reraise_exception():
-                LOG.error(u._LE("Error deleting object: %s"), e)
+            LOG.error(u._LE("Error deleting object: %s"), e)
+            raise exception.KeyManagerError(reason=e)

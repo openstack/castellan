@@ -106,7 +106,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.mock_barbican.orders.create_key.return_value = key_order
         key_order.submit = mock.Mock(
             side_effect=barbican_exceptions.HTTPClientError('test error'))
-        self.assertRaises(barbican_exceptions.HTTPClientError,
+        self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.create_key, self.ctxt, 'AES', 256)
 
     def test_create_key_pair(self):
@@ -159,7 +159,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.mock_barbican.orders.create_asymmetric.return_value = asym_order
         asym_order.submit = mock.Mock(
             side_effect=barbican_exceptions.HTTPClientError('test error'))
-        self.assertRaises(barbican_exceptions.HTTPClientError,
+        self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.create_key_pair, self.ctxt, 'RSA', 2048)
 
     def test_delete_null_context(self):
@@ -178,7 +178,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_delete_with_error(self):
         self.mock_barbican.secrets.delete = mock.Mock(
             side_effect=barbican_exceptions.HTTPClientError('test error'))
-        self.assertRaises(barbican_exceptions.HTTPClientError,
+        self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.delete, self.ctxt, self.key_id)
 
     def test_get_key(self):
@@ -207,7 +207,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_get_with_error(self):
         self.mock_barbican.secrets.get = mock.Mock(
             side_effect=barbican_exceptions.HTTPClientError('test error'))
-        self.assertRaises(barbican_exceptions.HTTPClientError,
+        self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.get, self.ctxt, self.key_id)
 
     def test_store_key(self):
@@ -245,7 +245,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         _key = sym_key.SymmetricKey('AES',
                                     key_length,
                                     secret_key)
-        self.assertRaises(barbican_exceptions.HTTPClientError,
+        self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.store, self.ctxt, _key)
 
     def test_get_active_order(self):
