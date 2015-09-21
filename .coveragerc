@@ -4,4 +4,4 @@ source = castellan
 omit = castellan/tests/*,castellan/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
