@@ -58,3 +58,7 @@ class Forbidden(CastellanException):
 
 class KeyManagerError(CastellanException):
     message = u._("Key manager error: %(reason)s")
+
+
+class ManagedObjectNotFoundError(CastellanException):
+    message = u._("Key not found, uuid: %(uuid)s")
