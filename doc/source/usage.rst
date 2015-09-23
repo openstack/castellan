@@ -16,7 +16,7 @@ can be supported through a single interface.
 
 In addition to the key manager, Castellan also provides primitives for
 various types of secrets (for example, asymmetric keys, simple passphrases,
-and certificates). These primitives are used in conjuction with the key
+and certificates). These primitives are used in conjunction with the key
 manager to create, store, retrieve, and destroy managed secrets.
 
 Another fundamental concept to using Castellan is the context object, most
