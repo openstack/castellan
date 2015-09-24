@@ -171,9 +171,16 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr.delete(self.ctxt, self.key_id)
         self.delete.assert_called_once_with(self.secret_ref)
 
-    def test_delete_unknown_key(self):
+    def test_delete_none_key(self):
         self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.delete, self.ctxt, None)
+
+    def test_delete_unkown_key(self):
+        side_effect = barbican_exceptions.HTTPClientError('key not found')
+        side_effect.status_code = 404
+        self.mock_barbican.secrets.delete = mock.Mock(side_effect=side_effect)
+        self.assertRaises(exception.ManagedObjectNotFoundError,
+                          self.key_mgr.delete, self.ctxt, self.key_id)
 
     def test_delete_with_error(self):
         self.mock_barbican.secrets.delete = mock.Mock(
@@ -200,9 +207,16 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.get, None, self.key_id)
 
-    def test_get_unknown_key(self):
+    def test_get_none_key(self):
         self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.get, self.ctxt, None)
+
+    def test_get_unknown_key(self):
+        side_effect = barbican_exceptions.HTTPClientError('key not found')
+        side_effect.status_code = 404
+        self.mock_barbican.secrets.get = mock.Mock(side_effect=side_effect)
+        self.assertRaises(exception.ManagedObjectNotFoundError,
+                          self.key_mgr.get, self.ctxt, self.key_id)
 
     def test_get_with_error(self):
         self.mock_barbican.secrets.get = mock.Mock(
