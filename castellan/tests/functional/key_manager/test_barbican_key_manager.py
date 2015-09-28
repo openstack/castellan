@@ -21,12 +21,12 @@ Note: This requires local running instances of Barbican and Keystone.
 
 import uuid
 
-from barbicanclient import exceptions as barbican_exceptions
 from keystoneclient.v3 import client
+from oslo_config import cfg
 from oslo_context import context
+from oslotest import base
 
 from castellan.common import exception
-from castellan.common.objects import symmetric_key
 from castellan.key_manager import barbican_key_manager
 from castellan.tests.functional import config
 from castellan.tests.functional.key_manager import test_key_manager
@@ -35,10 +35,11 @@ from castellan.tests.functional.key_manager import test_key_manager
 CONF = config.get_config()
 
 
-class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
+class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase,
+                                 base.BaseTestCase):
 
     def _create_key_manager(self):
-        return barbican_key_manager.BarbicanKeyManager()
+        return barbican_key_manager.BarbicanKeyManager(cfg.CONF)
 
     def setUp(self):
         super(BarbicanKeyManagerTestCase, self).setUp()
@@ -49,100 +50,58 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         keystone_client = client.Client(username=username,
                                         password=password,
                                         project_name=project_name,
-                                        auth_url=auth_url)
+                                        auth_url=auth_url,
+                                        project_domain_id='default')
+        project_list = keystone_client.projects.list(name=project_name)
+
         self.ctxt = context.RequestContext(
-            auth_token=keystone_client.auth_token)
+            auth_token=keystone_client.auth_token,
+            tenant=project_list[0].id)
 
     def tearDown(self):
         super(BarbicanKeyManagerTestCase, self).tearDown()
-
-    def test_create_key(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, key_uuid)
-        self.assertIsNotNone(key_uuid)
 
     def test_create_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key, None, 'AES', 256)
 
-    def test_delete_symmetric_key(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
-        self.key_mgr.delete_key(self.ctxt, key_uuid)
-        try:
-            self.key_mgr.get_key(self.ctxt, key_uuid)
-        except barbican_exceptions.HTTPClientError as e:
-            self.assertEqual(404, e.status_code)
-        else:
-            self.fail('No exception when deleting non-existent key')
+    def test_create_key_pair_null_context(self):
+        self.assertRaises(exception.Forbidden,
+                          self.key_mgr.create_key_pair, None, 'RSA', 2048)
 
     def test_delete_null_context(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, key_uuid)
+        key_uuid = self._get_valid_object_uuid(
+            test_key_manager._get_test_symmetric_key())
+        self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete_key, None, key_uuid)
+                          self.key_mgr.delete, None, key_uuid)
 
-    def test_delete_null_key(self):
+    def test_delete_null_object(self):
         self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete_key, self.ctxt, None)
+                          self.key_mgr.delete, self.ctxt, None)
 
-    def test_delete_unknown_key(self):
-        bad_key_uuid = str(uuid.uuid4())
-        self.assertRaises(barbican_exceptions.HTTPClientError,
-                          self.key_mgr.delete_key, self.ctxt, bad_key_uuid)
-
-    def test_get_key(self):
-        secret_key = b'\x01\x02\xA0\xB3'
-        key = symmetric_key.SymmetricKey('AES', secret_key)
-
-        uuid = self.key_mgr.store_key(self.ctxt, key)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, uuid)
-
-        retrieved_key = self.key_mgr.get_key(self.ctxt, uuid)
-        self.assertEqual(key.get_encoded(), retrieved_key.get_encoded())
+    def test_delete_unknown_object(self):
+        unknown_uuid = str(uuid.uuid4())
+        self.assertRaises(exception.ManagedObjectNotFoundError,
+                          self.key_mgr.delete, self.ctxt, unknown_uuid)
 
     def test_get_null_context(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
+        key_uuid = self._get_valid_object_uuid(
+            test_key_manager._get_test_symmetric_key())
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get_key, None, key_uuid)
+                          self.key_mgr.get, None, key_uuid)
 
-    def test_get_null_key(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, key_uuid)
+    def test_get_null_object(self):
         self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.get_key, self.ctxt, None)
+                          self.key_mgr.get, self.ctxt, None)
 
     def test_get_unknown_key(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, key_uuid)
         bad_key_uuid = str(uuid.uuid4())
-        self.assertRaises(barbican_exceptions.HTTPClientError,
-                          self.key_mgr.get_key, self.ctxt, bad_key_uuid)
-
-    def test_store(self):
-        secret_key = b'\x01\x02\xA0\xB3'
-        key = symmetric_key.SymmetricKey('AES', secret_key)
-
-        uuid = self.key_mgr.store_key(self.ctxt, key)
-        self.addCleanup(self.key_mgr.delete_key, self.ctxt, uuid)
-
-        retrieved_key = self.key_mgr.get_key(self.ctxt, uuid)
-        self.assertEqual(key.get_encoded(), retrieved_key.get_encoded())
+        self.assertRaises(exception.ManagedObjectNotFoundError,
+                          self.key_mgr.get, self.ctxt, bad_key_uuid)
 
     def test_store_null_context(self):
-        secret_key = b'\x01\x02\xA0\xB3'
-        key = symmetric_key.SymmetricKey('AES', secret_key)
+        key = test_key_manager._get_test_symmetric_key()
 
         self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store_key, None, key)
+                          self.key_mgr.store, None, key)

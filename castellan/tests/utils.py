@@ -16,6 +16,99 @@
 
 """These utility functions are borrowed from Barbican's testing utilities."""
 
+import functools
+import types
+
+import six
+
+
+def construct_new_test_function(original_func, name, build_params):
+    """Builds a new test function based on parameterized data.
+
+    :param original_func: The original test function that is used as a template
+    :param name: The fullname of the new test function
+    :param build_params: A dictionary or list containing args or kwargs
+        for the new test
+    :return: A new function object
+    """
+    new_func = types.FunctionType(
+        six.get_function_code(original_func),
+        six.get_function_globals(original_func),
+        name=name,
+        argdefs=six.get_function_defaults(original_func)
+    )
+
+    for key, val in six.iteritems(original_func.__dict__):
+        if key != 'build_data':
+            new_func.__dict__[key] = val
+
+    # Support either an arg list or kwarg dict for our data
+    build_args = build_params if isinstance(build_params, list) else []
+    build_kwargs = build_params if isinstance(build_params, dict) else {}
+
+    # Build a test wrapper to execute with our kwargs
+    def test_wrapper(func, test_args, test_kwargs):
+        @functools.wraps(func)
+        def wrapper(self):
+            return func(self, *test_args, **test_kwargs)
+        return wrapper
+
+    return test_wrapper(new_func, build_args, build_kwargs)
+
+
+def process_parameterized_function(name, func_obj, build_data):
+    """Build lists of functions to add and remove to a test case."""
+    to_remove = []
+    to_add = []
+
+    for subtest_name, params in six.iteritems(build_data):
+        # Build new test function
+        func_name = '{0}_{1}'.format(name, subtest_name)
+        new_func = construct_new_test_function(func_obj, func_name, params)
+
+        # Mark the new function as needed to be added to the class
+        to_add.append((func_name, new_func))
+
+        # Mark key for removal
+        to_remove.append(name)
+
+    return to_remove, to_add
+
+
+def parameterized_test_case(cls):
+    """Class decorator to process parameterized tests
+
+    This allows for parameterization to be used for potentially any
+    unittest compatible runner; including testr and py.test.
+    """
+    tests_to_remove = []
+    tests_to_add = []
+    for key, val in six.iteritems(vars(cls)):
+        # Only process tests with build data on them
+        if key.startswith('test_') and val.__dict__.get('build_data'):
+            to_remove, to_add = process_parameterized_function(
+                name=key,
+                func_obj=val,
+                build_data=val.__dict__.get('build_data')
+            )
+            tests_to_remove.extend(to_remove)
+            tests_to_add.extend(to_add)
+
+    # Add all new test functions
+    [setattr(cls, name, func) for name, func in tests_to_add]
+
+    # Remove all old test function templates (if they still exist)
+    [delattr(cls, key) for key in tests_to_remove if hasattr(cls, key)]
+    return cls
+
+
+def parameterized_dataset(build_data):
+    """Simple decorator to mark a test method for processing."""
+    def decorator(func):
+        func.__dict__['build_data'] = build_data
+        return func
+    return decorator
+
 
 def get_certificate_der():
     """Returns an X509 certificate in DER format
@@ -211,3 +304,13 @@ def get_public_key_der():
         b'\x01\x15\xcd\x52\x83\x3f\x06\x67\xfd\xa1\x2d\x2b\x07\xba\x32'
         b'\x62\x21\x07\x2f\x02\x03\x01\x00\x01')
     return key_der
+
+
+def get_symmetric_key():
+    """Returns symmetric key bytes
+
+    16 bytes that were randomly generated. Form a 128 bit key.
+    """
+    symmetric_key = (
+        b'\x92\xcf\x1e\xd9\x54\xea\x30\x70\xd8\xc2\x48\xae\xc1\xc8\x72\xa3')
+    return symmetric_key
