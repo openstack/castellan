@@ -27,12 +27,14 @@ class PrivateKeyTestCase(base.KeyTestCase):
     def _create_key(self):
         return private_key.PrivateKey(self.algorithm,
                                       self.length,
-                                      self.encoded)
+                                      self.encoded,
+                                      self.name)
 
     def setUp(self):
         self.algorithm = 'RSA'
         self.length = 2048
         self.encoded = bytes(utils.get_private_key_der())
+        self.name = 'my key'
 
         super(PrivateKeyTestCase, self).setUp()
 
@@ -41,6 +43,9 @@ class PrivateKeyTestCase(base.KeyTestCase):
 
     def test_get_length(self):
         self.assertEqual(self.length, self.key.bit_length)
+
+    def test_get_name(self):
+        self.assertEqual(self.name, self.key.name)
 
     def test_get_format(self):
         self.assertEqual('PKCS8', self.key.format)
@@ -56,6 +61,14 @@ class PrivateKeyTestCase(base.KeyTestCase):
 
     def test___ne__(self):
         self.assertFalse(self.key != self.key)
+        self.assertFalse(self.name != self.name)
 
         self.assertTrue(self.key is not None)
         self.assertTrue(None != self.key)
+
+    def test___ne__name(self):
+        other_key = private_key.PrivateKey(self.algorithm,
+                                           self.length,
+                                           self.encoded,
+                                           'other key')
+        self.assertTrue(self.key != other_key)

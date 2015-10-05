@@ -25,12 +25,13 @@ from castellan.common.objects import managed_object
 class Passphrase(managed_object.ManagedObject):
     """This class represents a passphrase."""
 
-    def __init__(self, passphrase):
+    def __init__(self, passphrase, name=None):
         """Create a new Passphrase object.
 
         The expected type for the passphrase is a bytestring.
         """
         self._passphrase = passphrase
+        super(Passphrase, self).__init__(name=name)
 
     @property
     def format(self):
@@ -43,7 +44,8 @@ class Passphrase(managed_object.ManagedObject):
 
     def __eq__(self, other):
         if isinstance(other, Passphrase):
-            return self._passphrase == other._passphrase
+            return (self._passphrase == other._passphrase and
+                    self._name == other._name)
         else:
             return False
 

@@ -24,10 +24,11 @@ from castellan.tests import base
 class OpaqueDataTestCase(base.TestCase):
 
     def _create_data(self):
-        return opaque_data.OpaqueData(self.data)
+        return opaque_data.OpaqueData(self.data, self.name)
 
     def setUp(self):
         self.data = bytes(b"secret opaque data")
+        self.name = 'my opaque'
         self.opaque_data = self._create_data()
 
         super(OpaqueDataTestCase, self).setUp()
@@ -38,6 +39,9 @@ class OpaqueDataTestCase(base.TestCase):
     def test_get_encoded(self):
         self.assertEqual(self.data, self.opaque_data.get_encoded())
 
+    def test_get_name(self):
+        self.assertEqual(self.name, self.opaque_data.name)
+
     def test___eq__(self):
         self.assertTrue(self.opaque_data == self.opaque_data)
 
@@ -46,6 +50,11 @@ class OpaqueDataTestCase(base.TestCase):
 
     def test___ne__(self):
         self.assertFalse(self.opaque_data != self.opaque_data)
+        self.assertFalse(self.name != self.name)
 
         self.assertTrue(self.opaque_data is not None)
         self.assertTrue(None != self.opaque_data)
+
+    def test___ne__name(self):
+        other_opaque = opaque_data.OpaqueData(self.data, "other opaque")
+        self.assertTrue(self.opaque_data != other_opaque)

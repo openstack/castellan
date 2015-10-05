@@ -25,7 +25,7 @@ from castellan.common.objects import key
 class PublicKey(key.Key):
     """This class represents public keys."""
 
-    def __init__(self, algorithm, bit_length, key):
+    def __init__(self, algorithm, bit_length, key, name=None):
         """Create a new PublicKey object.
 
         The arguments specify the algorithm and bit length for the asymmetric
@@ -35,6 +35,7 @@ class PublicKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
+        super(PublicKey, self).__init__(name=name)
 
     @property
     def algorithm(self):
@@ -58,7 +59,8 @@ class PublicKey(key.Key):
     def __eq__(self, other):
         if isinstance(other, PublicKey):
             return (self._alg == other._alg and
-                    self._key == other._key)
+                    self._key == other._key and
+                    self._name == other._name)
         else:
             return False
 

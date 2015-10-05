@@ -25,12 +25,13 @@ from castellan.common.objects import managed_object
 class OpaqueData(managed_object.ManagedObject):
     """This class represents opaque data."""
 
-    def __init__(self, data):
+    def __init__(self, data, name=None):
         """Create a new OpaqueData object.
 
         Expected type for data is a bytestring.
         """
         self._data = data
+        super(OpaqueData, self).__init__(name=name)
 
     @property
     def format(self):
@@ -43,7 +44,8 @@ class OpaqueData(managed_object.ManagedObject):
 
     def __eq__(self, other):
         if isinstance(other, OpaqueData):
-            return self._data == other._data
+            return (self._data == other._data and
+                    self._name == other._name)
         else:
             return False
 
