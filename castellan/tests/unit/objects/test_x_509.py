@@ -44,16 +44,22 @@ class X509TestCase(base.CertificateTestCase):
 
     def test___eq__(self):
         self.assertTrue(self.cert == self.cert)
+        self.assertTrue(self.cert is self.cert)
 
         self.assertFalse(self.cert is None)
         self.assertFalse(None == self.cert)
 
-    def test___ne__(self):
-        self.assertFalse(self.cert != self.cert)
-        self.assertFalse(self.name != self.name)
+        other_x_509 = x_509.X509(self.data, self.name)
+        self.assertTrue(self.cert == other_x_509)
+        self.assertFalse(self.cert is other_x_509)
 
+    def test___ne___none(self):
         self.assertTrue(self.cert is not None)
         self.assertTrue(None != self.cert)
+
+    def test___ne___data(self):
+        other_x509 = x_509.X509(b'\x00\x00\x00', self.name)
+        self.assertTrue(self.cert != other_x509)
 
     def test___ne__name(self):
         other_x509 = x_509.X509(self.data, "other x509")
