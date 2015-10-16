@@ -83,6 +83,21 @@ the functional tests through tox.
 By default, the functional tox job will use ``testr`` to execute the
 functional tests.
 
+Debugging
+---------
+
+In order to be able to debug code in Castellan, you must use the Python
+Debugger. This can be done by adding ``import pdb; pdb.set_trace()``
+to set the breakpoint. Then run the following command to hit the breakpoint:
+
+.. code-block:: bash
+
+    # hit the pdb breakpoint
+    tox -e debug
+
+Once in the Python Debugger, you can use the commands as stated in the
+`Debugger Commands` section here: https://docs.python.org/2/library/pdb.html
+
 Pep8 Check
 ----------
 
