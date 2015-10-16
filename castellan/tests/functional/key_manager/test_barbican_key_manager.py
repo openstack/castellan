@@ -21,6 +21,8 @@ Note: This requires local running instances of Barbican and Keystone.
 
 import uuid
 
+from keystoneclient.auth.identity import v3
+from keystoneclient import session
 from keystoneclient.v3 import client
 from oslo_config import cfg
 from oslo_context import context
@@ -46,16 +48,23 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase,
         username = CONF.identity.username
         password = CONF.identity.password
         project_name = CONF.identity.project_name
-        auth_url = CONF.identity.uri
-        keystone_client = client.Client(username=username,
-                                        password=password,
-                                        project_name=project_name,
-                                        auth_url=auth_url,
-                                        project_domain_id='default')
+        auth_url = CONF.identity.auth_url
+        user_domain_name = CONF.identity.user_domain_name
+        project_domain_name = CONF.identity.project_domain_name
+
+        auth = v3.Password(auth_url=auth_url,
+                           username=username,
+                           password=password,
+                           project_name=project_name,
+                           user_domain_name=user_domain_name,
+                           project_domain_name=project_domain_name)
+        sess = session.Session(auth=auth)
+        keystone_client = client.Client(session=sess)
+
         project_list = keystone_client.projects.list(name=project_name)
 
         self.ctxt = context.RequestContext(
-            auth_token=keystone_client.auth_token,
+            auth_token=auth.auth_ref.auth_token,
             tenant=project_list[0].id)
 
     def tearDown(self):
