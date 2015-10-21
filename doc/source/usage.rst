@@ -26,6 +26,31 @@ usually populated in the WSGI pipeline. The information contained in this
 object will be used by Castellan to interact with the specific key manager
 that is being abstracted.
 
+**Example. Creating RequestContext from Keystone Client**
+
+.. code:: python
+
+    from keystoneclient.v3 import client
+    from oslo_context import context
+
+    username = 'admin'
+    password = 'openstack'
+    project_name = 'admin'
+    auth_url = 'http://localhost:5000/v3'
+    keystone_client = client.Client(username=username,
+                                    password=password,
+                                    project_name=project_name,
+                                    auth_url=auth_url,
+                                    project_domain_id='default')
+
+    project_list = keystone_client.projects.list(name=project_name)
+
+    ctxt = context.RequestContext(auth_token=keystone_client.auth_token,
+                                  tenant=project_list[0].id)
+
+ctxt can then be passed into any key_manager api call which requires
+a RequestContext object.
+
 **Example. Creating and storing a key.**
 
 .. code:: python
