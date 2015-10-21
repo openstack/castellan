@@ -16,7 +16,6 @@
 """
 Test cases for the symmetric key class.
 """
-
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.tests import base
 
@@ -27,13 +26,15 @@ class SymmetricKeyTestCase(base.KeyTestCase):
         return sym_key.SymmetricKey(self.algorithm,
                                     self.bit_length,
                                     self.encoded,
-                                    self.name)
+                                    self.name,
+                                    self.created)
 
     def setUp(self):
         self.algorithm = 'AES'
         self.encoded = bytes(b'0' * 64)
         self.bit_length = len(self.encoded) * 8
         self.name = 'my key'
+        self.created = 1448088699
 
         super(SymmetricKeyTestCase, self).setUp()
 
@@ -52,6 +53,19 @@ class SymmetricKeyTestCase(base.KeyTestCase):
     def test_get_bit_length(self):
         self.assertEqual(self.bit_length, self.key.bit_length)
 
+    def test_get_created(self):
+        self.assertEqual(self.created, self.key.created)
+
+    def test_get_created_none(self):
+        created = None
+        key = sym_key.SymmetricKey(self.algorithm,
+                                   self.bit_length,
+                                   self.encoded,
+                                   self.name,
+                                   created)
+
+        self.assertEqual(created, key.created)
+
     def test___eq__(self):
         self.assertTrue(self.key == self.key)
         self.assertTrue(self.key is self.key)
@@ -61,8 +75,7 @@ class SymmetricKeyTestCase(base.KeyTestCase):
 
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length,
-                                         self.encoded,
-                                         self.name)
+                                         self.encoded)
         self.assertTrue(self.key == other_key)
         self.assertFalse(self.key is other_key)
 
@@ -77,7 +90,7 @@ class SymmetricKeyTestCase(base.KeyTestCase):
                                          self.name)
         self.assertTrue(self.key != other_key)
 
-    def test___ne___length(self):
+    def test___ne___bit_length(self):
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length * 2,
                                          self.encoded,
@@ -90,11 +103,4 @@ class SymmetricKeyTestCase(base.KeyTestCase):
                                          self.bit_length,
                                          different_encoded,
                                          self.name)
-        self.assertTrue(self.key != other_key)
-
-    def test___ne___name(self):
-        other_key = sym_key.SymmetricKey(self.algorithm,
-                                         self.bit_length,
-                                         self.encoded,
-                                         'other key')
         self.assertTrue(self.key != other_key)

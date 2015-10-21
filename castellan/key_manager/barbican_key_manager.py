@@ -16,6 +16,7 @@
 """
 Key manager implementation for Barbican
 """
+import calendar
 import time
 
 from cryptography.hazmat import backends
@@ -40,7 +41,9 @@ from castellan.openstack.common import _i18n as u
 
 from barbicanclient import client as barbican_client
 from barbicanclient import exceptions as barbican_exceptions
+from oslo_utils import timeutils
 from six.moves import urllib
+
 
 barbican_opts = [
     cfg.StrOpt('barbican_endpoint',
@@ -421,14 +424,22 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         secret_data = self._get_secret_data(secret)
 
+        # convert created ISO8601 in Barbican to POSIX
+        if secret.created:
+            time_stamp = timeutils.parse_isotime(
+                str(secret.created)).timetuple()
+            created = calendar.timegm(time_stamp)
+
         if issubclass(secret_type, key_base_class.Key):
             return secret_type(secret.algorithm,
                                secret.bit_length,
                                secret_data,
-                               secret.name)
+                               secret.name,
+                               created)
         else:
             return secret_type(secret_data,
-                               secret.name)
+                               secret.name,
+                               created)
 
     def _get_secret(self, context, object_id):
         """Returns the metadata of the secret.

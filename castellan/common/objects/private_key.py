@@ -25,7 +25,8 @@ from castellan.common.objects import key
 class PrivateKey(key.Key):
     """This class represents private keys."""
 
-    def __init__(self, algorithm, bit_length, key, name=None):
+    def __init__(self, algorithm, bit_length, key,
+                 name=None, created=None):
         """Create a new PrivateKey object.
 
         The arguments specify the algorithm and bit length for the asymmetric
@@ -34,7 +35,7 @@ class PrivateKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super(PrivateKey, self).__init__(name=name)
+        super(PrivateKey, self).__init__(name=name, created=created)
 
     @property
     def algorithm(self):
@@ -59,8 +60,7 @@ class PrivateKey(key.Key):
         if isinstance(other, PrivateKey):
             return (self._alg == other._alg and
                     self._bit_length == other._bit_length and
-                    self._key == other._key and
-                    self._name == other._name)
+                    self._key == other._key)
         else:
             return False
 

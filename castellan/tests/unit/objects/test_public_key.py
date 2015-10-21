@@ -16,7 +16,6 @@
 """
 Test cases for the public key class.
 """
-
 from castellan.common.objects import public_key
 from castellan.tests import base
 from castellan.tests import utils
@@ -26,23 +25,25 @@ class PublicKeyTestCase(base.KeyTestCase):
 
     def _create_key(self):
         return public_key.PublicKey(self.algorithm,
-                                    self.length,
+                                    self.bit_length,
                                     self.encoded,
-                                    self.name)
+                                    self.name,
+                                    self.created)
 
     def setUp(self):
         self.algorithm = 'RSA'
-        self.length = 2048
+        self.bit_length = 2048
         self.encoded = bytes(utils.get_public_key_der())
         self.name = 'my key'
+        self.created = 1448088699
 
         super(PublicKeyTestCase, self).setUp()
 
     def test_get_algorithm(self):
         self.assertEqual(self.algorithm, self.key.algorithm)
 
-    def test_get_length(self):
-        self.assertEqual(self.length, self.key.bit_length)
+    def test_get_bit_length(self):
+        self.assertEqual(self.bit_length, self.key.bit_length)
 
     def test_get_name(self):
         self.assertEqual(self.name, self.key.name)
@@ -53,6 +54,19 @@ class PublicKeyTestCase(base.KeyTestCase):
     def test_get_encoded(self):
         self.assertEqual(self.encoded, self.key.get_encoded())
 
+    def test_get_created(self):
+        self.assertEqual(self.created, self.key.created)
+
+    def test_get_created_none(self):
+        created = None
+        key = public_key.PublicKey(self.algorithm,
+                                   self.bit_length,
+                                   self.encoded,
+                                   self.name,
+                                   created)
+
+        self.assertEqual(created, key.created)
+
     def test___eq__(self):
         self.assertTrue(self.key == self.key)
         self.assertTrue(self.key is self.key)
@@ -61,9 +75,8 @@ class PublicKeyTestCase(base.KeyTestCase):
         self.assertFalse(None == self.key)
 
         other_key = public_key.PublicKey(self.algorithm,
-                                         self.length,
-                                         self.encoded,
-                                         self.name)
+                                         self.bit_length,
+                                         self.encoded)
         self.assertTrue(self.key == other_key)
         self.assertFalse(self.key is other_key)
 
@@ -73,12 +86,12 @@ class PublicKeyTestCase(base.KeyTestCase):
 
     def test___ne___algorithm(self):
         other_key = public_key.PublicKey('DSA',
-                                         self.length,
+                                         self.bit_length,
                                          self.encoded,
                                          self.name)
         self.assertTrue(self.key != other_key)
 
-    def test___ne___length(self):
+    def test___ne___bit_length(self):
         other_key = public_key.PublicKey(self.algorithm,
                                          4096,
                                          self.encoded,
@@ -88,14 +101,7 @@ class PublicKeyTestCase(base.KeyTestCase):
     def test___ne___encoded(self):
         different_encoded = bytes(utils.get_public_key_der()) + b'\x00'
         other_key = public_key.PublicKey(self.algorithm,
-                                         self.length,
+                                         self.bit_length,
                                          different_encoded,
                                          self.name)
-        self.assertTrue(self.key != other_key)
-
-    def test___ne__name(self):
-        other_key = public_key.PublicKey(self.algorithm,
-                                         self.length,
-                                         self.encoded,
-                                         'other key')
         self.assertTrue(self.key != other_key)

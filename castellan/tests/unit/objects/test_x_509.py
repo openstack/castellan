@@ -16,7 +16,6 @@
 """
 Test cases for the X.509 certificate class.
 """
-
 from castellan.common.objects import x_509
 from castellan.tests import base
 from castellan.tests import utils
@@ -25,11 +24,14 @@ from castellan.tests import utils
 class X509TestCase(base.CertificateTestCase):
 
     def _create_cert(self):
-        return x_509.X509(self.data, self.name)
+        return x_509.X509(self.data,
+                          self.name,
+                          self.created)
 
     def setUp(self):
         self.data = utils.get_certificate_der()
         self.name = 'my cert'
+        self.created = 1448088699
 
         super(X509TestCase, self).setUp()
 
@@ -42,6 +44,17 @@ class X509TestCase(base.CertificateTestCase):
     def test_get_encoded(self):
         self.assertEqual(self.data, self.cert.get_encoded())
 
+    def test_get_created(self):
+        self.assertEqual(self.created, self.cert.created)
+
+    def test_get_created_none(self):
+        created = None
+        cert = x_509.X509(self.data,
+                          self.name,
+                          created)
+
+        self.assertEqual(created, cert.created)
+
     def test___eq__(self):
         self.assertTrue(self.cert == self.cert)
         self.assertTrue(self.cert is self.cert)
@@ -49,7 +62,7 @@ class X509TestCase(base.CertificateTestCase):
         self.assertFalse(self.cert is None)
         self.assertFalse(None == self.cert)
 
-        other_x_509 = x_509.X509(self.data, self.name)
+        other_x_509 = x_509.X509(self.data)
         self.assertTrue(self.cert == other_x_509)
         self.assertFalse(self.cert is other_x_509)
 
@@ -59,8 +72,4 @@ class X509TestCase(base.CertificateTestCase):
 
     def test___ne___data(self):
         other_x509 = x_509.X509(b'\x00\x00\x00', self.name)
-        self.assertTrue(self.cert != other_x509)
-
-    def test___ne__name(self):
-        other_x509 = x_509.X509(self.data, "other x509")
         self.assertTrue(self.cert != other_x509)

@@ -16,7 +16,6 @@
 """
 Test cases for the passphrase class.
 """
-
 from castellan.common.objects import passphrase
 from castellan.tests import base
 
@@ -25,11 +24,13 @@ class PassphraseTestCase(base.TestCase):
 
     def _create_passphrase(self):
         return passphrase.Passphrase(self.passphrase_data,
-                                     self.name)
+                                     self.name,
+                                     self.created)
 
     def setUp(self):
         self.passphrase_data = bytes(b"secret passphrase")
         self.name = 'my phrase'
+        self.created = 1448088699
         self.passphrase = self._create_passphrase()
 
         super(PassphraseTestCase, self).setUp()
@@ -43,6 +44,17 @@ class PassphraseTestCase(base.TestCase):
     def test_get_name(self):
         self.assertEqual(self.name, self.passphrase.name)
 
+    def test_get_created(self):
+        self.assertEqual(self.created, self.passphrase.created)
+
+    def test_get_created_none(self):
+        created = None
+        phrase = passphrase.Passphrase(self.passphrase_data,
+                                       self.name,
+                                       created)
+
+        self.assertEqual(created, phrase.created)
+
     def test___eq__(self):
         self.assertTrue(self.passphrase == self.passphrase)
         self.assertTrue(self.passphrase is self.passphrase)
@@ -50,8 +62,7 @@ class PassphraseTestCase(base.TestCase):
         self.assertFalse(self.passphrase is None)
         self.assertFalse(None == self.passphrase)
 
-        other_passphrase = passphrase.Passphrase(self.passphrase_data,
-                                                 self.name)
+        other_passphrase = passphrase.Passphrase(self.passphrase_data)
         self.assertTrue(self.passphrase == other_passphrase)
         self.assertFalse(self.passphrase is other_passphrase)
 
@@ -61,9 +72,4 @@ class PassphraseTestCase(base.TestCase):
 
     def test___ne___data(self):
         other_phrase = passphrase.Passphrase(b"other passphrase", self.name)
-        self.assertTrue(self.passphrase != other_phrase)
-
-    def test___ne__name(self):
-        other_phrase = passphrase.Passphrase(self.passphrase_data,
-                                             "other phrase")
         self.assertTrue(self.passphrase != other_phrase)

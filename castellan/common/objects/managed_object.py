@@ -19,7 +19,6 @@ Base ManagedObject Class
 This module defines the ManagedObject class. The ManagedObject class
 is the base class to represent all objects managed by the key manager.
 """
-
 import abc
 
 import six
@@ -29,9 +28,20 @@ import six
 class ManagedObject(object):
     """Base class to represent all managed objects."""
 
-    def __init__(self, name=None):
-        """Managed Object has a name, defaulted to None."""
+    def __init__(self, name=None, created=None):
+        """Managed Object
+
+        :param name: the name of the managed object.
+        :param created: the time a managed object was created.
+        """
         self._name = name
+
+        # If None or POSIX times
+        if not created or type(created) == int:
+            self._created = created
+        else:
+            raise ValueError('created must be of long type, actual type %s' %
+                             type(created))
 
     @property
     def name(self):
@@ -40,6 +50,15 @@ class ManagedObject(object):
         Returns the object's name or None if this object does not have one.
         """
         return self._name
+
+    @property
+    def created(self):
+        """Returns the POSIX time(long) of the object that was created.
+
+        Returns the POSIX time(long) of the object that was created or None if
+        the object does not have one, meaning it has not been persisted.
+        """
+        return self._created
 
     @abc.abstractproperty
     def format(self):
