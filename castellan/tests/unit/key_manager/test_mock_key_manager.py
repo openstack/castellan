@@ -66,20 +66,30 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
             key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
 
+    def test_create_key_with_name(self):
+        name = 'my key'
+        key_id = self.key_mgr.create_key(self.context, name=name)
+        key = self.key_mgr.get(self.context, key_id)
+        self.assertEqual(name, key.name)
+
     def test_create_key_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key, None)
 
     def test_create_key_pair(self):
         for length in [2048, 3072, 4096]:
+            name = str(length) + ' key'
             private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
-                self.context, 'RSA', length)
+                self.context, 'RSA', length, name=name)
 
             private_key = self.key_mgr.get(self.context, private_key_uuid)
             public_key = self.key_mgr.get(self.context, public_key_uuid)
 
             crypto_private_key = get_cryptography_private_key(private_key)
             crypto_public_key = get_cryptography_public_key(public_key)
+
+            self.assertEqual(name, private_key.name)
+            self.assertEqual(name, public_key.name)
 
             self.assertEqual(length, crypto_private_key.key_size)
             self.assertEqual(length, crypto_public_key.key_size)

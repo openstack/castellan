@@ -64,12 +64,14 @@ class MockKeyManager(key_manager.KeyManager):
         return hex_encoded
 
     def _generate_key(self, **kwargs):
+        name = kwargs.get('name', None)
         key_length = kwargs.get('key_length', 256)
         _hex = self._generate_hex_key(key_length)
         return sym_key.SymmetricKey(
             'AES',
             key_length,
-            bytes(binascii.unhexlify(_hex)))
+            bytes(binascii.unhexlify(_hex)),
+            name)
 
     def create_key(self, context, **kwargs):
         """Creates a symmetric key.
@@ -84,7 +86,7 @@ class MockKeyManager(key_manager.KeyManager):
         key = self._generate_key(**kwargs)
         return self.store(context, key)
 
-    def _generate_public_and_private_key(self, length):
+    def _generate_public_and_private_key(self, length, name):
         crypto_private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=length,
@@ -104,16 +106,19 @@ class MockKeyManager(key_manager.KeyManager):
         private_key = pri_key.PrivateKey(
             algorithm='RSA',
             bit_length=length,
-            key=bytearray(private_der))
+            key=bytearray(private_der),
+            name=name)
 
         public_key = pub_key.PublicKey(
             algorithm='RSA',
             bit_length=length,
-            key=bytearray(public_der))
+            key=bytearray(public_der),
+            name=name)
 
         return private_key, public_key
 
-    def create_key_pair(self, context, algorithm, length, expiration=None):
+    def create_key_pair(self, context, algorithm, length,
+                        expiration=None, name=None):
         """Creates an asymmetric key pair.
 
         This implementation returns UUIDs for the created keys in the order:
@@ -134,7 +139,8 @@ class MockKeyManager(key_manager.KeyManager):
                 length, valid_lengths)
             raise ValueError(msg)
 
-        private_key, public_key = self._generate_public_and_private_key(length)
+        private_key, public_key = self._generate_public_and_private_key(length,
+                                                                        name)
 
         private_key_uuid = self.store(context, private_key)
         public_key_uuid = self.store(context, public_key)

@@ -29,10 +29,11 @@ class NotImplementedKeyManager(key_manager.KeyManager):
         super(NotImplementedKeyManager, self).__init__(configuration)
 
     def create_key(self, context, algorithm='AES', length=256,
-                   expiration=None, **kwargs):
+                   expiration=None, name=None, **kwargs):
         raise NotImplementedError()
 
-    def create_key_pair(self, context, algorithm, lengthm, expiration=None):
+    def create_key_pair(self, context, algorithm, length,
+                        expiration=None, name=None):
         raise NotImplementedError()
 
     def store(self, context, managed_object, expiration=None, **kwargs):
