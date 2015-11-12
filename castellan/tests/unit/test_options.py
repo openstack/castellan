@@ -38,3 +38,18 @@ class TestOptions(base.TestCase):
         options.set_defaults(conf, barbican_api_version=barbican_api_version)
         self.assertEqual(barbican_api_version,
                          conf.get(bkm.BARBICAN_OPT_GROUP).barbican_api_version)
+
+        auth_endpoint = 'http://test-server.org:5000/'
+        options.set_defaults(conf, auth_endpoint=auth_endpoint)
+        self.assertEqual(auth_endpoint,
+                         conf.get(bkm.BARBICAN_OPT_GROUP).auth_endpoint)
+
+        retry_delay = 3
+        options.set_defaults(conf, retry_delay=retry_delay)
+        self.assertEqual(retry_delay,
+                         conf.get(bkm.BARBICAN_OPT_GROUP).retry_delay)
+
+        number_of_retries = 10
+        options.set_defaults(conf, number_of_retries=number_of_retries)
+        self.assertEqual(number_of_retries,
+                         conf.get(bkm.BARBICAN_OPT_GROUP).number_of_retries)
