@@ -21,7 +21,8 @@ except ImportError:
 
 
 def set_defaults(conf, api_class=None, barbican_endpoint=None,
-                 barbican_api_version=None):
+                 barbican_api_version=None, auth_endpoint=None,
+                 retry_delay=None, number_of_retries=None):
     '''Set defaults for configuration values.
 
     Overrides the default options values.
@@ -33,6 +34,12 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
     :param barbican_endpoint: Use this endpoint to connect to Barbican.
 
     :param barbican_api_version: Version of the Barbican API.
+
+    :param auth_endpoint: Use this endpoint to connect to Keystone.
+
+    :param retry_delay: Use this attribute to set retry delay.
+
+    :param number_of_retries: Use this attribute to set number of retries.
     '''
     conf.register_opts(km.key_manager_opts, group='key_manager')
     if bkm:
@@ -45,6 +52,17 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
                          group=bkm.BARBICAN_OPT_GROUP)
     if bkm is not None and barbican_api_version is not None:
         conf.set_default('barbican_api_version', barbican_api_version,
+                         group=bkm.BARBICAN_OPT_GROUP)
+    if bkm is not None and auth_endpoint is not None:
+        conf.set_default('auth_endpoint', auth_endpoint,
+                         group=bkm.BARBICAN_OPT_GROUP)
+
+    if bkm is not None and retry_delay is not None:
+        conf.set_default('retry_delay', retry_delay,
+                         group=bkm.BARBICAN_OPT_GROUP)
+
+    if bkm is not None and number_of_retries is not None:
+        conf.set_default('number_of_retries', number_of_retries,
                          group=bkm.BARBICAN_OPT_GROUP)
 
 
