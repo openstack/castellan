@@ -45,18 +45,25 @@ class PassphraseTestCase(base.TestCase):
 
     def test___eq__(self):
         self.assertTrue(self.passphrase == self.passphrase)
+        self.assertTrue(self.passphrase is self.passphrase)
 
         self.assertFalse(self.passphrase is None)
         self.assertFalse(None == self.passphrase)
 
-    def test___ne__(self):
-        self.assertFalse(self.passphrase != self.passphrase)
-        self.assertFalse(self.name != self.name)
+        other_passphrase = passphrase.Passphrase(self.passphrase_data,
+                                                 self.name)
+        self.assertTrue(self.passphrase == other_passphrase)
+        self.assertFalse(self.passphrase is other_passphrase)
 
+    def test___ne___none(self):
         self.assertTrue(self.passphrase is not None)
         self.assertTrue(None != self.passphrase)
+
+    def test___ne___data(self):
+        other_phrase = passphrase.Passphrase(b"other passphrase", self.name)
+        self.assertTrue(self.passphrase != other_phrase)
 
     def test___ne__name(self):
         other_phrase = passphrase.Passphrase(self.passphrase_data,
                                              "other phrase")
-        self.assertTrue(self.passphrase_data != other_phrase)
+        self.assertTrue(self.passphrase != other_phrase)

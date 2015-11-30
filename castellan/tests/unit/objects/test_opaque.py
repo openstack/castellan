@@ -44,17 +44,23 @@ class OpaqueDataTestCase(base.TestCase):
 
     def test___eq__(self):
         self.assertTrue(self.opaque_data == self.opaque_data)
+        self.assertTrue(self.opaque_data is self.opaque_data)
 
         self.assertFalse(self.opaque_data is None)
         self.assertFalse(None == self.opaque_data)
 
-    def test___ne__(self):
-        self.assertFalse(self.opaque_data != self.opaque_data)
-        self.assertFalse(self.name != self.name)
+        other_opaque_data = opaque_data.OpaqueData(self.data, self.name)
+        self.assertTrue(self.opaque_data == other_opaque_data)
+        self.assertFalse(self.opaque_data is other_opaque_data)
 
+    def test___ne___none(self):
         self.assertTrue(self.opaque_data is not None)
         self.assertTrue(None != self.opaque_data)
 
-    def test___ne__name(self):
+    def test___ne___data(self):
+        other_opaque = opaque_data.OpaqueData(b'other data', self.name)
+        self.assertTrue(self.opaque_data != other_opaque)
+
+    def test___ne___name(self):
         other_opaque = opaque_data.OpaqueData(self.data, "other opaque")
         self.assertTrue(self.opaque_data != other_opaque)

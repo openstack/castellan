@@ -54,18 +54,45 @@ class SymmetricKeyTestCase(base.KeyTestCase):
 
     def test___eq__(self):
         self.assertTrue(self.key == self.key)
+        self.assertTrue(self.key is self.key)
 
         self.assertFalse(self.key is None)
         self.assertFalse(None == self.key)
 
-    def test___ne__(self):
-        self.assertFalse(self.key != self.key)
-        self.assertFalse(self.name != self.name)
+        other_key = sym_key.SymmetricKey(self.algorithm,
+                                         self.bit_length,
+                                         self.encoded,
+                                         self.name)
+        self.assertTrue(self.key == other_key)
+        self.assertFalse(self.key is other_key)
 
+    def test___ne___none(self):
         self.assertTrue(self.key is not None)
         self.assertTrue(None != self.key)
 
-    def test___ne__name(self):
+    def test___ne___algorithm(self):
+        other_key = sym_key.SymmetricKey('DES',
+                                         self.bit_length,
+                                         self.encoded,
+                                         self.name)
+        self.assertTrue(self.key != other_key)
+
+    def test___ne___length(self):
+        other_key = sym_key.SymmetricKey(self.algorithm,
+                                         self.bit_length * 2,
+                                         self.encoded,
+                                         self.name)
+        self.assertTrue(self.key != other_key)
+
+    def test___ne___encoded(self):
+        different_encoded = self.encoded * 2
+        other_key = sym_key.SymmetricKey(self.algorithm,
+                                         self.bit_length,
+                                         different_encoded,
+                                         self.name)
+        self.assertTrue(self.key != other_key)
+
+    def test___ne___name(self):
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length,
                                          self.encoded,
