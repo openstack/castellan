@@ -1,6 +1,6 @@
-========
+=====
 Usage
-========
+=====
 
 This document describes some of the common usage patterns for Castellan. When
 incorporating this package into your applications, care should be taken to
@@ -162,6 +162,24 @@ configuration.**
     from castellan import key_manager
 
     options.set_defaults(cfg.CONF, api_class='some.other.KeyManager')
+    manager = key_manager.API()
+
+Logging from within Castellan
+-----------------------------
+
+Castellan uses ``oslo_log`` for logging. Log information will be generated
+if your application has configured the ``oslo_log`` module. If your
+application does not use ``oslo_log`` then you can enable default logging
+using ``enable_logging`` in the ``castellan.options`` module.
+
+**Example. Enabling default logging.**
+
+.. code:: python
+
+    from castellan import options
+    from castellan import key_manager
+
+    options.enable_logging()
     manager = key_manager.API()
 
 Generating sample configuration files
