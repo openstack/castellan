@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from oslo_config import cfg
+from oslo_log import log
 
 from castellan import key_manager as km
 try:
@@ -19,28 +21,28 @@ try:
 except ImportError:
     bkm = None
 
+_DEFAULT_LOG_LEVELS = ['castellan=WARN']
+
+_DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
+                                   '%(levelname)s %(name)s [%(request_id)s '
+                                   '%(user_identity)s] %(instance)s'
+                                   '%(message)s')
+
 
 def set_defaults(conf, api_class=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
                  retry_delay=None, number_of_retries=None):
-    '''Set defaults for configuration values.
+    """Set defaults for configuration values.
 
     Overrides the default options values.
-
     :param conf: Config instance in which to set default options.
-
     :param api_class: The full class name of the key manager API class.
-
     :param barbican_endpoint: Use this endpoint to connect to Barbican.
-
     :param barbican_api_version: Version of the Barbican API.
-
     :param auth_endpoint: Use this endpoint to connect to Keystone.
-
     :param retry_delay: Use this attribute to set retry delay.
-
     :param number_of_retries: Use this attribute to set number of retries.
-    '''
+    """
     conf.register_opts(km.key_manager_opts, group='key_manager')
     if bkm:
         conf.register_opts(bkm.barbican_opts, group=bkm.BARBICAN_OPT_GROUP)
@@ -66,8 +68,18 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
                          group=bkm.BARBICAN_OPT_GROUP)
 
 
+def enable_logging(conf=None, app_name='castellan'):
+    conf = conf or cfg.CONF
+
+    log.register_options(conf)
+    log.set_defaults(_DEFAULT_LOGGING_CONTEXT_FORMAT,
+                     _DEFAULT_LOG_LEVELS)
+
+    log.setup(conf, app_name)
+
+
 def list_opts():
-    '''Returns a list of oslo.config options available in the library.
+    """Returns a list of oslo.config options available in the library.
 
     The returned list includes all oslo.config options which may be registered
     at runtime by the library.
@@ -81,7 +93,7 @@ def list_opts():
     generator to discover the options exposed to users by this library.
 
     :returns: a list of (group_name, opts) tuples
-    '''
+    """
     opts = [('key_manager', km.key_manager_opts)]
     if bkm is not None:
         opts.append((bkm.BARBICAN_OPT_GROUP, bkm.barbican_opts))
