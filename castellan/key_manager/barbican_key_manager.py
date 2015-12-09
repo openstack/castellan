@@ -110,7 +110,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
             return self._barbican_client
 
         try:
-            self._current_context = context
             auth = self._get_keystone_auth(context)
             sess = session.Session(auth=auth)
 
@@ -118,6 +117,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             self._barbican_client = barbican_client.Client(
                 session=sess,
                 endpoint=self._barbican_endpoint)
+            self._current_context = context
 
         except Exception as e:
             LOG.error(u._LE("Error creating Barbican client: %s"), e)
