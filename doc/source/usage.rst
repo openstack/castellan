@@ -194,6 +194,41 @@ root of the castellan project directory:
 
     $ tox -e genconfig
 
+
+Parsing the configuration files
+-------------------------------
+
+Castellan does not parse the configuration files by default. When you create
+the files and occupy them, you still need to manipulate the
+``oslo_config.cfg.ConfigOpts`` object before passing it to the
+``castellan.key_manager.API`` object. You can create a list of locations where
+the configuration files reside. If multiple configuration files are
+specified, the variables will be used from the most recently parsed file and
+overwrite any previous variables. In the example below, the configuration
+file in the ``/etc/castellan`` directory will overwrite the values found in
+the file in the user's home directory. If a file is not found in one of the
+specified locations, then a file not found error will occur.
+
+**Example. Parsing the config files.**
+
+.. code:: python
+
+    from oslo_config import cfg
+    from castellan import key_manager
+
+    conf = cfg.ConfigOpts()
+    conf(['~/castellan.conf', '/etc/castellan/castellan.conf'])
+    manager = key_manager.API(configuration=conf)
+
+There are two options for parsing the Castellan values from a
+configuration file:
+
+- The values can be placed in a separate file.
+- You can include the values in a configuration file you already use.
+
+In order to see all of the default values used by Castellan, generate a
+sample configuration by referring to the section directly above.
+
 Adding castellan to configuration files
 ---------------------------------------
 
