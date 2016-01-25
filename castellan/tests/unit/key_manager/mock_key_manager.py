@@ -53,7 +53,8 @@ class MockKeyManager(key_manager.KeyManager):
     This key manager is not suitable for use in production deployments.
     """
 
-    def __init__(self):
+    def __init__(self, configuration=None):
+        self.conf = configuration
         self.keys = {}
 
     def _generate_hex_key(self, key_length):
