@@ -7,19 +7,77 @@ incorporating this package into your applications, care should be taken to
 consider the key manager behavior you wish to encapsulate and the OpenStack
 deployments on which your application will run.
 
-Basic usage
-~~~~~~~~~~~
+Authentication
+~~~~~~~~~~~~~~
 
-Castellan works on the principle of providing an abstracted key manager based
-on your configuration. In this manner, several different management services
-can be supported through a single interface.
+A fundamental concept to using Castellan is the credential context object.
+Castellan supports the following credentials for authentication:
 
-In addition to the key manager, Castellan also provides primitives for
-various types of secrets (for example, asymmetric keys, simple passphrases,
-and certificates). These primitives are used in conjunction with the key
-manager to create, store, retrieve, and destroy managed secrets.
+* Token
+* Password
+* Keystone Token
+* Keystone Password
 
-Another fundamental concept to using Castellan is the context object, most
+In order to use these credentials, valid configuration parameters must be
+provided.
+
+.. code:: ini
+
+  # token credential
+  # token variable not required, token can be obtained from context
+  [castellan]
+  auth_type = 'token'
+  token = '5b4de0bb77064f289f7cc58e33bea8c7'
+
+  # password credential
+  [castellan]
+  auth_type = 'password'
+  username = 'admin'
+  password = 'passw0rd1'
+
+  # keystone token credential
+  [castellan]
+  auth_type = 'keystone_token'
+  token = '5b4de0bb77064f289f7cc58e33bea8c7'
+  project_id = 'a1e19934af81420d980a5d02b4afe9fb'
+
+  # keystone password credential
+  [castellan]
+  auth_type = 'keystone_password'
+  username = 'admin'
+  password = 'passw0rd1'
+  project_id = '1099302ec608486f9879ba2466c60720'
+  user_domain_name = 'default'
+
+.. note::
+
+  Keystone Token and Password authentication is achieved using
+  keystoneclient.auth.identity.v3 Token and Password auth plugins.
+  There are a variety of different variables which can be set for the
+  keystone credential options.
+
+
+The configuration must be passed to a credential factory which will
+generate the appropriate context.
+
+.. code:: python
+
+  from castellan.common import utils
+
+  CONF = <your_configuration>
+  context = utils.credential_factory(conf=CONF, context=None)
+
+Now you can go ahead and pass the context and use it for authentication.
+
+.. note::
+
+  There is a special case for a token. Since a user may not want to store a
+  token in the configuration, the user can pass a context object containing
+  an 'auth_token' as well as a configuration file with 'token' as the
+  auth type.
+
+
+An oslo context object can also be used for authentication, it is
 frequently inherited from ``oslo.context.RequestContext``. This object
 represents information that is contained in the current request, and is
 usually populated in the WSGI pipeline. The information contained in this
@@ -48,8 +106,20 @@ that is being abstracted.
     ctxt = context.RequestContext(auth_token=keystone_client.auth_token,
                                   tenant=project_list[0].id)
 
-ctxt can then be passed into any key_manager api call which requires
-a RequestContext object.
+ctxt can then be passed into any key_manager api call.
+
+
+Basic usage
+~~~~~~~~~~~
+
+Castellan works on the principle of providing an abstracted key manager based
+on your configuration. In this manner, several different management services
+can be supported through a single interface.
+
+In addition to the key manager, Castellan also provides primitives for
+various types of secrets (for example, asymmetric keys, simple passphrases,
+and certificates). These primitives are used in conjunction with the key
+manager to create, store, retrieve, and destroy managed secrets.
 
 **Example. Creating and storing a key.**
 
