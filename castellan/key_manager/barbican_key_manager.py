@@ -103,12 +103,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error(msg)
             raise exception.Forbidden(msg)
 
-        if not hasattr(context, 'tenant') or context.tenant is None:
-            msg = u._("Unable to create Barbican Client without tenant "
-                      "attribute in context object.")
-            LOG.error(msg)
-            raise exception.KeyManagerError(reason=msg)
-
         if self._barbican_client and self._current_context == context:
             return self._barbican_client
 
@@ -133,14 +127,48 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return self._barbican_client
 
     def _get_keystone_auth(self, context):
-        # TODO(kfarr): support keystone v2
-        auth = identity.v3.Token(
-            auth_url=self.conf.barbican.auth_endpoint,
-            token=context.auth_token,
-            project_id=context.tenant,
-            domain_id=context.user_domain,
-            project_domain_id=context.project_domain)
-        return auth
+        auth_url = self.conf.barbican.auth_endpoint
+
+        if context.__class__.__name__ is 'KeystonePassword':
+            return identity.v3.Password(
+                auth_url=auth_url,
+                username=context.username,
+                password=context.password,
+                user_id=context.user_id,
+                user_domain_id=context.user_domain_id,
+                user_domain_name=context.user_domain_name,
+                trust_id=context.trust_id,
+                domain_id=context.domain_id,
+                domain_name=context.domain_name,
+                project_id=context.project_id,
+                project_name=context.project_name,
+                project_domain_id=context.project_domain_id,
+                project_domain_name=context.project_domain_name,
+                reauthenticate=context.reauthenticate)
+        elif context.__class__.__name__ is 'KeystoneToken':
+            return identity.v3.Token(
+                auth_url=auth_url,
+                token=context.token,
+                trust_id=context.trust_id,
+                domain_id=context.domain_id,
+                domain_name=context.domain_name,
+                project_id=context.project_id,
+                project_name=context.project_name,
+                project_domain_id=context.project_domain_id,
+                project_domain_name=context.project_domain_name,
+                reauthenticate=context.reauthenticate)
+        # this will be kept for oslo.context compatibility until
+        # projects begin to use utils.credential_factory
+        elif context.__class__.__name__ is 'RequestContext':
+            return identity.v3.Token(
+                auth_url=auth_url,
+                token=context.auth_token,
+                project_id=context.tenant)
+        else:
+            msg = "context must be of type KeystonePassword, KeystoneToken, "
+            "or RequestContext."
+            LOG.error(msg)
+            raise exception.Forbidden(reason=msg)
 
     def _get_barbican_endpoint(self, auth, sess):
         if self.conf.barbican.barbican_endpoint:
