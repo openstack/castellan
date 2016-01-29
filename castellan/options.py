@@ -20,6 +20,7 @@ try:
     from castellan.key_manager import barbican_key_manager as bkm
 except ImportError:
     bkm = None
+from castellan.common import utils
 
 _DEFAULT_LOG_LEVELS = ['castellan=WARN']
 
@@ -94,7 +95,11 @@ def list_opts():
 
     :returns: a list of (group_name, opts) tuples
     """
-    opts = [('key_manager', km.key_manager_opts)]
+    key_manager_opts = []
+    key_manager_opts.extend(km.key_manager_opts)
+    key_manager_opts.extend(utils.credential_opts)
+    opts = [('key_manager', key_manager_opts)]
+
     if bkm is not None:
         opts.append((bkm.BARBICAN_OPT_GROUP, bkm.barbican_opts))
     return opts
