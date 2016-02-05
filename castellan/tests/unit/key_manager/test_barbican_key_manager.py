@@ -329,3 +329,22 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
         self.assertEqual(number_of_retries + 1,
                          self.mock_barbican.orders.get.call_count)
+
+    def test_get_active_order_error(self):
+        order_ref_url = ("http://localhost:9311/v1/orders/"
+                         "4fe939b7-72bc-49aa-bd1e-e979589858af")
+
+        error_order = mock.Mock()
+        error_order.status = u'ERROR'
+        error_order.order_ref = order_ref_url
+        error_order.error_status_code = u"500"
+        error_order.error_reason = u"Test Error"
+
+        self.mock_barbican.orders.get.return_value = error_order
+
+        self.assertRaises(exception.KeyManagerError,
+                          self.key_mgr._get_active_order,
+                          self.mock_barbican,
+                          order_ref_url)
+
+        self.assertEqual(1, self.mock_barbican.orders.get.call_count)

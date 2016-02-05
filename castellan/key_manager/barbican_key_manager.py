@@ -336,17 +336,26 @@ class BarbicanKeyManager(key_manager.KeyManager):
         Barbican key creation is done asynchronously, so this loop continues
         checking until the order is active or a timeout occurs.
         """
-        active = u'ACTIVE'
+        active_status = u'ACTIVE'
+        error_status = u'ERROR'
         number_of_retries = self.conf.barbican.number_of_retries
         retry_delay = self.conf.barbican.retry_delay
         order = barbican_client.orders.get(order_ref)
         time.sleep(.25)
         for n in range(number_of_retries):
-            if order.status != active:
+            if order.status == error_status:
+                kwargs = {"status": error_status,
+                          "code": order.error_status_code,
+                          "reason": order.error_reason}
+                msg = u._LE("Order is in %(status)s status - status code: "
+                            "%(code)s, status reason: %(reason)s") % kwargs
+                LOG.error(msg)
+                raise exception.KeyManagerError(reason=msg)
+            if order.status != active_status:
                 kwargs = {'attempt': n,
                           'total': number_of_retries,
                           'status': order.status,
-                          'active': active,
+                          'active': active_status,
                           'delay': retry_delay}
                 msg = u._LI("Retry attempt #%(attempt)i out of %(total)i: "
                             "Order status is '%(status)s'. Waiting for "
@@ -358,9 +367,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 return order
         msg = u._LE("Exceeded retries: Failed to find '%(active)s' status "
-                    "within %(num_retries)i retries") % {'active': active,
-                                                         'num_retries':
-                                                         number_of_retries}
+                    "within %(num_retries)i retries") % {
+            'active': active_status,
+            'num_retries': number_of_retries}
         LOG.error(msg)
         raise exception.KeyManagerError(reason=msg)
 
