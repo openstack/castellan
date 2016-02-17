@@ -62,3 +62,13 @@ class KeyManagerError(CastellanException):
 
 class ManagedObjectNotFoundError(CastellanException):
     message = u._("Key not found, uuid: %(uuid)s")
+
+
+class AuthTypeInvalidError(CastellanException):
+    message = u._("Invalid auth_type was specified, auth_type: %(type)s")
+
+
+class InsufficientCredentialDataError(CastellanException):
+    message = u._("Insufficient credential data was provided, either "
+                  "\"token\" must be set in the passed conf, or a context "
+                  "with an \"auth_token\" property must be passed.")
