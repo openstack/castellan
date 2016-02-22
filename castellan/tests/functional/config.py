@@ -50,12 +50,13 @@ def setup_config(config_file=''):
 
     config_to_load = []
     local_config = './../../../etc/castellan/castellan-functional.conf'
+    main_config = '/etc/castellan/castellan-functional.conf'
     if os.path.isfile(config_file):
         config_to_load.append(config_file)
     elif os.path.isfile(local_config):
         config_to_load.append(local_config)
-    else:
-        config_to_load.append('/etc/castellan/castellan-functional.conf')
+    elif os.path.isfile(main_config):
+        config_to_load.append(main_config)
 
     TEST_CONF(
         (),  # Required to load an anonymous config
