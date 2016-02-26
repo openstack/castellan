@@ -30,27 +30,61 @@ LOG = logging.getLogger(__name__)
 
 credential_opts = [
     # auth_type opt
-    cfg.StrOpt('auth_type', default=None),
+    cfg.StrOpt('auth_type', default=None,
+               help="The type of authentication credential to create. "
+               "Possible values are 'token', 'password', 'keystone_token', "
+               "and 'keystone_password'. Required if no context is passed to "
+               "the credential factory."),
 
     # token opt
-    cfg.StrOpt('token', default=None),
+    cfg.StrOpt('token', default=None,
+               help="Token for authentication. Required for 'token' and "
+               "'keystone_token' auth_type if no context is passed to the "
+               "credential factory."),
 
     # password opts
-    cfg.StrOpt('username', default=None),
-    cfg.StrOpt('password', default=None),
+    cfg.StrOpt('username', default=None,
+               help="Username for authentication. Required for 'password' "
+               "auth_type. Optional for the 'keystone_password' auth_type."),
+    cfg.StrOpt('password', default=None,
+               help="Password for authentication. Required for 'password' and "
+               "'keystone_password' auth_type."),
 
     # keystone credential opts
-    cfg.StrOpt('user_id', default=None),
-    cfg.StrOpt('user_domain_id', default=None),
-    cfg.StrOpt('user_domain_name', default=None),
-    cfg.StrOpt('trust_id', default=None),
-    cfg.StrOpt('domain_id', default=None),
-    cfg.StrOpt('domain_name', default=None),
-    cfg.StrOpt('project_id', default=None),
-    cfg.StrOpt('project_name', default=None),
-    cfg.StrOpt('project_domain_id', default=None),
-    cfg.StrOpt('project_domain_name', default=None),
-    cfg.BoolOpt('reauthenticate', default=True)
+    cfg.StrOpt('user_id', default=None,
+               help="User ID for authentication. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('user_domain_id', default=None,
+               help="User's domain ID for authentication. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('user_domain_name', default=None,
+               help="User's domain name for authentication. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('trust_id', default=None,
+               help="Trust ID for trust scoping. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('domain_id', default=None,
+               help="Domain ID for domain scoping. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('domain_name', default=None,
+               help="Domain name for domain scoping. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('project_id', default=None,
+               help="Project ID for project scoping. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('project_name', default=None,
+               help="Project name for project scoping. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('project_domain_id', default=None,
+               help="Project's domain ID for project. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.StrOpt('project_domain_name', default=None,
+               help="Project's domain name for project. Optional for "
+               "'keystone_token' and 'keystone_password' auth_type."),
+    cfg.BoolOpt('reauthenticate', default=True,
+                help="Allow fetching a new token if the current one is "
+                "going to expire. Optional for 'keystone_token' and "
+                "'keystone_password' auth_type.")
 ]
 
 OPT_GROUP = 'key_manager'
