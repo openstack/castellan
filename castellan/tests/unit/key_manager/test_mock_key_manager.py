@@ -72,6 +72,12 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(name, key.name)
 
+    def test_create_key_with_algorithm(self):
+        algorithm = 'DES'
+        key_id = self.key_mgr.create_key(self.context, algorithm=algorithm)
+        key = self.key_mgr.get(self.context, key_id)
+        self.assertEqual(algorithm, key.algorithm)
+
     def test_create_key_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key, None)
