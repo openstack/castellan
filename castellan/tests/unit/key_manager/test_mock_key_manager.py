@@ -62,7 +62,7 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
 
     def test_create_key_with_length(self):
         for length in [64, 128, 256]:
-            key_id = self.key_mgr.create_key(self.context, key_length=length)
+            key_id = self.key_mgr.create_key(self.context, length=length)
             key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
 
