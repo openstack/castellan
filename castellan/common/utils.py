@@ -37,7 +37,7 @@ credential_opts = [
                "the credential factory."),
 
     # token opt
-    cfg.StrOpt('token', default=None,
+    cfg.StrOpt('token', default=None, secret=True,
                help="Token for authentication. Required for 'token' and "
                "'keystone_token' auth_type if no context is passed to the "
                "credential factory."),
@@ -46,7 +46,7 @@ credential_opts = [
     cfg.StrOpt('username', default=None,
                help="Username for authentication. Required for 'password' "
                "auth_type. Optional for the 'keystone_password' auth_type."),
-    cfg.StrOpt('password', default=None,
+    cfg.StrOpt('password', default=None, secret=True,
                help="Password for authentication. Required for 'password' and "
                "'keystone_password' auth_type."),
 
