@@ -22,8 +22,9 @@ import time
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import serialization
 from cryptography import x509 as cryptography_x509
-from keystoneclient.auth import identity
-from keystoneclient import session
+from keystoneauth1 import identity
+from keystoneauth1 import loading
+from keystoneauth1 import session
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -85,7 +86,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         self._base_url = None
         self.conf = configuration
         self.conf.register_opts(barbican_opts, group=BARBICAN_OPT_GROUP)
-        session.Session.register_conf_options(self.conf, BARBICAN_OPT_GROUP)
+        loading.register_session_conf_options(self.conf, BARBICAN_OPT_GROUP)
 
     def _get_barbican_client(self, context):
         """Creates a client to connect to the Barbican service.
@@ -130,7 +131,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         auth_url = self.conf.barbican.auth_endpoint
 
         if context.__class__.__name__ is 'KeystonePassword':
-            return identity.v3.Password(
+            return identity.V3Password(
                 auth_url=auth_url,
                 username=context.username,
                 password=context.password,
@@ -146,7 +147,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 project_domain_name=context.project_domain_name,
                 reauthenticate=context.reauthenticate)
         elif context.__class__.__name__ is 'KeystoneToken':
-            return identity.v3.Token(
+            return identity.V3Token(
                 auth_url=auth_url,
                 token=context.token,
                 trust_id=context.trust_id,
@@ -160,7 +161,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
         elif context.__class__.__name__ is 'RequestContext':
-            return identity.v3.Token(
+            return identity.V3Token(
                 auth_url=auth_url,
                 token=context.auth_token,
                 project_id=context.tenant)
