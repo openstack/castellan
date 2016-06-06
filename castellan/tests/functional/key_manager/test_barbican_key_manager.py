@@ -21,9 +21,8 @@ Note: This requires local running instances of Barbican and Keystone.
 import abc
 import uuid
 
-from keystoneclient.auth.identity import v3
-from keystoneclient import session
-from keystoneclient.v3 import client
+from keystoneauth1 import identity
+from keystoneauth1 import session
 from oslo_config import cfg
 from oslo_context import context
 from oslotest import base
@@ -113,22 +112,16 @@ class BarbicanKeyManagerOSLOContextTestCase(BarbicanKeyManagerTestCase,
         user_domain_name = CONF.identity.user_domain_name
         project_domain_name = CONF.identity.project_domain_name
 
-        auth = v3.Password(auth_url=auth_url,
-                           username=username,
-                           password=password,
-                           project_name=project_name,
-                           user_domain_name=user_domain_name,
-                           project_domain_name=project_domain_name)
+        auth = identity.V3Password(auth_url=auth_url,
+                                   username=username,
+                                   password=password,
+                                   project_name=project_name,
+                                   user_domain_name=user_domain_name,
+                                   project_domain_name=project_domain_name)
         sess = session.Session(auth=auth)
-        keystone_client = client.Client(session=sess)
 
-        project_list = keystone_client.projects.list(name=project_name)
-
-        ctxt = context.RequestContext(
-            auth_token=auth.auth_ref.auth_token,
-            tenant=project_list[0].id)
-
-        return ctxt
+        return context.RequestContext(auth_token=auth.get_token(sess),
+                                      tenant=auth.get_project_id(sess))
 
 
 class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
@@ -161,19 +154,14 @@ class BarbicanKeyManagerKSTokenTestCase(BarbicanKeyManagerTestCase,
         user_domain_name = CONF.identity.user_domain_name
         project_domain_name = CONF.identity.project_domain_name
 
-        auth = v3.Password(auth_url=auth_url,
-                           username=username,
-                           password=password,
-                           project_name=project_name,
-                           user_domain_name=user_domain_name,
-                           project_domain_name=project_domain_name)
-        sess = session.Session(auth=auth)
-        keystone_client = client.Client(session=sess)
+        auth = identity.V3Password(auth_url=auth_url,
+                                   username=username,
+                                   password=password,
+                                   project_name=project_name,
+                                   user_domain_name=user_domain_name,
+                                   project_domain_name=project_domain_name)
+        sess = session.Session()
 
-        project_list = keystone_client.projects.list(name=project_name)
-
-        ctxt = keystone_token.KeystoneToken(
-            token=auth.auth_ref.auth_token,
-            project_id=project_list[0].id)
-
-        return ctxt
+        return keystone_token.KeystoneToken(
+            token=auth.get_token(sess),
+            project_id=auth.get_project_id(sess))

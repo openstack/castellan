@@ -52,7 +52,7 @@ provided.
 .. note::
 
   Keystone Token and Password authentication is achieved using
-  keystoneclient.auth.identity.v3 Token and Password auth plugins.
+  keystoneauth1.identity Token and Password auth plugins.
   There are a variety of different variables which can be set for the
   keystone credential options.
 
@@ -88,23 +88,23 @@ that is being abstracted.
 
 .. code:: python
 
-    from keystoneclient.v3 import client
+    from keystoneauth1 import identity
+    from keystoneauth1 import session
     from oslo_context import context
 
     username = 'admin'
     password = 'openstack'
     project_name = 'admin'
-    auth_url = 'http://localhost:5000/v3'
-    keystone_client = client.Client(username=username,
-                                    password=password,
-                                    project_name=project_name,
-                                    auth_url=auth_url,
-                                    project_domain_id='default')
+    auth_url = 'http://localhost:5000/'
+    auth = identity.Password(auth_url=auth_url,
+                             username=username,
+                             password=password,
+                             project_name=project_name,
+                             default_domain_id='default')
+    sess = session.Session()
 
-    project_list = keystone_client.projects.list(name=project_name)
-
-    ctxt = context.RequestContext(auth_token=keystone_client.auth_token,
-                                  tenant=project_list[0].id)
+    ctxt = context.RequestContext(auth_token=auth.get_token(sess),
+                                  tenant=auth.get_project_id(sess))
 
 ctxt can then be passed into any key_manager api call.
 
