@@ -166,8 +166,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 token=context.auth_token,
                 project_id=context.tenant)
         else:
-            msg = "context must be of type KeystonePassword, KeystoneToken, "
-            "or RequestContext."
+            msg = u._("context must be of type KeystonePassword, "
+                      "KeystoneToken, or RequestContext.")
             LOG.error(msg)
             raise exception.Forbidden(reason=msg)
 
@@ -352,7 +352,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :return: the URL of the requested secret
         """
         if not object_id:
-            msg = "Key ID is None"
+            msg = u._("Key ID is None")
             raise exception.KeyManagerError(reason=msg)
         base_url = self._base_url
         if base_url[-1] != '/':
