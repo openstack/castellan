@@ -37,6 +37,10 @@ cover
 .project
 .pydevproject
 
+# Pycharm
+.idea
+*.iml
+
 # Complexity
 output/*.html
 output/*/index.html
