@@ -82,6 +82,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_get_null_context(self):
         key_uuid = self._get_valid_object_uuid(
             test_key_manager._get_test_symmetric_key())
+        self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.get, None, key_uuid)
 
