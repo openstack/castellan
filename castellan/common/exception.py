@@ -19,7 +19,7 @@ Castellan exception subclasses
 
 import six.moves.urllib.parse as urlparse
 
-from castellan.openstack.common import _i18n as u
+from castellan.i18n import _
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
@@ -36,7 +36,7 @@ class CastellanException(Exception):
     a 'message' property. That message will get printf'd
     with the keyword arguments provided to the constructor.
     """
-    message = u._("An unknown exception occurred")
+    message = _("An unknown exception occurred")
 
     def __init__(self, message_arg=None, *args, **kwargs):
         if not message_arg:
@@ -53,22 +53,22 @@ class CastellanException(Exception):
 
 
 class Forbidden(CastellanException):
-    message = u._("You are not authorized to complete this action.")
+    message = _("You are not authorized to complete this action.")
 
 
 class KeyManagerError(CastellanException):
-    message = u._("Key manager error: %(reason)s")
+    message = _("Key manager error: %(reason)s")
 
 
 class ManagedObjectNotFoundError(CastellanException):
-    message = u._("Key not found, uuid: %(uuid)s")
+    message = _("Key not found, uuid: %(uuid)s")
 
 
 class AuthTypeInvalidError(CastellanException):
-    message = u._("Invalid auth_type was specified, auth_type: %(type)s")
+    message = _("Invalid auth_type was specified, auth_type: %(type)s")
 
 
 class InsufficientCredentialDataError(CastellanException):
-    message = u._("Insufficient credential data was provided, either "
-                  "\"token\" must be set in the passed conf, or a context "
-                  "with an \"auth_token\" property must be passed.")
+    message = _("Insufficient credential data was provided, either "
+                "\"token\" must be set in the passed conf, or a context "
+                "with an \"auth_token\" property must be passed.")

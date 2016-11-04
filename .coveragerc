@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = castellan
-omit = castellan/tests/*,castellan/openstack/*
+omit = castellan/tests/*
 
 [report]
 ignore_errors = True
