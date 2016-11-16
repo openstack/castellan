@@ -45,5 +45,8 @@ class NotImplementedKeyManager(key_manager.KeyManager):
     def get(self, context, managed_object_id, **kwargs):
         raise NotImplementedError()
 
+    def list(self, context, object_type=None):
+        raise NotImplementedError()
+
     def delete(self, context, managed_object_id, **kwargs):
         raise NotImplementedError()

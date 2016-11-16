@@ -54,6 +54,11 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
 
         self.context = context.RequestContext('fake', 'fake')
 
+    def cleanUp(self):
+        super(MockKeyManagerTestCase, self).cleanUp()
+
+        self.key_mgr.keys = {}
+
     def test_create_key(self):
         key_id_1 = self.key_mgr.create_key(self.context)
         key_id_2 = self.key_mgr.create_key(self.context)
@@ -201,3 +206,30 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
     def test_delete_unknown_key(self):
         self.assertRaises(KeyError, self.key_mgr.delete, self.context,
                           None)
+
+    def test_list_null_context(self):
+        self.assertRaises(exception.Forbidden, self.key_mgr.list, None)
+
+    def test_list_keys(self):
+        key1 = sym_key.SymmetricKey('AES', 64 * 8, bytes(b'0' * 64))
+        self.key_mgr.store(self.context, key1)
+        key2 = sym_key.SymmetricKey('AES', 32 * 8, bytes(b'0' * 32))
+        self.key_mgr.store(self.context, key2)
+
+        keys = self.key_mgr.list(self.context)
+        self.assertEqual(2, len(keys))
+        self.assertTrue(key1 in keys)
+        self.assertTrue(key2 in keys)
+
+    def test_list_keys_metadata_only(self):
+        key1 = sym_key.SymmetricKey('AES', 64 * 8, bytes(b'0' * 64))
+        self.key_mgr.store(self.context, key1)
+        key2 = sym_key.SymmetricKey('AES', 32 * 8, bytes(b'0' * 32))
+        self.key_mgr.store(self.context, key2)
+
+        keys = self.key_mgr.list(self.context, metadata_only=True)
+        self.assertEqual(2, len(keys))
+        bit_length_list = [key1.bit_length, key2.bit_length]
+        for key in keys:
+            self.assertTrue(key.is_metadata_only())
+            self.assertTrue(key.bit_length in bit_length_list)
