@@ -63,6 +63,10 @@ barbican_opts = [
                default=60,
                help='Number of times to retry poll for key creation '
                     'completion'),
+    cfg.BoolOpt('verify_ssl',
+                default=True,
+                help='Specifies if insecure TLS (https) requests. If False, '
+                     'the server\'s certificate will not be validated'),
 ]
 
 BARBICAN_OPT_GROUP = 'barbican'
@@ -109,7 +113,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         try:
             auth = self._get_keystone_auth(context)
-            sess = session.Session(auth=auth)
+            sess = session.Session(auth=auth,
+                                   verify=self.conf.barbican.verify_ssl)
 
             self._barbican_endpoint = self._get_barbican_endpoint(auth, sess)
             self._barbican_client = barbican_client.Client(

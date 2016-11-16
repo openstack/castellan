@@ -53,3 +53,8 @@ class TestOptions(base.TestCase):
         options.set_defaults(conf, number_of_retries=number_of_retries)
         self.assertEqual(number_of_retries,
                          conf.get(bkm.BARBICAN_OPT_GROUP).number_of_retries)
+
+        verify_ssl = True
+        options.set_defaults(conf, verify_ssl=True)
+        self.assertEqual(verify_ssl,
+                         conf.get(bkm.BARBICAN_OPT_GROUP).verify_ssl)
