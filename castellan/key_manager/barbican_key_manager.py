@@ -131,7 +131,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         auth_url = self.conf.barbican.auth_endpoint
 
         if context.__class__.__name__ is 'KeystonePassword':
-            return identity.V3Password(
+            return identity.Password(
                 auth_url=auth_url,
                 username=context.username,
                 password=context.password,
@@ -147,7 +147,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 project_domain_name=context.project_domain_name,
                 reauthenticate=context.reauthenticate)
         elif context.__class__.__name__ is 'KeystoneToken':
-            return identity.V3Token(
+            return identity.Token(
                 auth_url=auth_url,
                 token=context.token,
                 trust_id=context.trust_id,
@@ -161,7 +161,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
         elif context.__class__.__name__ is 'RequestContext':
-            return identity.V3Token(
+            return identity.Token(
                 auth_url=auth_url,
                 token=context.auth_token,
                 project_id=context.tenant)
