@@ -517,12 +517,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
     def get(self, context, managed_object_id):
         """Retrieves the specified managed object.
 
-        Currently only supports retrieving symmetric keys.
-
         :param context: contains information of the user and the environment
                         for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to retrieve
-        :return: SymmetricKey representation of the key
+        :return: ManagedObject representation of the managed object
         :raises KeyManagerError: if object retrieval fails
         :raises ManagedObjectNotFoundError: if object not found
         """
@@ -545,7 +543,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to delete
-        :raises KeyManagerError: if key deletion fails
+        :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
         barbican_client = self._get_barbican_client(context)
