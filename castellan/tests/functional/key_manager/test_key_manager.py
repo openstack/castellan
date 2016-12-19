@@ -136,6 +136,25 @@ class KeyManagerTestCase(object):
         retrieved_object = self.key_mgr.get(self.ctxt, uuid)
         self.assertEqual(managed_object.get_encoded(),
                          retrieved_object.get_encoded())
+        self.assertFalse(managed_object.is_metadata_only())
+
+    @utils.parameterized_dataset({
+        'symmetric_key': [_get_test_symmetric_key()],
+        'public_key': [_get_test_public_key()],
+        'private_key': [_get_test_private_key()],
+        'certificate': [_get_test_certificate()],
+        'passphrase': [_get_test_passphrase()],
+        'opaque_data': [_get_test_opaque_data()],
+    })
+    def test_get_metadata(self, managed_object):
+        uuid = self._get_valid_object_uuid(managed_object)
+        self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
+
+        retrieved_object = self.key_mgr.get(self.ctxt,
+                                            uuid,
+                                            metadata_only=True)
+        self.assertFalse(managed_object.is_metadata_only())
+        self.assertTrue(retrieved_object.is_metadata_only())
 
     @utils.parameterized_dataset({
         'symmetric_key': [_get_test_symmetric_key()],

@@ -35,6 +35,13 @@ class OpaqueDataTestCase(base.TestCase):
 
         super(OpaqueDataTestCase, self).setUp()
 
+    def test_is_not_only_metadata(self):
+        self.assertFalse(self.opaque_data.is_metadata_only())
+
+    def test_is_only_metadata(self):
+        d = opaque_data.OpaqueData(None, self.name, self.created)
+        self.assertTrue(d.is_metadata_only())
+
     def test_get_format(self):
         self.assertEqual('Opaque', self.opaque_data.format)
 

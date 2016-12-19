@@ -38,6 +38,17 @@ class SymmetricKeyTestCase(base.KeyTestCase):
 
         super(SymmetricKeyTestCase, self).setUp()
 
+    def test_is_not_only_metadata(self):
+        self.assertFalse(self.key.is_metadata_only())
+
+    def test_is_only_metadata(self):
+        k = sym_key.SymmetricKey(self.algorithm,
+                                 self.bit_length,
+                                 None,
+                                 self.name,
+                                 self.created)
+        self.assertTrue(k.is_metadata_only())
+
     def test_get_format(self):
         self.assertEqual('RAW', self.key.format)
 

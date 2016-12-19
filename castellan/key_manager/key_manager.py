@@ -74,13 +74,16 @@ class KeyManager(object):
         pass
 
     @abc.abstractmethod
-    def get(self, context, managed_object_id):
+    def get(self, context, managed_object_id, metadata_only=False):
         """Retrieves the specified managed object.
 
         Implementations should verify that the caller has permissions to
         retrieve the managed object by checking the context object passed in
         as context. If the user lacks permission then a NotAuthorized
         exception is raised.
+
+        If the caller requests only metadata, then the object that is
+        returned will contain only the secret metadata and no secret bytes.
 
         If the specified object does not exist, then a KeyError should be
         raised. Implementations should preclude users from discerning the

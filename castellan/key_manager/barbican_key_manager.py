@@ -454,10 +454,17 @@ class BarbicanKeyManager(key_manager.KeyManager):
         else:
             return secret.payload
 
-    def _get_castellan_object(self, secret):
+    def _get_castellan_object(self, secret, metadata_only=False):
         """Creates a Castellan managed object given the Barbican secret.
 
-        :param secret: the secret from barbican with the payload of data
+        The python barbicanclient lazy-loads the secret data, i.e. the secret
+        data is not requested until secret.payload is called. If the user
+        specifies metadata_only=True, secret.payload is never called,
+        preventing unnecessary loading of secret data.
+
+        :param secret: the barbican secret object
+        :metadata_only: boolean indicating if the secret bytes should be
+                        included in the managed object
         :returns: the castellan object
         """
         secret_type = op_data.OpaqueData
@@ -465,7 +472,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
             if barbican_type == secret.secret_type:
                 secret_type = castellan_type
 
-        secret_data = self._get_secret_data(secret)
+        if metadata_only:
+            secret_data = None
+        else:
+            secret_data = self._get_secret_data(secret)
 
         # convert created ISO8601 in Barbican to POSIX
         if secret.created:
@@ -514,19 +524,20 @@ class BarbicanKeyManager(key_manager.KeyManager):
         else:
             return False
 
-    def get(self, context, managed_object_id):
+    def get(self, context, managed_object_id, metadata_only=False):
         """Retrieves the specified managed object.
 
         :param context: contains information of the user and the environment
                         for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to retrieve
+        :param metadata_only: whether secret data should be included
         :return: ManagedObject representation of the managed object
         :raises KeyManagerError: if object retrieval fails
         :raises ManagedObjectNotFoundError: if object not found
         """
         try:
             secret = self._get_secret(context, managed_object_id)
-            return self._get_castellan_object(secret)
+            return self._get_castellan_object(secret, metadata_only)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
