@@ -29,7 +29,7 @@ independent version, you can do so with the following command:
 
 .. note::
 
-    Other available environments are py34, py26, and pypy.
+    Other available environments are py35, py34, pypy and pep8.
 
     If you do not have the appropriate Python versions available, consider
     setting up PyEnv to install multiple versions of Python. See the
