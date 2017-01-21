@@ -32,7 +32,7 @@ _DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
 
 def set_defaults(conf, api_class=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
-                 retry_delay=None, number_of_retries=None):
+                 retry_delay=None, number_of_retries=None, verify_ssl=None):
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -43,6 +43,7 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
     :param auth_endpoint: Use this endpoint to connect to Keystone.
     :param retry_delay: Use this attribute to set retry delay.
     :param number_of_retries: Use this attribute to set number of retries.
+    :param verify_ssl: Use this to specify if ssl should be verified.
     """
     conf.register_opts(km.key_manager_opts, group='key_manager')
     if bkm:
@@ -50,23 +51,26 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
 
     if api_class is not None:
         conf.set_default('api_class', api_class, group='key_manager')
-    if bkm is not None and barbican_endpoint is not None:
-        conf.set_default('barbican_endpoint', barbican_endpoint,
-                         group=bkm.BARBICAN_OPT_GROUP)
-    if bkm is not None and barbican_api_version is not None:
-        conf.set_default('barbican_api_version', barbican_api_version,
-                         group=bkm.BARBICAN_OPT_GROUP)
-    if bkm is not None and auth_endpoint is not None:
-        conf.set_default('auth_endpoint', auth_endpoint,
-                         group=bkm.BARBICAN_OPT_GROUP)
 
-    if bkm is not None and retry_delay is not None:
-        conf.set_default('retry_delay', retry_delay,
-                         group=bkm.BARBICAN_OPT_GROUP)
-
-    if bkm is not None and number_of_retries is not None:
-        conf.set_default('number_of_retries', number_of_retries,
-                         group=bkm.BARBICAN_OPT_GROUP)
+    if bkm is not None:
+        if barbican_endpoint is not None:
+            conf.set_default('barbican_endpoint', barbican_endpoint,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if barbican_api_version is not None:
+            conf.set_default('barbican_api_version', barbican_api_version,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if auth_endpoint is not None:
+            conf.set_default('auth_endpoint', auth_endpoint,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if retry_delay is not None:
+            conf.set_default('retry_delay', retry_delay,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if number_of_retries is not None:
+            conf.set_default('number_of_retries', number_of_retries,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if verify_ssl is not None:
+            conf.set_default('verify_ssl', verify_ssl,
+                             group=bkm.BARBICAN_OPT_GROUP)
 
 
 def enable_logging(conf=None, app_name='castellan'):
