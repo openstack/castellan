@@ -212,7 +212,7 @@ class MockKeyManager(key_manager.KeyManager):
         symbols = ''.join(symbolgroups)
         password.extend([random.choice(symbols) for _i in range(length)])
 
-        # finally shuffle to ensure first x characters aren't from a
+        # Finally, shuffle to ensure first x characters aren't from a
         # predictable group
         random.shuffle(password)
 
