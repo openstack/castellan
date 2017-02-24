@@ -59,7 +59,7 @@ def setup_config(config_file=''):
         config_to_load.append(main_config)
 
     TEST_CONF(
-        (),  # Required to load an anonymous config
+        (),  # Required to load an anonymous configuration
         default_config_files=config_to_load
     )
 
