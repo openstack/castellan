@@ -35,6 +35,13 @@ class PassphraseTestCase(base.TestCase):
 
         super(PassphraseTestCase, self).setUp()
 
+    def test_is_not_only_metadata(self):
+        self.assertFalse(self.passphrase.is_metadata_only())
+
+    def test_is_only_metadata(self):
+        p = passphrase.Passphrase(None, self.name, self.created)
+        self.assertTrue(p.is_metadata_only())
+
     def test_get_format(self):
         self.assertEqual('RAW', self.passphrase.format)
 

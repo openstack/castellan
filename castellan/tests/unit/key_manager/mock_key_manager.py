@@ -166,7 +166,7 @@ class MockKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def get(self, context, managed_object_id, **kwargs):
+    def get(self, context, managed_object_id, metadata_only=False, **kwargs):
         """Retrieves the key identified by the specified id.
 
         This implementation returns the key that is associated with the
@@ -176,7 +176,15 @@ class MockKeyManager(key_manager.KeyManager):
         if context is None:
             raise exception.Forbidden()
 
-        return self.keys[managed_object_id]
+        obj = self.keys[managed_object_id]
+        if metadata_only:
+            if hasattr(obj, "_key"):
+                obj._key = None
+            if hasattr(obj, "_data"):
+                obj._data = None
+            if hasattr(obj, "_passphrase"):
+                obj._passphrase = None
+        return obj
 
     def delete(self, context, managed_object_id, **kwargs):
         """Deletes the object identified by the specified id.

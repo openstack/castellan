@@ -39,6 +39,17 @@ class PrivateKeyTestCase(base.KeyTestCase):
 
         super(PrivateKeyTestCase, self).setUp()
 
+    def test_is_not_only_metadata(self):
+        self.assertFalse(self.key.is_metadata_only())
+
+    def test_is_only_metadata(self):
+        k = private_key.PrivateKey(self.algorithm,
+                                   self.bit_length,
+                                   None,
+                                   self.name,
+                                   self.created)
+        self.assertTrue(k.is_metadata_only())
+
     def test_get_algorithm(self):
         self.assertEqual(self.algorithm, self.key.algorithm)
 

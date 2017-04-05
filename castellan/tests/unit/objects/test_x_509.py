@@ -35,6 +35,13 @@ class X509TestCase(base.CertificateTestCase):
 
         super(X509TestCase, self).setUp()
 
+    def test_is_not_only_metadata(self):
+        self.assertFalse(self.cert.is_metadata_only())
+
+    def test_is_only_metadata(self):
+        c = x_509.X509(None, self.name, self.created)
+        self.assertTrue(c.is_metadata_only())
+
     def test_get_format(self):
         self.assertEqual('X.509', self.cert.format)
 
