@@ -95,7 +95,7 @@ that is being abstracted.
     username = 'admin'
     password = 'openstack'
     project_name = 'admin'
-    auth_url = 'http://localhost:5000/'
+    auth_url = 'http://localhost/identity/v3'
     auth = identity.Password(auth_url=auth_url,
                              username=username,
                              password=password,

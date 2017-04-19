@@ -53,7 +53,7 @@ barbican_opts = [
     cfg.StrOpt('barbican_api_version',
                help='Version of the Barbican API, for example: "v1"'),
     cfg.StrOpt('auth_endpoint',
-               default='http://localhost:5000/v3',
+               default='http://localhost/identity/v3',
                help='Use this endpoint to connect to Keystone'),
     cfg.IntOpt('retry_delay',
                default=1,

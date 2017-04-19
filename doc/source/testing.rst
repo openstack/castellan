@@ -69,7 +69,7 @@ The file should look something like the following:
     username = 'admin'
     password = 'openstack'
     project_name = 'admin'
-    auth_url = 'http://localhost:5000/v3'
+    auth_url = 'http://localhost/identity/v3'
 
 Once you have the appropriate services running and configured you can execute
 the functional tests through tox.

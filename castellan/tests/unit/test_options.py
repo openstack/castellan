@@ -39,7 +39,7 @@ class TestOptions(base.TestCase):
         self.assertEqual(barbican_api_version,
                          conf.get(bkm.BARBICAN_OPT_GROUP).barbican_api_version)
 
-        auth_endpoint = 'http://test-server.org:5000/'
+        auth_endpoint = 'http://test-server.org/identity'
         options.set_defaults(conf, auth_endpoint=auth_endpoint)
         self.assertEqual(auth_endpoint,
                          conf.get(bkm.BARBICAN_OPT_GROUP).auth_endpoint)

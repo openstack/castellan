@@ -22,7 +22,7 @@ TEST_CONF = None
 identity_group = cfg.OptGroup(name='identity')
 identity_options = [
     cfg.StrOpt('auth_url',
-               default='http://localhost:5000/v3',
+               default='http://localhost/identity/v3',
                help='Keystone endpoint'),
     cfg.StrOpt('username',
                default='admin',
