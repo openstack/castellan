@@ -27,6 +27,7 @@ this class.
 """
 
 import binascii
+import copy
 import random
 import uuid
 
@@ -176,7 +177,7 @@ class MockKeyManager(key_manager.KeyManager):
         if context is None:
             raise exception.Forbidden()
 
-        obj = self.keys[managed_object_id]
+        obj = copy.deepcopy(self.keys[managed_object_id])
         if metadata_only:
             if hasattr(obj, "_key"):
                 obj._key = None
