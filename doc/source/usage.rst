@@ -25,24 +25,24 @@ provided.
 
   # token credential
   # token variable not required, token can be obtained from context
-  [castellan]
+  [key_manager]
   auth_type = 'token'
   token = '5b4de0bb77064f289f7cc58e33bea8c7'
 
   # password credential
-  [castellan]
+  [key_manager]
   auth_type = 'password'
   username = 'admin'
   password = 'passw0rd1'
 
   # keystone token credential
-  [castellan]
+  [key_manager]
   auth_type = 'keystone_token'
   token = '5b4de0bb77064f289f7cc58e33bea8c7'
   project_id = 'a1e19934af81420d980a5d02b4afe9fb'
 
   # keystone password credential
-  [castellan]
+  [key_manager]
   auth_type = 'keystone_password'
   username = 'admin'
   password = 'passw0rd1'
