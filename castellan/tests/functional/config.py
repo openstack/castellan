@@ -49,7 +49,7 @@ def setup_config(config_file=''):
     TEST_CONF.register_opts(identity_options, group=identity_group)
 
     config_to_load = []
-    local_config = './../../../etc/castellan/castellan-functional.conf'
+    local_config = './etc/castellan/castellan-functional.conf'
     main_config = '/etc/castellan/castellan-functional.conf'
     if os.path.isfile(config_file):
         config_to_load.append(config_file)
