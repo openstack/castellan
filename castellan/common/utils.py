@@ -140,8 +140,8 @@ def credential_factory(conf=None, context=None):
                 domain_name=conf.key_manager.domain_name,
                 project_id=conf.key_manager.project_id,
                 project_name=conf.key_manager.project_name,
-                project_domain_id=conf.key_manager.domain_id,
-                project_domain_name=conf.key_manager.domain_name,
+                project_domain_id=conf.key_manager.project_domain_id,
+                project_domain_name=conf.key_manager.project_domain_name,
                 reauthenticate=conf.key_manager.reauthenticate)
 
         elif conf.key_manager.auth_type == 'keystone_token':
@@ -159,8 +159,8 @@ def credential_factory(conf=None, context=None):
                 domain_name=conf.key_manager.domain_name,
                 project_id=conf.key_manager.project_id,
                 project_name=conf.key_manager.project_name,
-                project_domain_id=conf.key_manager.domain_id,
-                project_domain_name=conf.key_manager.domain_name,
+                project_domain_id=conf.key_manager.project_domain_id,
+                project_domain_name=conf.key_manager.project_domain_name,
                 reauthenticate=conf.key_manager.reauthenticate)
 
         else:
