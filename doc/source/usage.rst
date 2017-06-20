@@ -320,4 +320,4 @@ by the castellan package.*
         castellan.config = castellan.options:list_opts
 
 For more information on the oslo configuration generator, please see
-http://docs.openstack.org/developer/oslo.config/generator.html
+https://docs.openstack.org/developer/oslo.config/generator.html

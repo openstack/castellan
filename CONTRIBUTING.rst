@@ -15,7 +15,7 @@ ways you can contribute to the Castellan project:
 
 Before you start contributing take a look at the `Openstack Developers Guide`_.
 
-.. _`Openstack Developers Guide`: http://docs.openstack.org/infra/manual/developers.html
+.. _`Openstack Developers Guide`: https://docs.openstack.org/infra/manual/developers.html
 
 Freenode IRC (Chat)
 -------------------
@@ -56,7 +56,7 @@ review system for all code reviews. If you're unfamiliar with using
 the OpenStack Gerrit review system, please review the `Gerrit Workflow`_
 wiki documentation.
 
-.. _`Gerrit Workflow`: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _`Gerrit Workflow`: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 .. note::
 
