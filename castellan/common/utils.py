@@ -21,7 +21,6 @@ from castellan.common.credentials import keystone_token
 from castellan.common.credentials import password
 from castellan.common.credentials import token
 from castellan.common import exception
-from castellan.i18n import _LE
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -164,7 +163,7 @@ def credential_factory(conf=None, context=None):
                 reauthenticate=conf.key_manager.reauthenticate)
 
         else:
-            LOG.error(_LE("Invalid auth_type specified."))
+            LOG.error("Invalid auth_type specified.")
             raise exception.AuthTypeInvalidError(
                 type=conf.key_manager.auth_type)
 

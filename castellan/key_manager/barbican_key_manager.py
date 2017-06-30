@@ -37,8 +37,9 @@ from castellan.common.objects import private_key as pri_key
 from castellan.common.objects import public_key as pub_key
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.common.objects import x_509
+from castellan.i18n import _
 from castellan.key_manager import key_manager
-from castellan.i18n import _, _LE, _LI
+
 
 from barbicanclient import client as barbican_client
 from barbicanclient import exceptions as barbican_exceptions
@@ -104,7 +105,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         # Confirm context is provided, if not raise forbidden
         if not context:
-            msg = _LE("User is not authorized to use key manager.")
+            msg = _("User is not authorized to use key manager.")
             LOG.error(msg)
             raise exception.Forbidden(msg)
 
@@ -123,7 +124,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             self._current_context = context
 
         except Exception as e:
-            LOG.error(_LE("Error creating Barbican client: %s"), e)
+            LOG.error("Error creating Barbican client: %s", e)
             raise exception.KeyManagerError(reason=e)
 
         self._base_url = self._create_base_url(auth,
@@ -171,8 +172,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 token=context.auth_token,
                 project_id=context.tenant)
         else:
-            msg = _LE("context must be of type KeystonePassword, "
-                      "KeystoneToken, or RequestContext.")
+            msg = _("context must be of type KeystonePassword, "
+                    "KeystoneToken, or RequestContext.")
             LOG.error(msg)
             raise exception.Forbidden(reason=msg)
 
@@ -192,7 +193,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             discovery = auth.get_discovery(sess, url=endpoint)
             raw_data = discovery.raw_version_data()
             if len(raw_data) == 0:
-                msg = _LE(
+                msg = _(
                     "Could not find discovery information for %s") % endpoint
                 LOG.error(msg)
                 raise exception.KeyManagerError(reason=msg)
@@ -230,7 +231,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_LE("Error creating key: %s"), e)
+            LOG.error("Error creating key: %s", e)
             raise exception.KeyManagerError(reason=e)
 
     def create_key_pair(self, context, algorithm, length,
@@ -268,7 +269,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_LE("Error creating key pair: %s"), e)
+            LOG.error("Error creating key pair: %s", e)
             raise exception.KeyManagerError(reason=e)
 
     def _get_barbican_object(self, barbican_client, managed_object):
@@ -347,7 +348,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_LE("Error storing object: %s"), e)
+            LOG.error("Error storing object: %s", e)
             raise exception.KeyManagerError(reason=e)
 
     def _create_secret_ref(self, object_id):
@@ -381,8 +382,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 kwargs = {"status": error_status,
                           "code": order.error_status_code,
                           "reason": order.error_reason}
-                msg = _LE("Order is in %(status)s status - status code: "
-                          "%(code)s, status reason: %(reason)s") % kwargs
+                msg = _("Order is in %(status)s status - status code: "
+                        "%(code)s, status reason: %(reason)s") % kwargs
                 LOG.error(msg)
                 raise exception.KeyManagerError(reason=msg)
             if order.status != active_status:
@@ -391,17 +392,17 @@ class BarbicanKeyManager(key_manager.KeyManager):
                           'status': order.status,
                           'active': active_status,
                           'delay': retry_delay}
-                msg = _LI("Retry attempt #%(attempt)i out of %(total)i: "
-                          "Order status is '%(status)s'. Waiting for "
-                          "'%(active)s', will retry in %(delay)s "
-                          "seconds")
+                msg = _("Retry attempt #%(attempt)i out of %(total)i: "
+                        "Order status is '%(status)s'. Waiting for "
+                        "'%(active)s', will retry in %(delay)s "
+                        "seconds")
                 LOG.info(msg, kwargs)
                 time.sleep(retry_delay)
                 order = barbican_client.orders.get(order_ref)
             else:
                 return order
-        msg = _LE("Exceeded retries: Failed to find '%(active)s' status "
-                  "within %(num_retries)i retries") % {
+        msg = _("Exceeded retries: Failed to find '%(active)s' status "
+                "within %(num_retries)i retries") % {
             'active': active_status,
             'num_retries': number_of_retries}
         LOG.error(msg)
@@ -515,7 +516,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             with excutils.save_and_reraise_exception():
-                LOG.error(_LE("Error getting secret metadata: %s"), e)
+                LOG.error("Error getting secret metadata: %s", e)
 
     def _is_secret_not_found_error(self, error):
         if (isinstance(error, barbican_exceptions.HTTPClientError) and
@@ -541,7 +542,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_LE("Error retrieving object: %s"), e)
+            LOG.error("Error retrieving object: %s", e)
             if self._is_secret_not_found_error(e):
                 raise exception.ManagedObjectNotFoundError(
                     uuid=managed_object_id)
@@ -565,7 +566,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_LE("Error deleting object: %s"), e)
+            LOG.error("Error deleting object: %s", e)
             if self._is_secret_not_found_error(e):
                 raise exception.ManagedObjectNotFoundError(
                     uuid=managed_object_id)
