@@ -29,11 +29,11 @@ this class.
 import binascii
 import copy
 import random
-import uuid
 
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from oslo_utils import uuidutils
 
 from castellan.common import exception
 from castellan.common.objects import private_key as pri_key
@@ -151,9 +151,9 @@ class MockKeyManager(key_manager.KeyManager):
         return private_key_uuid, public_key_uuid
 
     def _generate_key_id(self):
-        key_id = str(uuid.uuid4())
+        key_id = uuidutils.generate_uuid()
         while key_id in self.keys:
-            key_id = str(uuid.uuid4())
+            key_id = uuidutils.generate_uuid()
 
         return key_id
 

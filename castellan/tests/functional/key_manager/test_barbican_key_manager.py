@@ -19,12 +19,12 @@ Functional test cases for the Barbican key manager.
 Note: This requires local running instances of Barbican and Keystone.
 """
 import abc
-import uuid
 
 from keystoneauth1 import identity
 from keystoneauth1 import session
 from oslo_config import cfg
 from oslo_context import context
+from oslo_utils import uuidutils
 from oslotest import base
 
 from castellan.common.credentials import keystone_password
@@ -75,7 +75,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                           self.key_mgr.delete, self.ctxt, None)
 
     def test_delete_unknown_object(self):
-        unknown_uuid = str(uuid.uuid4())
+        unknown_uuid = uuidutils.generate_uuid()
         self.assertRaises(exception.ManagedObjectNotFoundError,
                           self.key_mgr.delete, self.ctxt, unknown_uuid)
 
@@ -91,7 +91,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                           self.key_mgr.get, self.ctxt, None)
 
     def test_get_unknown_key(self):
-        bad_key_uuid = str(uuid.uuid4())
+        bad_key_uuid = uuidutils.generate_uuid()
         self.assertRaises(exception.ManagedObjectNotFoundError,
                           self.key_mgr.get, self.ctxt, bad_key_uuid)
 
