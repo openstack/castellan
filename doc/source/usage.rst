@@ -319,5 +319,14 @@ by the castellan package.*
     oslo.config.opts =
         castellan.config = castellan.options:list_opts
 
+The new namespace also needs to be added to your project's
+oslo-config-generator conf, e.g. `etc/oslo-config-generator/myproject.conf`:
+
+.. code:: ini
+
+    [DEFAULT]
+    output_file = etc/myproject/myproject.conf
+    namespace = castellan.config
+
 For more information on the oslo configuration generator, please see
 https://docs.openstack.org/developer/oslo.config/generator.html
