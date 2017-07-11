@@ -329,4 +329,4 @@ oslo-config-generator conf, e.g. `etc/oslo-config-generator/myproject.conf`:
     namespace = castellan.config
 
 For more information on the oslo configuration generator, please see
-https://docs.openstack.org/developer/oslo.config/generator.html
+https://docs.openstack.org/oslo.config/latest/cli/generator.html
