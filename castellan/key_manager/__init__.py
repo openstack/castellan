@@ -25,8 +25,9 @@ key_manager_opts = [
                default='barbican',
                deprecated_name='api_class',
                deprecated_group='key_manager',
-               help='Specify the key manager implementation. Default is '
-                    '"barbican".Will support the  values earlier set using '
+               help='Specify the key manager implementation. Options are '
+                    '"barbican" and "vault". Default is  "barbican". Will '
+                    'support the  values earlier set using '
                     '[key_manager]/api_class for some time.'),
 ]
 

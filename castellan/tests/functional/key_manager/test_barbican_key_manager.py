@@ -26,6 +26,7 @@ from oslo_config import cfg
 from oslo_context import context
 from oslo_utils import uuidutils
 from oslotest import base
+from testtools import testcase
 
 from castellan.common.credentials import keystone_password
 from castellan.common.credentials import keystone_token
@@ -50,7 +51,13 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def setUp(self):
         super(BarbicanKeyManagerTestCase, self).setUp()
-        self.ctxt = self.get_context()
+        try:
+            self.ctxt = self.get_context()
+            self.key_mgr._get_barbican_client(self.ctxt)
+        except Exception as e:
+            # When we run functional-vault target, This test class needs
+            # to be skipped as barbican is not running
+            raise testcase.TestSkipped(str(e))
 
     def tearDown(self):
         super(BarbicanKeyManagerTestCase, self).tearDown()

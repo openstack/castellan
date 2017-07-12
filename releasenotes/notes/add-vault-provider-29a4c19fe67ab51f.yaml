@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added a new provider for Vault (https://www.vaultproject.io/)
