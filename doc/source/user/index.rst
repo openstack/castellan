@@ -64,8 +64,9 @@ generate the appropriate context.
 
   from castellan.common import utils
 
-  CONF = <your_configuration>
-  context = utils.credential_factory(conf=CONF, context=None)
+  CONF = cfg.CONF
+  CONF(default_config_files=['~/castellan.conf'])
+  context = utils.credential_factory(conf=CONF)
 
 Now you can go ahead and pass the context and use it for authentication.
 
