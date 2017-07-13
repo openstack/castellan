@@ -51,6 +51,8 @@ credential_opts = [
                "'keystone_password' auth_type."),
 
     # keystone credential opts
+    cfg.StrOpt('auth_url',
+               help="Use this endpoint to connect to Keystone."),
     cfg.StrOpt('user_id',
                help="User ID for authentication. Optional for "
                "'keystone_token' and 'keystone_password' auth_type."),
@@ -130,6 +132,7 @@ def credential_factory(conf=None, context=None):
         elif conf.key_manager.auth_type == 'keystone_password':
             return keystone_password.KeystonePassword(
                 conf.key_manager.password,
+                auth_url=conf.key_manager.auth_url,
                 username=conf.key_manager.username,
                 user_id=conf.key_manager.user_id,
                 user_domain_id=conf.key_manager.user_domain_id,
@@ -153,6 +156,7 @@ def credential_factory(conf=None, context=None):
 
             return keystone_token.KeystoneToken(
                 auth_token,
+                auth_url=conf.key_manager.auth_url,
                 trust_id=conf.key_manager.trust_id,
                 domain_id=conf.key_manager.domain_id,
                 domain_name=conf.key_manager.domain_name,

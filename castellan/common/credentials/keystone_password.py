@@ -23,13 +23,14 @@ from castellan.common.credentials import password
 class KeystonePassword(password.Password):
     """This class represents a keystone password credential."""
 
-    def __init__(self, password, username=None, user_id=None,
+    def __init__(self, password, auth_url=None, username=None, user_id=None,
                  user_domain_id=None, user_domain_name=None, trust_id=None,
                  domain_id=None, domain_name=None, project_id=None,
                  project_name=None, project_domain_id=None,
                  project_domain_name=None, reauthenticate=True):
         """Create a new Keystone Password Credential.
 
+        :param string auth_url: Use this endpoint to connect to Keystone.
         :param string password: Password for authentication.
         :param string username: Username for authentication.
         :param string user_id: User ID for authentication.
@@ -46,6 +47,7 @@ class KeystonePassword(password.Password):
         one is going to expire. (optional) default True
         """
 
+        self._auth_url = auth_url
         self._user_id = user_id
         self._user_domain_id = user_domain_id
         self._user_domain_name = user_domain_name
@@ -60,6 +62,11 @@ class KeystonePassword(password.Password):
 
         super(KeystonePassword, self).__init__(username,
                                                password)
+
+    @property
+    def auth_url(self):
+        """This method returns an auth_url."""
+        return self._auth_url
 
     @property
     def user_id(self):
