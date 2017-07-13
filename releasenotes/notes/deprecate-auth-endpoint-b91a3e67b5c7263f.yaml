@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    Config option barbican/auth_endpoint is unnecessary and deprecated in
+    favor of the more standard key_manager/auth_url.

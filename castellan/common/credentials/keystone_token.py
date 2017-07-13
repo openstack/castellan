@@ -23,13 +23,15 @@ from castellan.common.credentials import token
 class KeystoneToken(token.Token):
     """This class represents a keystone token credential."""
 
-    def __init__(self, token, trust_id=None, domain_id=None, domain_name=None,
-                 project_id=None, project_name=None, project_domain_id=None,
-                 project_domain_name=None, reauthenticate=True):
+    def __init__(self, token, auth_url=None, trust_id=None, domain_id=None,
+                 domain_name=None, project_id=None, project_name=None,
+                 project_domain_id=None, project_domain_name=None,
+                 reauthenticate=True):
         """Create a new Keystone Token Credential.
 
         :param string token: Token for authentication. The type of token
         formats accepted are UUID, PKI, and Fernet.
+        :param string auth_url: Use this endpoint to connect to Keystone.
         :param string trust_id: Trust ID for trust scoping.
         :param string domain_id: Domain ID for domain scoping.
         :param string domain_name: Domain name for domain scoping.
@@ -41,6 +43,7 @@ class KeystoneToken(token.Token):
         one is going to expire. (optional) default True
         """
 
+        self._auth_url = auth_url
         self._trust_id = trust_id
         self._domain_id = domain_id
         self._domain_name = domain_name
@@ -51,6 +54,11 @@ class KeystoneToken(token.Token):
         self._reauthenticate = reauthenticate
 
         super(KeystoneToken, self).__init__(token)
+
+    @property
+    def auth_url(self):
+        """This method returns an auth_url."""
+        return self._auth_url
 
     @property
     def trust_id(self):

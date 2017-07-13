@@ -129,6 +129,7 @@ class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
                                            base.BaseTestCase):
 
     def get_context(self):
+        auth_url = CONF.identity.auth_url
         username = CONF.identity.username
         password = CONF.identity.password
         project_name = CONF.identity.project_name
@@ -136,7 +137,7 @@ class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
         project_domain_name = CONF.identity.project_domain_name
 
         ctxt = keystone_password.KeystonePassword(
-            username=username, password=password,
+            auth_url=auth_url, username=username, password=password,
             project_name=project_name,
             user_domain_name=user_domain_name,
             project_domain_name=project_domain_name)
@@ -165,4 +166,5 @@ class BarbicanKeyManagerKSTokenTestCase(BarbicanKeyManagerTestCase,
 
         return keystone_token.KeystoneToken(
             token=auth.get_token(sess),
+            auth_url=auth_url,
             project_id=auth.get_project_id(sess))
