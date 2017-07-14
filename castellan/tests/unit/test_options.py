@@ -15,9 +15,11 @@
 
 from oslo_config import cfg
 
+from castellan import key_manager
 from castellan.key_manager import barbican_key_manager as bkm
 from castellan import options
 from castellan.tests import base
+from castellan.tests.unit.key_manager import mock_key_manager
 
 
 class TestOptions(base.TestCase):
@@ -25,9 +27,15 @@ class TestOptions(base.TestCase):
     def test_set_defaults(self):
         conf = cfg.ConfigOpts()
 
-        api_class = 'test.api.class'
-        options.set_defaults(conf, api_class=api_class)
-        self.assertEqual(api_class, conf.key_manager.api_class)
+        self.assertTrue(isinstance(key_manager.API(conf),
+                                   bkm.BarbicanKeyManager))
+
+        cls = mock_key_manager.MockKeyManager
+        backend = '%s.%s' % (cls.__module__, cls.__name__)
+        options.set_defaults(conf, backend=backend)
+        self.assertEqual(backend, conf.key_manager.backend)
+        self.assertIsInstance(key_manager.API(conf),
+                              mock_key_manager.MockKeyManager)
 
         barbican_endpoint = 'http://test-server.org:9311/'
         options.set_defaults(conf, barbican_endpoint=barbican_endpoint)

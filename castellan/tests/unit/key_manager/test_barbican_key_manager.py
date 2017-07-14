@@ -20,7 +20,6 @@ import calendar
 
 from barbicanclient import exceptions as barbican_exceptions
 import mock
-from oslo_config import cfg
 from oslo_utils import timeutils
 
 from castellan.common import exception
@@ -32,7 +31,7 @@ from castellan.tests.unit.key_manager import test_key_manager
 class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def _create_key_manager(self):
-        return barbican_key_manager.BarbicanKeyManager(cfg.CONF)
+        return barbican_key_manager.BarbicanKeyManager(self.conf)
 
     def setUp(self):
         super(BarbicanKeyManagerTestCase, self).setUp()

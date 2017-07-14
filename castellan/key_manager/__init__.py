@@ -13,13 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import importutils
+from stevedore import driver
+from stevedore import exception
+
+LOG = logging.getLogger(__name__)
 
 key_manager_opts = [
-    cfg.StrOpt('api_class',
-               default='castellan.key_manager.barbican_key_manager'
-                       '.BarbicanKeyManager',
-               help='The full class name of the key manager API class'),
+    cfg.StrOpt('backend',
+               default='barbican',
+               deprecated_name='api_class',
+               deprecated_group='key_manager',
+               help='Specify the key manager implementation. Default is '
+                    '"barbican".Will support the  values earlier set using '
+                    '[key_manager]/api_class for some time.'),
 ]
 
 
@@ -27,5 +35,14 @@ def API(configuration=None):
     conf = configuration or cfg.CONF
     conf.register_opts(key_manager_opts, group='key_manager')
 
-    cls = importutils.import_class(conf.key_manager.api_class)
-    return cls(configuration=conf)
+    try:
+        mgr = driver.DriverManager("castellan.drivers",
+                                   conf.key_manager.backend,
+                                   invoke_on_load=True,
+                                   invoke_args=[conf])
+        return mgr.driver
+    except exception.NoMatches:
+        LOG.warning("Deprecation Warning : %s is not a stevedore based driver,"
+                    " trying to load it as a class", conf.key_manager.backend)
+        cls = importutils.import_class(conf.key_manager.backend)
+        return cls(configuration=conf)

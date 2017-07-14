@@ -30,9 +30,10 @@ _DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
                                    '%(message)s')
 
 
-def set_defaults(conf, api_class=None, barbican_endpoint=None,
+def set_defaults(conf, backend=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
-                 retry_delay=None, number_of_retries=None, verify_ssl=None):
+                 retry_delay=None, number_of_retries=None, verify_ssl=None,
+                 api_class=None):
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -49,8 +50,10 @@ def set_defaults(conf, api_class=None, barbican_endpoint=None,
     if bkm:
         conf.register_opts(bkm.barbican_opts, group=bkm.BARBICAN_OPT_GROUP)
 
-    if api_class is not None:
-        conf.set_default('api_class', api_class, group='key_manager')
+    # Use the new backend option if set or fall back to the older api_class
+    default_backend = backend or api_class
+    if default_backend is not None:
+        conf.set_default('backend', default_backend, group='key_manager')
 
     if bkm is not None:
         if barbican_endpoint is not None:
