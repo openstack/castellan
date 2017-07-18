@@ -226,3 +226,19 @@ class MockKeyManager(key_manager.KeyManager):
         random.shuffle(password)
 
         return ''.join(password)
+
+    def list(self, context, object_type=None, metadata_only=False):
+        """Retrieves a list of managed objects that match the criteria.
+
+        A Forbidden exception is raised if the context is None.
+        If no search criteria is given, all objects are returned.
+        """
+        if context is None:
+            raise exception.Forbidden()
+
+        objects = []
+        for obj_id in self.keys:
+            obj = self.get(context, obj_id, metadata_only=metadata_only)
+            if type(obj) == object_type or object_type is None:
+                objects.append(obj)
+        return objects

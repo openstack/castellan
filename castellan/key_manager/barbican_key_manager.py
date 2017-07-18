@@ -572,3 +572,44 @@ class BarbicanKeyManager(key_manager.KeyManager):
                     uuid=managed_object_id)
             else:
                 raise exception.KeyManagerError(reason=e)
+
+    def list(self, context, object_type=None, metadata_only=False):
+        """Retrieves a list of managed objects that match the criteria.
+
+        If no search criteria is given, all objects are returned.
+
+        :param context: contains information of the user and the environment
+                     for the request (castellan/context.py)
+        :param object_type: the type of object to retrieve
+        :param metadata_only: whether secret data should be included
+        :raises KeyManagerError: if listing secrets fails
+        """
+        objects = []
+        barbican_client = self._get_barbican_client(context)
+
+        if object_type and object_type not in self._secret_type_dict:
+            msg = _("Invalid secret type: %s") % object_type
+            LOG.error(msg)
+            raise exception.KeyManagerError(reason=msg)
+
+        secret_type = self._secret_type_dict.get(object_type)
+
+        try:
+            secrets = barbican_client.secrets.list(secret_type=secret_type)
+        except (barbican_exceptions.HTTPAuthError,
+                barbican_exceptions.HTTPClientError,
+                barbican_exceptions.HTTPServerError) as e:
+            LOG.error(_("Error listing objects: %s"), e)
+            raise exception.KeyManagerError(reason=e)
+
+        for secret in secrets:
+            try:
+                obj = self._get_castellan_object(secret, metadata_only)
+                objects.append(obj)
+            except (barbican_exceptions.HTTPAuthError,
+                    barbican_exceptions.HTTPClientError,
+                    barbican_exceptions.HTTPServerError) as e:
+                LOG.warn(_("Error occurred while retrieving object metadata,"
+                           " not adding it to the list: %s"), e)
+
+        return objects

@@ -46,6 +46,10 @@ class NotImplementedKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertRaises(NotImplementedError,
                           self.key_mgr.get, None, None)
 
+    def test_list(self):
+        self.assertRaises(NotImplementedError,
+                          self.key_mgr.list, None)
+
     def test_delete(self):
         self.assertRaises(NotImplementedError,
                           self.key_mgr.delete, None, None)

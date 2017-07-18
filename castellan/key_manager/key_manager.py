@@ -109,3 +109,18 @@ class KeyManager(object):
         considered "non-existent" and completely invisible.
         """
         pass
+
+    @abc.abstractmethod
+    def list(self, context, object_type=None, metadata_only=False):
+        """Lists the managed objects given the criteria.
+
+        Implementations should verify that the caller has permission to list
+        the managed objects and should only list the objects the caller has
+        access to by checking the context object (context). A NotAuthorized
+        exception should be raised if the caller lacks permission.
+
+        A list of managed objects or managed object metadata should be
+        returned, depending on the metadata_only flag. If no objects are
+        found, an empty list should be returned instead.
+        """
+        pass

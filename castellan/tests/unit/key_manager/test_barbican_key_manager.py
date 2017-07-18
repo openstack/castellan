@@ -72,6 +72,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.delete = self.mock_barbican.secrets.delete
         self.store = self.mock_barbican.secrets.store
         self.create = self.mock_barbican.secrets.create
+        self.list = self.mock_barbican.secrets.list
 
         self.key_mgr._barbican_client = self.mock_barbican
         self.key_mgr._current_context = self.ctxt
@@ -348,3 +349,60 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                           order_ref_url)
 
         self.assertEqual(1, self.mock_barbican.orders.get.call_count)
+
+    def test_list_null_context(self):
+        self.key_mgr._barbican_client = None
+        self.assertRaises(exception.Forbidden,
+                          self.key_mgr.list, None)
+
+    def test_list(self):
+        original_secret_metadata = mock.Mock()
+        original_secret_metadata.algorithm = mock.sentinel.alg
+        original_secret_metadata.bit_length = mock.sentinel.bit
+        original_secret_metadata.secret_type = 'symmetric'
+
+        created = timeutils.parse_isotime('2015-10-20 18:51:17+00:00')
+        original_secret_metadata.created = created
+        created_formatted = timeutils.parse_isotime(str(created))
+        created_posix = calendar.timegm(created_formatted.timetuple())
+
+        key_name = 'my key'
+        original_secret_metadata.name = key_name
+
+        original_secret_data = b'test key'
+        original_secret_metadata.payload = original_secret_data
+
+        self.mock_barbican.secrets.list.return_value = (
+            [original_secret_metadata])
+
+        # check metadata_only = False
+        key_list = self.key_mgr.list(self.ctxt)
+        self.assertEqual(1, len(key_list))
+        key = key_list[0]
+
+        self.list.assert_called_once()
+        self.assertEqual(key_name, key.name)
+        self.assertEqual(original_secret_data, key.get_encoded())
+        self.assertEqual(created_posix, key.created)
+
+        self.list.reset_mock()
+
+        # check metadata_only = True
+        key_list = self.key_mgr.list(self.ctxt, metadata_only=True)
+        self.assertEqual(1, len(key_list))
+        key = key_list[0]
+
+        self.list.assert_called_once()
+        self.assertEqual(key_name, key.name)
+        self.assertIsNone(key.get_encoded())
+        self.assertEqual(created_posix, key.created)
+
+    def test_list_with_error(self):
+        self.mock_barbican.secrets.list = mock.Mock(
+            side_effect=barbican_exceptions.HTTPClientError('test error'))
+        self.assertRaises(exception.KeyManagerError,
+                          self.key_mgr.list, self.ctxt)
+
+    def test_list_with_invalid_object_type(self):
+        self.assertRaises(exception.KeyManagerError,
+                          self.key_mgr.list, self.ctxt, "invalid_type")

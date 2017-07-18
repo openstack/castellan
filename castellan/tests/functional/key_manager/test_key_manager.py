@@ -171,3 +171,66 @@ class KeyManagerTestCase(object):
         retrieved_object = self.key_mgr.get(self.ctxt, uuid)
         self.assertEqual(managed_object.get_encoded(),
                          retrieved_object.get_encoded())
+
+    @utils.parameterized_dataset({
+        'symmetric_key': [_get_test_symmetric_key()],
+        'public_key': [_get_test_public_key()],
+        'private_key': [_get_test_private_key()],
+        'certificate': [_get_test_certificate()],
+        'passphrase': [_get_test_passphrase()],
+        'opaque_data': [_get_test_opaque_data()],
+    })
+    def test_list(self, managed_object):
+        uuid = self.key_mgr.store(self.ctxt, managed_object)
+        self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
+
+        # the list command may return more objects than the one we just
+        # created if older objects were not cleaned up, so we will simply
+        # check if the object we created is in the list
+        retrieved_objects = self.key_mgr.list(self.ctxt)
+        self.assertTrue(managed_object in retrieved_objects)
+        for obj in retrieved_objects:
+            self.assertFalse(obj.is_metadata_only())
+
+    @utils.parameterized_dataset({
+        'symmetric_key': [_get_test_symmetric_key()],
+        'public_key': [_get_test_public_key()],
+        'private_key': [_get_test_private_key()],
+        'certificate': [_get_test_certificate()],
+        'passphrase': [_get_test_passphrase()],
+        'opaque_data': [_get_test_opaque_data()],
+    })
+    def test_list_metadata_only(self, managed_object):
+        uuid = self.key_mgr.store(self.ctxt, managed_object)
+        self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
+
+        expected_obj = self.key_mgr.get(self.ctxt, uuid, metadata_only=True)
+
+        # the list command may return more objects than the one we just
+        # created if older objects were not cleaned up, so we will simply
+        # check if the object we created is in the list
+        retrieved_objects = self.key_mgr.list(self.ctxt, metadata_only=True)
+        self.assertTrue(expected_obj in retrieved_objects)
+        for obj in retrieved_objects:
+            self.assertTrue(obj.is_metadata_only())
+
+    @utils.parameterized_dataset({
+        'query_by_object_type': {
+            'object_1': _get_test_symmetric_key(),
+            'object_2': _get_test_public_key(),
+            'query_dict': dict(object_type=symmetric_key.SymmetricKey)
+        },
+    })
+    def test_list_with_filter(self, object_1, object_2, query_dict):
+        uuid1 = self.key_mgr.store(self.ctxt, object_1)
+        uuid2 = self.key_mgr.store(self.ctxt, object_2)
+        self.addCleanup(self.key_mgr.delete, self.ctxt, uuid1)
+        self.addCleanup(self.key_mgr.delete, self.ctxt, uuid2)
+
+        # the list command may return more objects than the one we just
+        # created if older objects were not cleaned up, so we will simply
+        # check that the returned objects have the expected type
+        retrieved_objects = self.key_mgr.list(self.ctxt, **query_dict)
+        for retrieved_object in retrieved_objects:
+            self.assertEqual(type(object_1), type(retrieved_object))
+        self.assertTrue(object_1 in retrieved_objects)
