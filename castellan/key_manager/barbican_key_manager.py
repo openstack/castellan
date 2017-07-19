@@ -609,7 +609,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             except (barbican_exceptions.HTTPAuthError,
                     barbican_exceptions.HTTPClientError,
                     barbican_exceptions.HTTPServerError) as e:
-                LOG.warn(_("Error occurred while retrieving object metadata,"
-                           " not adding it to the list: %s"), e)
+                LOG.warning(_("Error occurred while retrieving object "
+                              "metadata, not adding it to the list: %s"), e)
 
         return objects
