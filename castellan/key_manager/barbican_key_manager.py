@@ -55,6 +55,8 @@ barbican_opts = [
                help='Version of the Barbican API, for example: "v1"'),
     cfg.StrOpt('auth_endpoint',
                default='http://localhost/identity/v3',
+               deprecated_name='auth_url',
+               deprecated_group='key_manager',
                help='Use this endpoint to connect to Keystone'),
     cfg.IntOpt('retry_delay',
                default=1,
@@ -123,6 +125,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 endpoint=self._barbican_endpoint)
             self._current_context = context
 
+        # TODO(pbourke): more fine grained exception handling - we are eating
+        # tracebacks here
         except Exception as e:
             LOG.error("Error creating Barbican client: %s", e)
             raise exception.KeyManagerError(reason=e)
@@ -134,11 +138,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return self._barbican_client
 
     def _get_keystone_auth(self, context):
-        auth_url = self.conf.barbican.auth_endpoint
-
         if context.__class__.__name__ is 'KeystonePassword':
             return identity.Password(
-                auth_url=auth_url,
+                auth_url=context.auth_url,
                 username=context.username,
                 password=context.password,
                 user_id=context.user_id,
@@ -154,7 +156,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 reauthenticate=context.reauthenticate)
         elif context.__class__.__name__ is 'KeystoneToken':
             return identity.Token(
-                auth_url=auth_url,
+                auth_url=context.auth_url,
                 token=context.token,
                 trust_id=context.trust_id,
                 domain_id=context.domain_id,
@@ -168,7 +170,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # projects begin to use utils.credential_factory
         elif context.__class__.__name__ is 'RequestContext':
             return identity.Token(
-                auth_url=auth_url,
+                auth_url=self.conf.barbican.auth_endpoint,
                 token=context.auth_token,
                 project_id=context.tenant)
         else:
