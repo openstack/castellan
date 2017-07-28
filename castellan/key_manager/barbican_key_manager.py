@@ -41,7 +41,7 @@ from castellan.i18n import _
 from castellan.key_manager import key_manager
 
 
-from barbicanclient import client as barbican_client
+from barbicanclient import client as barbican_client_import
 from barbicanclient import exceptions as barbican_exceptions
 from oslo_utils import timeutils
 from six.moves import urllib
@@ -120,7 +120,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                                    verify=self.conf.barbican.verify_ssl)
 
             self._barbican_endpoint = self._get_barbican_endpoint(auth, sess)
-            self._barbican_client = barbican_client.Client(
+            self._barbican_client = barbican_client_import.Client(
                 session=sess,
                 endpoint=self._barbican_endpoint)
             self._current_context = context
