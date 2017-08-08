@@ -202,8 +202,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
             latest_version = raw_data[-1]
             api_version = latest_version.get('id')
 
+        if endpoint[-1] != '/':
+            endpoint += '/'
+
         base_url = urllib.parse.urljoin(
             endpoint, api_version)
+
         return base_url
 
     def create_key(self, context, algorithm, length,

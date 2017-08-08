@@ -76,6 +76,24 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr._barbican_client = self.mock_barbican
         self.key_mgr._current_context = self.ctxt
 
+    def test_base_url_old_version(self):
+        version = "v1"
+        self.key_mgr.conf.barbican.barbican_api_version = version
+        endpoint = "http://localhost:9311"
+        base_url = self.key_mgr._create_base_url(mock.Mock(),
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + version, base_url)
+
+    def test_base_url_new_version(self):
+        version = "v1"
+        self.key_mgr.conf.barbican.barbican_api_version = version
+        endpoint = "http://localhost/key_manager"
+        base_url = self.key_mgr._create_base_url(mock.Mock(),
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + version, base_url)
+
     def test_create_key(self):
         # Create order_ref_url and assign return value
         order_ref_url = ("http://localhost:9311/v1/orders/"
