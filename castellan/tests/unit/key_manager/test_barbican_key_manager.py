@@ -189,6 +189,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         original_secret_metadata.bit_length = mock.sentinel.bit
         original_secret_metadata.secret_type = 'symmetric'
 
+        key_id = "43ed09c3-e551-4c24-b612-e619abe9b534"
+        key_ref = ("http://localhost:9311/v1/secrets/" + key_id)
+        original_secret_metadata.secret_ref = key_ref
+
         created = timeutils.parse_isotime('2015-10-20 18:51:17+00:00')
         original_secret_metadata.created = created
         created_formatted = timeutils.parse_isotime(str(created))
@@ -204,6 +208,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         key = self.key_mgr.get(self.ctxt, self.key_id)
 
         self.get.assert_called_once_with(self.secret_ref)
+        self.assertEqual(key_id, key.id)
         self.assertEqual(key_name, key.name)
         self.assertEqual(original_secret_data, key.get_encoded())
         self.assertEqual(created_posix, key.created)
@@ -360,6 +365,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         original_secret_metadata.bit_length = mock.sentinel.bit
         original_secret_metadata.secret_type = 'symmetric'
 
+        key_id = "43ed09c3-e551-4c24-b612-e619abe9b534"
+        key_ref = ("http://localhost:9311/v1/secrets/" + key_id)
+        original_secret_metadata.secret_ref = key_ref
+
         created = timeutils.parse_isotime('2015-10-20 18:51:17+00:00')
         original_secret_metadata.created = created
         created_formatted = timeutils.parse_isotime(str(created))
@@ -380,6 +389,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         key = key_list[0]
 
         self.list.assert_called_once()
+        self.assertEqual(key_id, key.id)
         self.assertEqual(key_name, key.name)
         self.assertEqual(original_secret_data, key.get_encoded())
         self.assertEqual(created_posix, key.created)

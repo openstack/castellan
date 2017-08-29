@@ -480,6 +480,11 @@ class BarbicanKeyManager(key_manager.KeyManager):
         else:
             secret_data = self._get_secret_data(secret)
 
+        if secret.secret_ref:
+            object_id = self._retrieve_secret_uuid(secret.secret_ref)
+        else:
+            object_id = None
+
         # convert created ISO8601 in Barbican to POSIX
         if secret.created:
             time_stamp = timeutils.parse_isotime(
@@ -491,11 +496,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
                                secret.bit_length,
                                secret_data,
                                secret.name,
-                               created)
+                               created,
+                               object_id)
         else:
             return secret_type(secret_data,
                                secret.name,
-                               created)
+                               created,
+                               object_id)
 
     def _get_secret(self, context, object_id):
         """Returns the metadata of the secret.

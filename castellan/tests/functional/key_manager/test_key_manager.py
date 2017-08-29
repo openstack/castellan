@@ -137,6 +137,8 @@ class KeyManagerTestCase(object):
         self.assertEqual(managed_object.get_encoded(),
                          retrieved_object.get_encoded())
         self.assertFalse(managed_object.is_metadata_only())
+        self.assertFalse(retrieved_object.is_metadata_only())
+        self.assertIsNotNone(retrieved_object.id)
 
     @utils.parameterized_dataset({
         'symmetric_key': [_get_test_symmetric_key()],
@@ -155,6 +157,7 @@ class KeyManagerTestCase(object):
                                             metadata_only=True)
         self.assertFalse(managed_object.is_metadata_only())
         self.assertTrue(retrieved_object.is_metadata_only())
+        self.assertIsNotNone(retrieved_object.id)
 
     @utils.parameterized_dataset({
         'symmetric_key': [_get_test_symmetric_key()],
@@ -171,6 +174,7 @@ class KeyManagerTestCase(object):
         retrieved_object = self.key_mgr.get(self.ctxt, uuid)
         self.assertEqual(managed_object.get_encoded(),
                          retrieved_object.get_encoded())
+        self.assertIsNotNone(retrieved_object.id)
 
     @utils.parameterized_dataset({
         'symmetric_key': [_get_test_symmetric_key()],
@@ -189,8 +193,9 @@ class KeyManagerTestCase(object):
         # check if the object we created is in the list
         retrieved_objects = self.key_mgr.list(self.ctxt)
         self.assertTrue(managed_object in retrieved_objects)
-        for obj in retrieved_objects:
-            self.assertFalse(obj.is_metadata_only())
+        for retrieved_object in retrieved_objects:
+            self.assertFalse(retrieved_object.is_metadata_only())
+            self.assertIsNotNone(retrieved_object.id)
 
     @utils.parameterized_dataset({
         'symmetric_key': [_get_test_symmetric_key()],
@@ -211,8 +216,9 @@ class KeyManagerTestCase(object):
         # check if the object we created is in the list
         retrieved_objects = self.key_mgr.list(self.ctxt, metadata_only=True)
         self.assertTrue(expected_obj in retrieved_objects)
-        for obj in retrieved_objects:
-            self.assertTrue(obj.is_metadata_only())
+        for retrieved_object in retrieved_objects:
+            self.assertTrue(retrieved_object.is_metadata_only())
+            self.assertIsNotNone(retrieved_object.id)
 
     @utils.parameterized_dataset({
         'query_by_object_type': {
@@ -233,4 +239,5 @@ class KeyManagerTestCase(object):
         retrieved_objects = self.key_mgr.list(self.ctxt, **query_dict)
         for retrieved_object in retrieved_objects:
             self.assertEqual(type(object_1), type(retrieved_object))
+            self.assertIsNotNone(retrieved_object.id)
         self.assertTrue(object_1 in retrieved_objects)

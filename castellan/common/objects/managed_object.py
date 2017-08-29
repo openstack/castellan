@@ -28,11 +28,12 @@ import six
 class ManagedObject(object):
     """Base class to represent all managed objects."""
 
-    def __init__(self, name=None, created=None):
+    def __init__(self, name=None, created=None, id=None):
         """Managed Object
 
         :param name: the name of the managed object.
         :param created: the time a managed object was created.
+        :param id: the ID of the object, generated after storing the object.
         """
         self._name = name
 
@@ -42,6 +43,17 @@ class ManagedObject(object):
         else:
             raise ValueError('created must be of long type, actual type %s' %
                              type(created))
+
+        self._id = id
+
+    @property
+    def id(self):
+        """Returns the ID of the managed object.
+
+        Returns the ID of the managed object or None if this object does not
+        have one. If the ID is None, the object has not been persisted yet.
+        """
+        return self._id
 
     @property
     def name(self):

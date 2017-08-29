@@ -26,7 +26,7 @@ class PublicKey(key.Key):
     """This class represents public keys."""
 
     def __init__(self, algorithm, bit_length, key,
-                 name=None, created=None):
+                 name=None, created=None, id=None):
         """Create a new PublicKey object.
 
         The arguments specify the algorithm and bit length for the asymmetric
@@ -36,7 +36,7 @@ class PublicKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super(PublicKey, self).__init__(name=name, created=created)
+        super(PublicKey, self).__init__(name=name, created=created, id=id)
 
     @property
     def algorithm(self):
