@@ -110,7 +110,6 @@ class KeyManager(object):
         """
         pass
 
-    @abc.abstractmethod
     def list(self, context, object_type=None, metadata_only=False):
         """Lists the managed objects given the criteria.
 
@@ -123,4 +122,4 @@ class KeyManager(object):
         returned, depending on the metadata_only flag. If no objects are
         found, an empty list should be returned instead.
         """
-        pass
+        return []
