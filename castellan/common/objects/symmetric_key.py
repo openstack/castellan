@@ -26,7 +26,7 @@ class SymmetricKey(key.Key):
     """This class represents symmetric keys."""
 
     def __init__(self, algorithm, bit_length, key,
-                 name=None, created=None):
+                 name=None, created=None, id=None):
         """Create a new SymmetricKey object.
 
         The arguments specify the algorithm and bit length for the symmetric
@@ -35,7 +35,7 @@ class SymmetricKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super(SymmetricKey, self).__init__(name=name, created=created)
+        super(SymmetricKey, self).__init__(name=name, created=created, id=id)
 
     @property
     def algorithm(self):

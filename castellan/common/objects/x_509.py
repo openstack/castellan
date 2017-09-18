@@ -25,13 +25,13 @@ from castellan.common.objects import certificate
 class X509(certificate.Certificate):
     """This class represents X.509 certificates."""
 
-    def __init__(self, data, name=None, created=None):
+    def __init__(self, data, name=None, created=None, id=None):
         """Create a new X509 object.
 
         The data should be in a bytestring.
         """
         self._data = data
-        super(X509, self).__init__(name=name, created=created)
+        super(X509, self).__init__(name=name, created=created, id=id)
 
     @property
     def format(self):

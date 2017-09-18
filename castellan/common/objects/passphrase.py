@@ -25,13 +25,13 @@ from castellan.common.objects import managed_object
 class Passphrase(managed_object.ManagedObject):
     """This class represents a passphrase."""
 
-    def __init__(self, passphrase, name=None, created=None):
+    def __init__(self, passphrase, name=None, created=None, id=None):
         """Create a new Passphrase object.
 
         The expected type for the passphrase is a bytestring.
         """
         self._passphrase = passphrase
-        super(Passphrase, self).__init__(name=name, created=created)
+        super(Passphrase, self).__init__(name=name, created=created, id=id)
 
     @property
     def format(self):

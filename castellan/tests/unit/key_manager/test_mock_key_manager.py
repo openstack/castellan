@@ -70,18 +70,21 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
             key_id = self.key_mgr.create_key(self.context, length=length)
             key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
+            self.assertIsNotNone(key.id)
 
     def test_create_key_with_name(self):
         name = 'my key'
         key_id = self.key_mgr.create_key(self.context, name=name)
         key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(name, key.name)
+        self.assertIsNotNone(key.id)
 
     def test_create_key_with_algorithm(self):
         algorithm = 'DES'
         key_id = self.key_mgr.create_key(self.context, algorithm=algorithm)
         key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(algorithm, key.algorithm)
+        self.assertIsNotNone(key.id)
 
     def test_create_key_null_context(self):
         self.assertRaises(exception.Forbidden,
@@ -94,7 +97,9 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
                 self.context, 'RSA', length, name=name)
 
             private_key = self.key_mgr.get(self.context, private_key_uuid)
+            self.assertIsNotNone(private_key.id)
             public_key = self.key_mgr.get(self.context, public_key_uuid)
+            self.assertIsNotNone(public_key.id)
 
             crypto_private_key = get_cryptography_private_key(private_key)
             crypto_public_key = get_cryptography_public_key(public_key)
@@ -153,6 +158,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         actual_key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(_key, actual_key)
 
+        self.assertIsNotNone(actual_key.id)
+
     def test_store_key_and_get_metadata(self):
         secret_key = bytes(b'0' * 64)
         _key = sym_key.SymmetricKey('AES', 64 * 8, secret_key)
@@ -163,6 +170,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
                                       metadata_only=True)
         self.assertIsNone(actual_key.get_encoded())
         self.assertTrue(actual_key.is_metadata_only())
+
+        self.assertIsNotNone(actual_key.id)
 
     def test_store_key_and_get_metadata_and_get_key(self):
         secret_key = bytes(b'0' * 64)
@@ -180,6 +189,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
                                       metadata_only=False)
         self.assertIsNotNone(actual_key.get_encoded())
         self.assertFalse(actual_key.is_metadata_only())
+
+        self.assertIsNotNone(actual_key.id)
 
     def test_store_null_context(self):
         self.assertRaises(exception.Forbidden,
@@ -221,6 +232,9 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         self.assertTrue(key1 in keys)
         self.assertTrue(key2 in keys)
 
+        for key in keys:
+            self.assertIsNotNone(key.id)
+
     def test_list_keys_metadata_only(self):
         key1 = sym_key.SymmetricKey('AES', 64 * 8, bytes(b'0' * 64))
         self.key_mgr.store(self.context, key1)
@@ -233,3 +247,6 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         for key in keys:
             self.assertTrue(key.is_metadata_only())
             self.assertTrue(key.bit_length in bit_length_list)
+
+        for key in keys:
+            self.assertIsNotNone(key.id)

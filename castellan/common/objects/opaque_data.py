@@ -25,13 +25,13 @@ from castellan.common.objects import managed_object
 class OpaqueData(managed_object.ManagedObject):
     """This class represents opaque data."""
 
-    def __init__(self, data, name=None, created=None):
+    def __init__(self, data, name=None, created=None, id=None):
         """Create a new OpaqueData object.
 
         Expected type for data is a bytestring.
         """
         self._data = data
-        super(OpaqueData, self).__init__(name=name, created=created)
+        super(OpaqueData, self).__init__(name=name, created=created, id=id)
 
     @property
     def format(self):

@@ -163,6 +163,7 @@ class MockKeyManager(key_manager.KeyManager):
             raise exception.Forbidden()
 
         key_id = self._generate_key_id()
+        managed_object._id = key_id
         self.keys[key_id] = managed_object
 
         return key_id
