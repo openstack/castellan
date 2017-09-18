@@ -1,0 +1,3 @@
+redirectmatch 301 ^/castellan/([^/]+)/usage.html$ ^/user/index.html
+redirectmatch 301 ^/castellan/([^/]+)/testing.html$ ^/contributor/testing.html
+redirectmatch 301 ^/castellan/([^/]+)/installation.html$ ^/install/index.html
