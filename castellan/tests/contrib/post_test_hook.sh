@@ -25,14 +25,6 @@ sudo chown -R $owner:stack $CASTELLAN_DIR
 
 testenv=functional
 
-sudo -H -u $owner tox -e genconfig
-
-if [ ! -d /etc/castellan ]; then
-    sudo mkdir /etc/castellan
-fi
-
-sudo cp $CASTELLAN_DIR/etc/castellan/castellan-functional.conf.sample /etc/castellan/castellan-functional.conf
-
 # Run tests
 echo "Running Castellan $testenv test suite"
 set +e
