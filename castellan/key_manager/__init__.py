@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from castellan.key_manager import migration
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
@@ -40,9 +41,11 @@ def API(configuration=None):
                                    conf.key_manager.backend,
                                    invoke_on_load=True,
                                    invoke_args=[conf])
-        return mgr.driver
+        key_mgr = mgr.driver
     except exception.NoMatches:
         LOG.warning("Deprecation Warning : %s is not a stevedore based driver,"
                     " trying to load it as a class", conf.key_manager.backend)
         cls = importutils.import_class(conf.key_manager.backend)
-        return cls(configuration=conf)
+        key_mgr = cls(configuration=conf)
+
+    return migration.handle_migration(conf, key_mgr)

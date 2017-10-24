@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Enhance the key manager to handle requests containing the special (all
+    zeros) managed object ID associated with Cinder's and Nova's legacy
+    ConfKeyManager. The purpose of this feature is to help users migrate from
+    the ConfKeyManager to a modern key manager such as Barbican. The feature
+    works by ensuring the ConfKeyManager's all-zeros key ID continues to
+    function when Barbican or Vault is the key manager.
