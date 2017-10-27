@@ -1,0 +1,46 @@
+- job:
+    name: castellan-functional-devstack
+    parent: devstack
+    description: |
+      Run DevStack-based Castellan functional tests
+    pre-run: playbooks/devstack/pre.yaml
+    run: playbooks/devstack/run.yaml
+    post-run: playbooks/devstack/post.yaml
+    required-projects:
+      - name: openstack/castellan
+      - name: openstack/barbican
+      - name: openstack/python-barbicanclient
+    roles:
+      - zuul: openstack-infra/devstack
+    timeout: 9000
+    vars:
+      devstack_services:
+        # is there a way to disable all services?  I only want barbican
+        ceilometer-acentral: False
+        ceilometer-acompute: False
+        ceilometer-alarm-evaluator: False
+        ceilometer-alarm-notifier: False
+        ceilometer-anotification: False
+        ceilometer-api: False
+        ceilometer-collector: False
+        horizon: False
+        s-account: False
+        s-container: False
+        s-object: False
+        s-proxy: False
+      devstack_plugins:
+        barbican: git://git.openstack.org/openstack/barbican
+      tox_environment:
+        PYTHONUNBUFFERED: 'true'
+      tox_install_siblings: False # I don't know what this means
+      tox_envlist: functional
+      zuul_work_dir: src/git.openstack.org/openstack/castellan
+
+- project:
+    name: openstack/castellan
+    check:
+      jobs:
+        - castellan-functional-devstack
+    gate:
+      jobs:
+        - castellan-functional-devstack
