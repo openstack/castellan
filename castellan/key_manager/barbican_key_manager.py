@@ -172,7 +172,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
             return identity.Token(
                 auth_url=self.conf.barbican.auth_endpoint,
                 token=context.auth_token,
-                project_id=context.tenant)
+                project_id=context.project_id,
+                project_name=context.project_name,
+                project_domain_id=context.project_domain_id,
+                project_domain_name=context.project_domain_name)
         else:
             msg = _("context must be of type KeystonePassword, "
                     "KeystoneToken, or RequestContext.")
