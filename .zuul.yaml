@@ -57,3 +57,6 @@
         - castellan-functional-vault
         - castellan-functional-devstack
         - openstack-tox-lower-constraints
+    experimental:
+      jobs:
+        - barbican-simple-crypto-devstack-tempest-castellan-from-git
