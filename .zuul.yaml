@@ -51,7 +51,9 @@
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
+        - openstack-tox-lower-constraints
     gate:
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
+        - openstack-tox-lower-constraints
