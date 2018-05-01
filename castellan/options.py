@@ -40,7 +40,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
                  retry_delay=None, number_of_retries=None, verify_ssl=None,
                  api_class=None, vault_root_token_id=None, vault_url=None,
-                 vault_ssl_ca_crt_file=None, vault_use_ssl=None):
+                 vault_ssl_ca_crt_file=None, vault_use_ssl=None,
+                 barbican_endpoint_type=None):
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -56,6 +57,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param vault_url: Use this for the url for vault.
     :param vault_use_ssl: Use this to force vault driver to use ssl.
     :param vault_ssl_ca_crt_file: Use this for the CA file for vault.
+    :param barbican_endpoint_type: Use this to specify the type of URL.
+    :                              Valid values are: public, internal or admin.
     """
     conf.register_opts(km.key_manager_opts, group='key_manager')
     if bkm:
@@ -86,6 +89,9 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                              group=bkm.BARBICAN_OPT_GROUP)
         if verify_ssl is not None:
             conf.set_default('verify_ssl', verify_ssl,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if barbican_endpoint_type is not None:
+            conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
                              group=bkm.BARBICAN_OPT_GROUP)
 
     if vkm is not None:

@@ -66,3 +66,8 @@ class TestOptions(base.TestCase):
         options.set_defaults(conf, verify_ssl=True)
         self.assertEqual(verify_ssl,
                          conf.get(bkm.BARBICAN_OPT_GROUP).verify_ssl)
+
+        barbican_endpoint_type = 'internal'
+        options.set_defaults(conf, barbican_endpoint_type='internal')
+        result_type = conf.get(bkm.BARBICAN_OPT_GROUP).barbican_endpoint_type
+        self.assertEqual(barbican_endpoint_type, result_type)

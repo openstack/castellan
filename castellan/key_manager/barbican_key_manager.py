@@ -70,6 +70,12 @@ barbican_opts = [
                 default=True,
                 help='Specifies if insecure TLS (https) requests. If False, '
                      'the server\'s certificate will not be validated'),
+    cfg.StrOpt('barbican_endpoint_type',
+               default='public',
+               choices=['public', 'internal', 'admin'],
+               help='Specifies the type of endpoint.  Allowed values are: '
+                    'public, private, and admin'),
+
 ]
 
 BARBICAN_OPT_GROUP = 'barbican'
@@ -183,12 +189,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
             raise exception.Forbidden(reason=msg)
 
     def _get_barbican_endpoint(self, auth, sess):
-        if self.conf.barbican.barbican_endpoint:
-            return self.conf.barbican.barbican_endpoint
+        barbican = self.conf.barbican
+        if barbican.barbican_endpoint:
+            return barbican.barbican_endpoint
         else:
             service_parameters = {'service_type': 'key-manager',
                                   'service_name': 'barbican',
-                                  'interface': 'public'}
+                                  'interface': barbican.barbican_endpoint_type}
             return auth.get_endpoint(sess, **service_parameters)
 
     def _create_base_url(self, auth, sess, endpoint):
