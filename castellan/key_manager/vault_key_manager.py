@@ -15,6 +15,13 @@ Key manager implementation for Vault
 """
 
 import binascii
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.hazmat.primitives.serialization import NoEncryption
+from cryptography.hazmat.primitives.serialization import PrivateFormat
+from cryptography.hazmat.primitives.serialization import PublicFormat
+
 import os
 import time
 import uuid
@@ -95,8 +102,53 @@ class VaultKeyManager(key_manager.KeyManager):
     def create_key_pair(self, context, algorithm, length,
                         expiration=None, name=None):
         """Creates an asymmetric key pair."""
-        raise NotImplementedError(
-            "VaultKeyManager does not support asymmetric keys")
+
+        # Confirm context is provided, if not raise forbidden
+        if not context:
+            msg = _("User is not authorized to use key manager.")
+            raise exception.Forbidden(msg)
+
+        if algorithm.lower() != 'rsa':
+            raise NotImplementedError(
+                "VaultKeyManager only implements rsa keys"
+            )
+
+        priv_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=length,
+            backend=default_backend()
+        )
+
+        private_key = pri_key.PrivateKey(
+            'RSA',
+            length,
+            priv_key.private_bytes(
+                Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+            )
+        )
+
+        private_key_id = uuid.uuid4().hex
+        private_id = self._store_key_value(
+            private_key_id,
+            private_key
+        )
+
+        # pub_key = priv_key.public_key()
+        public_key = pub_key.PublicKey(
+            'RSA',
+            length,
+            priv_key.public_key().public_bytes(
+                Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+            )
+        )
+
+        public_key_id = uuid.uuid4().hex
+        public_id = self._store_key_value(
+            public_key_id,
+            public_key
+        )
+
+        return private_id, public_id
 
     def _store_key_value(self, key_id, value):
 
