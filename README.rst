@@ -8,6 +8,7 @@ Generic Key Manager interface for OpenStack.
 * Documentation: https://docs.openstack.org/castellan/latest
 * Source: https://git.openstack.org/cgit/openstack/castellan
 * Bugs: https://bugs.launchpad.net/castellan
+* Release notes: https://docs.openstack.org/releasenotes/castellan
 
 Team and repository tags
 ========================
