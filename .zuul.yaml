@@ -26,23 +26,23 @@
     vars:
       devstack_services:
         # is there a way to disable all services?  I only want barbican
-        ceilometer-acentral: False
-        ceilometer-acompute: False
-        ceilometer-alarm-evaluator: False
-        ceilometer-alarm-notifier: False
-        ceilometer-anotification: False
-        ceilometer-api: False
-        ceilometer-collector: False
-        horizon: False
-        s-account: False
-        s-container: False
-        s-object: False
-        s-proxy: False
+        ceilometer-acentral: false
+        ceilometer-acompute: false
+        ceilometer-alarm-evaluator: false
+        ceilometer-alarm-notifier: false
+        ceilometer-anotification: false
+        ceilometer-api: false
+        ceilometer-collector: false
+        horizon: false
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
       devstack_plugins:
         barbican: git://git.openstack.org/openstack/barbican
       tox_environment:
         PYTHONUNBUFFERED: 'true'
-      tox_install_siblings: False # I don't know what this means
+      tox_install_siblings: false # I don't know what this means
       tox_envlist: functional
       zuul_work_dir: src/git.openstack.org/openstack/castellan
 
@@ -51,8 +51,15 @@
     check:
       jobs:
         - castellan-functional-vault
-        - castellan-functional-devstack
+        - castellan-functional-devstack:
+            voting: false
     gate:
       jobs:
         - castellan-functional-vault
-        - castellan-functional-devstack
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - release-notes-jobs-python3
+      - publish-openstack-docs-pti
+      - check-requirements
+      - periodic-stable-jobs
