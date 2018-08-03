@@ -59,3 +59,10 @@
         - castellan-functional-devstack
         - openstack-tox-lower-constraints
         - barbican-simple-crypto-devstack-tempest-castellan-from-git
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - release-notes-jobs-python3
+      - publish-openstack-docs-pti
+      - check-requirements
+      - periodic-stable-jobs
