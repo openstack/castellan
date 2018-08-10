@@ -56,17 +56,20 @@ class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def tearDown(self):
         super(VaultKeyManagerTestCase, self).tearDown()
 
-    def test_create_key_pair(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.create_key_pair, None, None, None)
-
     def test_create_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key, None, 'AES', 256)
 
     def test_create_key_pair_null_context(self):
-        self.assertRaises(NotImplementedError,
+        self.assertRaises(exception.Forbidden,
                           self.key_mgr.create_key_pair, None, 'RSA', 2048)
+
+    def test_create_key_pair_bad_algorithm(self):
+        self.assertRaises(
+            NotImplementedError,
+            self.key_mgr.create_key_pair,
+            self.ctxt, 'DSA', 2048
+        )
 
     def test_delete_null_context(self):
         key_uuid = self._get_valid_object_uuid(
