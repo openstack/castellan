@@ -93,11 +93,40 @@ class VaultKeyManager(key_manager.KeyManager):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
         else:
             self._verify_server = False
+        self._vault_kv_version = None
 
     def _get_url(self):
         if not self._vault_url.endswith('/'):
             self._vault_url += '/'
         return self._vault_url
+
+    def _get_api_version(self):
+        if self._vault_kv_version:
+            return self._vault_kv_version
+
+        headers = {'X-Vault-Token': self._root_token_id}
+        try:
+            resource_url = self._get_url() + 'v1/sys/internal/ui/mounts/secret'
+            resp = self._session.get(resource_url,
+                                     verify=self._verify_server,
+                                     headers=headers)
+        except requests.exceptions.Timeout as ex:
+            raise exception.KeyManagerError(six.text_type(ex))
+        except requests.exceptions.ConnectionError as ex:
+            raise exception.KeyManagerError(six.text_type(ex))
+        except Exception as ex:
+            raise exception.KeyManagerError(six.text_type(ex))
+
+        if resp.status_code in _EXCEPTIONS_BY_CODE:
+            raise exception.KeyManagerError(resp.reason)
+        if resp.status_code == requests.codes['forbidden']:
+            raise exception.Forbidden()
+        if resp.status_code == requests.codes['not_found']:
+            self._vault_kv_version = '1'
+        else:
+            self._vault_kv_version = resp.json()['data']['options']['version']
+
+        return self._vault_kv_version
 
     def create_key_pair(self, context, algorithm, length,
                         expiration=None, name=None):
@@ -159,7 +188,11 @@ class VaultKeyManager(key_manager.KeyManager):
 
         headers = {'X-Vault-Token': self._root_token_id}
         try:
-            resource_url = self._get_url() + 'v1/secret/' + key_id
+            resource_url = '{}v1/secret/{}{}'.format(
+                self._get_url(),
+                '' if self._get_api_version() == '1' else 'data/',
+                key_id)
+
             record = {
                 'type': type_value,
                 'value': binascii.hexlify(value.get_encoded()).decode('utf-8'),
@@ -170,6 +203,9 @@ class VaultKeyManager(key_manager.KeyManager):
                 'name': value.name,
                 'created': value.created
             }
+            if self._get_api_version() != '1':
+                record = {'data': record}
+
             resp = self._session.post(resource_url,
                                       verify=self._verify_server,
                                       json=record,
@@ -229,7 +265,11 @@ class VaultKeyManager(key_manager.KeyManager):
 
         headers = {'X-Vault-Token': self._root_token_id}
         try:
-            resource_url = self._get_url() + 'v1/secret/' + key_id
+            resource_url = '{}v1/secret/{}{}'.format(
+                self._get_url(),
+                '' if self._get_api_version() == '1' else 'data/',
+                key_id)
+
             resp = self._session.get(resource_url,
                                      verify=self._verify_server,
                                      headers=headers)
@@ -248,6 +288,9 @@ class VaultKeyManager(key_manager.KeyManager):
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
         record = resp.json()['data']
+        if self._get_api_version() != '1':
+            record = record['data']
+
         key = None if metadata_only else binascii.unhexlify(record['value'])
 
         clazz = None
@@ -285,7 +328,11 @@ class VaultKeyManager(key_manager.KeyManager):
 
         headers = {'X-Vault-Token': self._root_token_id}
         try:
-            resource_url = self._get_url() + 'v1/secret/' + key_id
+            resource_url = '{}v1/secret/{}{}'.format(
+                self._get_url(),
+                '' if self._get_api_version() == '1' else 'data/',
+                key_id)
+
             resp = self._session.delete(resource_url,
                                         verify=self._verify_server,
                                         headers=headers)
@@ -317,7 +364,10 @@ class VaultKeyManager(key_manager.KeyManager):
 
         headers = {'X-Vault-Token': self._root_token_id}
         try:
-            resource_url = self._get_url() + 'v1/secret/?list=true'
+            resource_url = '{}v1/secret/{}?list=true'.format(
+                self._get_url(),
+                '' if self._get_api_version() == '1' else 'metadata/')
+
             resp = self._session.get(resource_url,
                                      verify=self._verify_server,
                                      headers=headers)
