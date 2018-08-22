@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux
 if [ -z "$(which vault)" ]; then
-    VAULT_VERSION=0.7.3
+    VAULT_VERSION=0.10.4
     SUFFIX=zip
     case `uname -s` in
         Darwin)
