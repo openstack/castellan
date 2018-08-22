@@ -104,12 +104,32 @@ class VaultKeyManager(key_manager.KeyManager):
         if self._vault_kv_version:
             return self._vault_kv_version
 
+        resource_url = self._get_url() + 'v1/sys/internal/ui/mounts/secret'
+        resp = self._do_http_request(self._session.get, resource_url)
+
+        if resp.status_code == requests.codes['not_found']:
+            self._vault_kv_version = '1'
+        else:
+            self._vault_kv_version = resp.json()['data']['options']['version']
+
+        return self._vault_kv_version
+
+    def _get_resource_url(self, key_id=None):
+        return '{}v1/secret/{}{}'.format(
+            self._get_url(),
+
+            '' if self._get_api_version() == '1' else
+            'data/' if key_id else
+            'metadata/',  # no key_id is for listing and 'data/' doesn't works
+
+            key_id if key_id else '?list=true')
+
+    def _do_http_request(self, method, resource, json=None):
+        verify = self._verify_server
         headers = {'X-Vault-Token': self._root_token_id}
+
         try:
-            resource_url = self._get_url() + 'v1/sys/internal/ui/mounts/secret'
-            resp = self._session.get(resource_url,
-                                     verify=self._verify_server,
-                                     headers=headers)
+            resp = method(resource, headers=headers, json=json, verify=verify)
         except requests.exceptions.Timeout as ex:
             raise exception.KeyManagerError(six.text_type(ex))
         except requests.exceptions.ConnectionError as ex:
@@ -121,12 +141,8 @@ class VaultKeyManager(key_manager.KeyManager):
             raise exception.KeyManagerError(resp.reason)
         if resp.status_code == requests.codes['forbidden']:
             raise exception.Forbidden()
-        if resp.status_code == requests.codes['not_found']:
-            self._vault_kv_version = '1'
-        else:
-            self._vault_kv_version = resp.json()['data']['options']['version']
 
-        return self._vault_kv_version
+        return resp
 
     def create_key_pair(self, context, algorithm, length,
                         expiration=None, name=None):
@@ -186,41 +202,22 @@ class VaultKeyManager(key_manager.KeyManager):
             raise exception.KeyManagerError(
                 "Unknown type for value : %r" % value)
 
-        headers = {'X-Vault-Token': self._root_token_id}
-        try:
-            resource_url = '{}v1/secret/{}{}'.format(
-                self._get_url(),
-                '' if self._get_api_version() == '1' else 'data/',
-                key_id)
+        record = {
+            'type': type_value,
+            'value': binascii.hexlify(value.get_encoded()).decode('utf-8'),
+            'algorithm': (value.algorithm if hasattr(value, 'algorithm')
+                          else None),
+            'bit_length': (value.bit_length if hasattr(value, 'bit_length')
+                           else None),
+            'name': value.name,
+            'created': value.created
+        }
+        if self._get_api_version() != '1':
+            record = {'data': record}
 
-            record = {
-                'type': type_value,
-                'value': binascii.hexlify(value.get_encoded()).decode('utf-8'),
-                'algorithm': (value.algorithm if hasattr(value, 'algorithm')
-                              else None),
-                'bit_length': (value.bit_length if hasattr(value, 'bit_length')
-                               else None),
-                'name': value.name,
-                'created': value.created
-            }
-            if self._get_api_version() != '1':
-                record = {'data': record}
-
-            resp = self._session.post(resource_url,
-                                      verify=self._verify_server,
-                                      json=record,
-                                      headers=headers)
-        except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except Exception as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-
-        if resp.status_code in _EXCEPTIONS_BY_CODE:
-            raise exception.KeyManagerError(resp.reason)
-        if resp.status_code == requests.codes['forbidden']:
-            raise exception.Forbidden()
+        self._do_http_request(self._session.post,
+                              self._get_resource_url(key_id),
+                              json=record)
 
         return key_id
 
@@ -263,27 +260,9 @@ class VaultKeyManager(key_manager.KeyManager):
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
 
-        headers = {'X-Vault-Token': self._root_token_id}
-        try:
-            resource_url = '{}v1/secret/{}{}'.format(
-                self._get_url(),
-                '' if self._get_api_version() == '1' else 'data/',
-                key_id)
+        resp = self._do_http_request(self._session.get,
+                                     self._get_resource_url(key_id))
 
-            resp = self._session.get(resource_url,
-                                     verify=self._verify_server,
-                                     headers=headers)
-        except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except Exception as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-
-        if resp.status_code in _EXCEPTIONS_BY_CODE:
-            raise exception.KeyManagerError(resp.reason)
-        if resp.status_code == requests.codes['forbidden']:
-            raise exception.Forbidden()
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
@@ -326,27 +305,9 @@ class VaultKeyManager(key_manager.KeyManager):
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
 
-        headers = {'X-Vault-Token': self._root_token_id}
-        try:
-            resource_url = '{}v1/secret/{}{}'.format(
-                self._get_url(),
-                '' if self._get_api_version() == '1' else 'data/',
-                key_id)
+        resp = self._do_http_request(self._session.delete,
+                                     self._get_resource_url(key_id))
 
-            resp = self._session.delete(resource_url,
-                                        verify=self._verify_server,
-                                        headers=headers)
-        except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except Exception as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-
-        if resp.status_code in _EXCEPTIONS_BY_CODE:
-            raise exception.KeyManagerError(resp.reason)
-        if resp.status_code == requests.codes['forbidden']:
-            raise exception.Forbidden()
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
@@ -362,29 +323,13 @@ class VaultKeyManager(key_manager.KeyManager):
             msg = _("Invalid secret type: %s") % object_type
             raise exception.KeyManagerError(reason=msg)
 
-        headers = {'X-Vault-Token': self._root_token_id}
-        try:
-            resource_url = '{}v1/secret/{}?list=true'.format(
-                self._get_url(),
-                '' if self._get_api_version() == '1' else 'metadata/')
+        resp = self._do_http_request(self._session.get,
+                                     self._get_resource_url())
 
-            resp = self._session.get(resource_url,
-                                     verify=self._verify_server,
-                                     headers=headers)
-            keys = resp.json()['data']['keys']
-        except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-        except Exception as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
-
-        if resp.status_code in _EXCEPTIONS_BY_CODE:
-            raise exception.KeyManagerError(resp.reason)
-        if resp.status_code == requests.codes['forbidden']:
-            raise exception.Forbidden()
         if resp.status_code == requests.codes['not_found']:
             keys = []
+        else:
+            keys = resp.json()['data']['keys']
 
         objects = []
         for obj_id in keys:
