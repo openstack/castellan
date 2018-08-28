@@ -51,11 +51,11 @@
     check:
       jobs:
         - castellan-functional-vault
-        - castellan-functional-devstack:
-            voting: false
+        - castellan-functional-devstack
     gate:
       jobs:
         - castellan-functional-vault
+        - castellan-functional-devstack
     templates:
       - openstack-python-jobs
       - openstack-python35-jobs
