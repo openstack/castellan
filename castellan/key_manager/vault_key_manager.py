@@ -44,6 +44,7 @@ from castellan.i18n import _
 from castellan.key_manager import key_manager
 
 DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
+DEFAULT_MOUNTPOINT = "secret"
 
 vault_opts = [
     cfg.StrOpt('root_token_id',
@@ -52,6 +53,10 @@ vault_opts = [
                help='AppRole role_id for authentication with vault'),
     cfg.StrOpt('approle_secret_id',
                help='AppRole secret_id for authentication with vault'),
+    cfg.StrOpt('kv_mountpoint',
+               default=DEFAULT_MOUNTPOINT,
+               help='Mountpoint of KV store in Vault to use, for example: '
+                    '{}'.format(DEFAULT_MOUNTPOINT)),
     cfg.StrOpt('vault_url',
                default=DEFAULT_VAULT_URL,
                help='Use this endpoint to connect to Vault, for example: '
@@ -98,6 +103,7 @@ class VaultKeyManager(key_manager.KeyManager):
         self._cached_approle_token_id = None
         self._approle_token_ttl = None
         self._approle_token_issue = None
+        self._kv_mountpoint = self._conf.vault.kv_mountpoint
         self._vault_url = self._conf.vault.vault_url
         if self._vault_url.startswith("https://"):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
@@ -114,7 +120,10 @@ class VaultKeyManager(key_manager.KeyManager):
         if self._vault_kv_version:
             return self._vault_kv_version
 
-        resource_url = self._get_url() + 'v1/sys/internal/ui/mounts/secret'
+        resource_url = '{}v1/sys/internal/ui/mounts/{}'.format(
+            self._get_url(),
+            self._kv_mountpoint
+        )
         resp = self._do_http_request(self._session.get, resource_url)
 
         if resp.status_code == requests.codes['not_found']:
@@ -125,8 +134,9 @@ class VaultKeyManager(key_manager.KeyManager):
         return self._vault_kv_version
 
     def _get_resource_url(self, key_id=None):
-        return '{}v1/secret/{}{}'.format(
+        return '{}v1/{}/{}{}'.format(
             self._get_url(),
+            self._kv_mountpoint,
 
             '' if self._get_api_version() == '1' else
             'data/' if key_id else
