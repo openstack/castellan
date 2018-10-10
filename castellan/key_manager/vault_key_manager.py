@@ -29,6 +29,7 @@ import uuid
 from keystoneauth1 import loading
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import timeutils
 import requests
 import six
 
@@ -47,6 +48,10 @@ DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
 vault_opts = [
     cfg.StrOpt('root_token_id',
                help='root token for vault'),
+    cfg.StrOpt('approle_role_id',
+               help='AppRole role_id for authentication with vault'),
+    cfg.StrOpt('approle_secret_id',
+               help='AppRole secret_id for authentication with vault'),
     cfg.StrOpt('vault_url',
                default=DEFAULT_VAULT_URL,
                help='Use this endpoint to connect to Vault, for example: '
@@ -88,6 +93,11 @@ class VaultKeyManager(key_manager.KeyManager):
         loading.register_session_conf_options(self._conf, VAULT_OPT_GROUP)
         self._session = requests.Session()
         self._root_token_id = self._conf.vault.root_token_id
+        self._approle_role_id = self._conf.vault.approle_role_id
+        self._approle_secret_id = self._conf.vault.approle_secret_id
+        self._cached_approle_token_id = None
+        self._approle_token_ttl = None
+        self._approle_token_issue = None
         self._vault_url = self._conf.vault.vault_url
         if self._vault_url.startswith("https://"):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
@@ -124,9 +134,58 @@ class VaultKeyManager(key_manager.KeyManager):
 
             key_id if key_id else '?list=true')
 
+    @property
+    def _approle_token_id(self):
+        if (all((self._approle_token_issue, self._approle_token_ttl)) and
+                timeutils.is_older_than(self._approle_token_issue,
+                                        self._approle_token_ttl)):
+            self._cached_approle_token_id = None
+        return self._cached_approle_token_id
+
+    def _build_auth_headers(self):
+        if self._root_token_id:
+            return {'X-Vault-Token': self._root_token_id}
+
+        if self._approle_token_id:
+            return {'X-Vault-Token': self._approle_token_id}
+
+        if self._approle_role_id:
+            params = {
+                'role_id': self._approle_role_id
+            }
+            if self._approle_secret_id:
+                params['secret_id'] = self._approle_secret_id
+            approle_login_url = '{}v1/auth/approle/login'.format(
+                self._get_url()
+            )
+            token_issue_utc = timeutils.utcnow()
+            try:
+                resp = self._session.post(url=approle_login_url,
+                                          json=params,
+                                          verify=self._verify_server)
+            except requests.exceptions.Timeout as ex:
+                raise exception.KeyManagerError(six.text_type(ex))
+            except requests.exceptions.ConnectionError as ex:
+                raise exception.KeyManagerError(six.text_type(ex))
+            except Exception as ex:
+                raise exception.KeyManagerError(six.text_type(ex))
+
+            if resp.status_code in _EXCEPTIONS_BY_CODE:
+                raise exception.KeyManagerError(resp.reason)
+            if resp.status_code == requests.codes['forbidden']:
+                raise exception.Forbidden()
+
+            resp = resp.json()
+            self._cached_approle_token_id = resp['auth']['client_token']
+            self._approle_token_issue = token_issue_utc
+            self._approle_token_ttl = resp['auth']['lease_duration']
+            return {'X-Vault-Token': self._approle_token_id}
+
+        return {}
+
     def _do_http_request(self, method, resource, json=None):
         verify = self._verify_server
-        headers = {'X-Vault-Token': self._root_token_id}
+        headers = self._build_auth_headers()
 
         try:
             resp = method(resource, headers=headers, json=json, verify=verify)

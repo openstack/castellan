@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Added support for AppRole based authentication to the Vault
+    key manager configured using new approle_role_id and
+    optional approle_secret_id options.
+    (https://www.vaultproject.io/docs/auth/approle.html)
