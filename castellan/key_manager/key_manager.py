@@ -123,3 +123,16 @@ class KeyManager(object):
         found, an empty list should be returned instead.
         """
         return []
+
+    def list_options_for_discovery(self):
+        """Lists the KeyManager's configure options.
+
+        KeyManagers should advertise all supported options through this
+        method for the purpose of sample generation by oslo-config-generator.
+        Each item in the advertised list should be tuple composed by the group
+        name and a list of options belonging to that group. None should be used
+        as the group name for the DEFAULT group.
+
+        :returns: the list of supported options of a KeyManager.
+        """
+        return []

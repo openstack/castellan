@@ -40,34 +40,34 @@ class TestOptions(base.TestCase):
         barbican_endpoint = 'http://test-server.org:9311/'
         options.set_defaults(conf, barbican_endpoint=barbican_endpoint)
         self.assertEqual(barbican_endpoint,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).barbican_endpoint)
+                         conf.barbican.barbican_endpoint)
 
         barbican_api_version = 'vSomething'
         options.set_defaults(conf, barbican_api_version=barbican_api_version)
         self.assertEqual(barbican_api_version,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).barbican_api_version)
+                         conf.barbican.barbican_api_version)
 
         auth_endpoint = 'http://test-server.org/identity'
         options.set_defaults(conf, auth_endpoint=auth_endpoint)
         self.assertEqual(auth_endpoint,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).auth_endpoint)
+                         conf.barbican.auth_endpoint)
 
         retry_delay = 3
         options.set_defaults(conf, retry_delay=retry_delay)
         self.assertEqual(retry_delay,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).retry_delay)
+                         conf.barbican.retry_delay)
 
         number_of_retries = 10
         options.set_defaults(conf, number_of_retries=number_of_retries)
         self.assertEqual(number_of_retries,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).number_of_retries)
+                         conf.barbican.number_of_retries)
 
         verify_ssl = True
         options.set_defaults(conf, verify_ssl=True)
         self.assertEqual(verify_ssl,
-                         conf.get(bkm.BARBICAN_OPT_GROUP).verify_ssl)
+                         conf.barbican.verify_ssl)
 
         barbican_endpoint_type = 'internal'
         options.set_defaults(conf, barbican_endpoint_type='internal')
-        result_type = conf.get(bkm.BARBICAN_OPT_GROUP).barbican_endpoint_type
+        result_type = conf.barbican.barbican_endpoint_type
         self.assertEqual(barbican_endpoint_type, result_type)

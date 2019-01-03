@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    Enhance the global option listing to discover available key managers and
+    their options. The purpose of this feature is to have a correct listing of
+    the supported key managers, now each key manager is responsible for
+    advertising the oslo.config groups/options they consume.
+other:
+  - |
+    The visibility of module variables and constants related to oslo.config
+    options changed to private in both barbican and vault key managers. The
+    key managers are only responsible for overloading the method
+    list_options_for_discovery() in order to advertise their own options.
+    This way, the global options doesn't need to know which variables to look
+    for.
