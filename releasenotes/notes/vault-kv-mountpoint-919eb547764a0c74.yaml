@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added configuration option to the Vault key manager to allow
+    the KV store mountpoint in Vault to be specified; the existing
+    default of 'secret' is maintained.

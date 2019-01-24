@@ -130,6 +130,8 @@ APPROLE_ENDPOINT = 'v1/auth/approle/role/{role_name}'
 
 class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
 
+    mountpoint = 'secret'
+
     def _create_key_manager(self):
         key_mgr = vault_key_manager.VaultKeyManager(cfg.CONF)
 
@@ -147,6 +149,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
         self.session = requests.Session()
         self.session.headers.update({'X-Vault-Token': self.root_token_id})
 
+        self._mount_kv(self.mountpoint)
         self._enable_approle()
         self._create_policy(vault_policy)
         self._create_approle(vault_approle, vault_policy)
@@ -154,8 +157,24 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
         key_mgr._approle_role_id, key_mgr._approle_secret_id = (
             self._retrieve_approle(vault_approle)
         )
+        key_mgr._kv_mountpoint = self.mountpoint
         key_mgr._vault_url = self.vault_url
         return key_mgr
+
+    def _mount_kv(self, vault_mountpoint):
+        backends = self.session.get(
+            '{}/v1/sys/mounts'.format(self.vault_url)).json()
+        if vault_mountpoint not in backends:
+            params = {
+                'type': 'kv',
+                'options': {
+                    'version': 2,
+                }
+            }
+            self.session.post(
+                '{}/v1/sys/mounts/{}'.format(self.vault_url,
+                                             vault_mountpoint),
+                json=params)
 
     def _enable_approle(self):
         params = {
@@ -171,7 +190,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
 
     def _create_policy(self, vault_policy):
         params = {
-            'rules': TEST_POLICY.format(backend='secret'),
+            'rules': TEST_POLICY.format(backend=self.mountpoint),
         }
         self.session.put(
             '{}/{}'.format(
@@ -213,3 +232,8 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
                 )).json()['data']['secret_id']
         )
         return (approle_role_id, approle_secret_id)
+
+
+class VaultKeyManagerAltMountpointTestCase(VaultKeyManagerAppRoleTestCase):
+
+    mountpoint = 'different-secrets'
