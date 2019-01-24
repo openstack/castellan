@@ -51,19 +51,18 @@
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - openstack-tox-lower-constraints
         - barbican-simple-crypto-devstack-tempest-castellan-from-git
     gate:
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - openstack-tox-lower-constraints
         - barbican-simple-crypto-devstack-tempest-castellan-from-git
     templates:
+      - check-requirements
+      - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python35-jobs
-      - release-notes-jobs-python3
-      - publish-openstack-docs-pti
-      - check-requirements
-      - periodic-stable-jobs
       - openstack-python36-jobs
+      - periodic-stable-jobs
+      - publish-openstack-docs-pti
+      - release-notes-jobs-python3
