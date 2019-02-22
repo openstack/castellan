@@ -298,13 +298,18 @@ class VaultKeyManager(key_manager.KeyManager):
             msg = _("User is not authorized to use key manager.")
             raise exception.Forbidden(msg)
 
+        if length % 8:
+            msg = _("Length must be multiple of 8.")
+            raise ValueError(msg)
+
         key_id = uuid.uuid4().hex
-        key_value = os.urandom(length or 32)
+        key_value = os.urandom((length or 256) // 8)
         key = sym_key.SymmetricKey(algorithm,
-                                   length or 32,
+                                   length or 256,
                                    key_value,
                                    key_id,
                                    name or int(time.time()))
+
         return self._store_key_value(key_id, key)
 
     def store(self, context, key_value, **kwargs):
