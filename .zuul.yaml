@@ -39,7 +39,7 @@
         s-object: false
         s-proxy: false
       devstack_plugins:
-        barbican: git://git.openstack.org/openstack/barbican
+        barbican: https://git.openstack.org/openstack/barbican
       tox_environment:
         PYTHONUNBUFFERED: 'true'
       tox_install_siblings: false # I don't know what this means
