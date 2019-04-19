@@ -39,12 +39,12 @@
         s-object: false
         s-proxy: false
       devstack_plugins:
-        barbican: https://git.openstack.org/openstack/barbican
+        barbican: https://opendev.org/openstack/barbican
       tox_environment:
         PYTHONUNBUFFERED: 'true'
       tox_install_siblings: false # I don't know what this means
       tox_envlist: functional
-      zuul_work_dir: src/git.openstack.org/openstack/castellan
+      zuul_work_dir: src/opendev.org/openstack/castellan
 
 - project:
     name: openstack/castellan
