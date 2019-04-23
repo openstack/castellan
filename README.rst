@@ -6,7 +6,7 @@ Generic Key Manager interface for OpenStack.
 
 * License: Apache License, Version 2.0
 * Documentation: https://docs.openstack.org/castellan/latest
-* Source: https://git.openstack.org/cgit/openstack/castellan
+* Source: https://opendev.org/openstack/castellan
 * Bugs: https://bugs.launchpad.net/castellan
 * Release notes: https://docs.openstack.org/releasenotes/castellan
 
