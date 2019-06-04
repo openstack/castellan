@@ -94,6 +94,54 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                                                  endpoint)
         self.assertEqual(endpoint + "/" + version, base_url)
 
+    def test_base_url_service_catalog(self):
+        endpoint_data = mock.Mock()
+        endpoint_data.api_version = 'v321'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = "http://localhost/key_manager"
+
+        base_url = self.key_mgr._create_base_url(auth,
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + endpoint_data.api_version, base_url)
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager')
+
+    def test_base_url_raise_exception(self):
+        auth = mock.Mock(spec=['get_discovery'])
+        sess = mock.Mock()
+        discovery = mock.Mock()
+        discovery.raw_version_data = mock.Mock(return_value=[])
+        auth.get_discovery = mock.Mock(return_value=discovery)
+
+        endpoint = "http://localhost/key_manager"
+
+        self.assertRaises(exception.KeyManagerError,
+                          self.key_mgr._create_base_url,
+                          auth, sess, endpoint)
+        auth.get_discovery.asser_called_once_with(sess, url=endpoint)
+        self.assertEqual(1, discovery.raw_version_data.call_count)
+
+    def test_base_url_get_discovery(self):
+        version = 'v100500'
+        auth = mock.Mock(spec=['get_discovery'])
+        sess = mock.Mock()
+        discovery = mock.Mock()
+        auth.get_discovery = mock.Mock(return_value=discovery)
+        discovery.raw_version_data = mock.Mock(return_value=[{'id': version}])
+
+        endpoint = "http://localhost/key_manager"
+
+        base_url = self.key_mgr._create_base_url(auth,
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + version, base_url)
+        auth.get_discovery.asser_called_once_with(sess, url=endpoint)
+        self.assertEqual(1, discovery.raw_version_data.call_count)
+
     def test_create_key(self):
         # Create order_ref_url and assign return value
         order_ref_url = ("http://localhost:9311/v1/orders/"
