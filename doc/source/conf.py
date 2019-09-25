@@ -23,6 +23,7 @@ extensions = [
     'sphinx.ext.autodoc',
     #'sphinx.ext.intersphinx',
     'openstackdocstheme',
+    'sphinxcontrib.rsvgconverter',
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -71,12 +72,19 @@ html_extra_path = ['_extra']
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
+
 latex_documents = [
     ('index',
-     '%s.tex' % project,
+     'doc-castellan.tex',
      u'%s Documentation' % project,
      u'OpenStack Foundation', 'manual'),
 ]
+
+latex_elements = {
+    'extraclassoptions': 'openany,oneside',
+}
+
+latex_use_xindy = False
 
 # Example configuration for intersphinx: refer to the Python standard library.
 #intersphinx_mapping = {'https://docs.python.org/3/': None}
