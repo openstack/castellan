@@ -144,7 +144,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return self._barbican_client
 
     def _get_keystone_auth(self, context):
-        if context.__class__.__name__ is 'KeystonePassword':
+        if context.__class__.__name__ == 'KeystonePassword':
             return identity.Password(
                 auth_url=context.auth_url,
                 username=context.username,
@@ -160,7 +160,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 project_domain_id=context.project_domain_id,
                 project_domain_name=context.project_domain_name,
                 reauthenticate=context.reauthenticate)
-        elif context.__class__.__name__ is 'KeystoneToken':
+        elif context.__class__.__name__ == 'KeystoneToken':
             return identity.Token(
                 auth_url=context.auth_url,
                 token=context.token,
@@ -174,7 +174,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 reauthenticate=context.reauthenticate)
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
-        elif context.__class__.__name__ is 'RequestContext':
+        elif context.__class__.__name__ == 'RequestContext':
             if getattr(context, 'get_auth_plugin', None):
                 return context.get_auth_plugin()
             else:
