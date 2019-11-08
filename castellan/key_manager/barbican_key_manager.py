@@ -175,13 +175,16 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
         elif context.__class__.__name__ is 'RequestContext':
-            return identity.Token(
-                auth_url=self.conf.barbican.auth_endpoint,
-                token=context.auth_token,
-                project_id=context.project_id,
-                project_name=context.project_name,
-                project_domain_id=context.project_domain_id,
-                project_domain_name=context.project_domain_name)
+            if getattr(context, 'get_auth_plugin', None):
+                return context.get_auth_plugin()
+            else:
+                return identity.Token(
+                    auth_url=self.conf.barbican.auth_endpoint,
+                    token=context.auth_token,
+                    project_id=context.project_id,
+                    project_name=context.project_name,
+                    project_domain_id=context.project_domain_id,
+                    project_domain_name=context.project_domain_name)
         else:
             msg = _("context must be of type KeystonePassword, "
                     "KeystoneToken, or RequestContext.")
@@ -192,6 +195,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
         barbican = self.conf.barbican
         if barbican.barbican_endpoint:
             return barbican.barbican_endpoint
+        elif getattr(auth, 'service_catalog', None):
+            endpoint_data = auth.service_catalog.endpoint_data_for(
+                service_type='key-manager')
+            return endpoint_data.url
         else:
             service_parameters = {'service_type': 'key-manager',
                                   'service_name': 'barbican',
@@ -199,9 +206,14 @@ class BarbicanKeyManager(key_manager.KeyManager):
             return auth.get_endpoint(sess, **service_parameters)
 
     def _create_base_url(self, auth, sess, endpoint):
+        api_version = None
         if self.conf.barbican.barbican_api_version:
             api_version = self.conf.barbican.barbican_api_version
-        else:
+        elif getattr(auth, 'service_catalog', None):
+            endpoint_data = auth.service_catalog.endpoint_data_for(
+                service_type='key-manager')
+            api_version = endpoint_data.api_version
+        elif getattr(auth, 'get_discovery', None):
             discovery = auth.get_discovery(sess, url=endpoint)
             raw_data = discovery.raw_version_data()
             if len(raw_data) == 0:
