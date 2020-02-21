@@ -47,7 +47,7 @@ from oslo_utils import timeutils
 from six.moves import urllib
 
 
-barbican_opts = [
+_barbican_opts = [
     cfg.StrOpt('barbican_endpoint',
                help='Use this endpoint to connect to Barbican, for example: '
                     '"http://localhost:9311/"'),
@@ -78,7 +78,7 @@ barbican_opts = [
 
 ]
 
-BARBICAN_OPT_GROUP = 'barbican'
+_BARBICAN_OPT_GROUP = 'barbican'
 
 LOG = logging.getLogger(__name__)
 
@@ -98,8 +98,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         self._barbican_client = None
         self._base_url = None
         self.conf = configuration
-        self.conf.register_opts(barbican_opts, group=BARBICAN_OPT_GROUP)
-        loading.register_session_conf_options(self.conf, BARBICAN_OPT_GROUP)
+        self.conf.register_opts(_barbican_opts, group=_BARBICAN_OPT_GROUP)
+        loading.register_session_conf_options(self.conf, _BARBICAN_OPT_GROUP)
 
     def _get_barbican_client(self, context):
         """Creates a client to connect to the Barbican service.
@@ -634,7 +634,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
-            LOG.error(_("Error listing objects: %s"), e)
+            LOG.error("Error listing objects: %s", e)
             raise exception.KeyManagerError(reason=e)
 
         for secret in secrets:
@@ -644,7 +644,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
             except (barbican_exceptions.HTTPAuthError,
                     barbican_exceptions.HTTPClientError,
                     barbican_exceptions.HTTPServerError) as e:
-                LOG.warning(_("Error occurred while retrieving object "
-                              "metadata, not adding it to the list: %s"), e)
+                LOG.warning("Error occurred while retrieving object "
+                            "metadata, not adding it to the list: %s", e)
 
         return objects
+
+    def list_options_for_discovery(self):
+        return [(_BARBICAN_OPT_GROUP, _barbican_opts)]

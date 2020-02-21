@@ -43,10 +43,10 @@ from castellan.common.objects import x_509
 from castellan.i18n import _
 from castellan.key_manager import key_manager
 
-DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
-DEFAULT_MOUNTPOINT = "secret"
+_DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
+_DEFAULT_MOUNTPOINT = "secret"
 
-vault_opts = [
+_vault_opts = [
     cfg.StrOpt('root_token_id',
                help='root token for vault'),
     cfg.StrOpt('approle_role_id',
@@ -54,13 +54,13 @@ vault_opts = [
     cfg.StrOpt('approle_secret_id',
                help='AppRole secret_id for authentication with vault'),
     cfg.StrOpt('kv_mountpoint',
-               default=DEFAULT_MOUNTPOINT,
+               default=_DEFAULT_MOUNTPOINT,
                help='Mountpoint of KV store in Vault to use, for example: '
-                    '{}'.format(DEFAULT_MOUNTPOINT)),
+                    '{}'.format(_DEFAULT_MOUNTPOINT)),
     cfg.StrOpt('vault_url',
-               default=DEFAULT_VAULT_URL,
+               default=_DEFAULT_VAULT_URL,
                help='Use this endpoint to connect to Vault, for example: '
-                    '"%s"' % DEFAULT_VAULT_URL),
+                    '"%s"' % _DEFAULT_VAULT_URL),
     cfg.StrOpt('ssl_ca_crt_file',
                help='Absolute path to ca cert file'),
     cfg.BoolOpt('use_ssl',
@@ -68,7 +68,7 @@ vault_opts = [
                 help=_('SSL Enabled/Disabled')),
 ]
 
-VAULT_OPT_GROUP = 'vault'
+_VAULT_OPT_GROUP = 'vault'
 
 _EXCEPTIONS_BY_CODE = [
     requests.codes['internal_server_error'],
@@ -94,8 +94,8 @@ class VaultKeyManager(key_manager.KeyManager):
 
     def __init__(self, configuration):
         self._conf = configuration
-        self._conf.register_opts(vault_opts, group=VAULT_OPT_GROUP)
-        loading.register_session_conf_options(self._conf, VAULT_OPT_GROUP)
+        self._conf.register_opts(_vault_opts, group=_VAULT_OPT_GROUP)
+        loading.register_session_conf_options(self._conf, _VAULT_OPT_GROUP)
         self._session = requests.Session()
         self._root_token_id = self._conf.vault.root_token_id
         self._approle_role_id = self._conf.vault.approle_role_id
@@ -412,7 +412,10 @@ class VaultKeyManager(key_manager.KeyManager):
                 if object_type is None or isinstance(obj, object_type):
                     objects.append(obj)
             except exception.ManagedObjectNotFoundError as e:
-                LOG.warning(_("Error occurred while retrieving object "
-                              "metadata, not adding it to the list: %s"), e)
+                LOG.warning("Error occurred while retrieving object "
+                            "metadata, not adding it to the list: %s", e)
                 pass
         return objects
+
+    def list_options_for_discovery(self):
+        return [(_VAULT_OPT_GROUP, _vault_opts)]

@@ -12,10 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from stevedore import ExtensionManager
+
 from oslo_config import cfg
 from oslo_log import log
 
-from castellan import key_manager as km
+from castellan import key_manager
 try:
     from castellan.key_manager import barbican_key_manager as bkm
 except ImportError:
@@ -66,11 +68,16 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param barbican_endpoint_type: Use this to specify the type of URL.
     :                              Valid values are: public, internal or admin.
     """
-    conf.register_opts(km.key_manager_opts, group='key_manager')
-    if bkm:
-        conf.register_opts(bkm.barbican_opts, group=bkm.BARBICAN_OPT_GROUP)
-    if vkm:
-        conf.register_opts(vkm.vault_opts, group=vkm.VAULT_OPT_GROUP)
+    conf.register_opts(key_manager.key_manager_opts, group='key_manager')
+
+    ext_mgr = ExtensionManager(
+        "castellan.drivers",
+        invoke_on_load=True,
+        invoke_args=[cfg.CONF])
+
+    for km in ext_mgr.names():
+        for group, opts in ext_mgr[km].obj.list_options_for_discovery():
+            conf.register_opts(opts, group=group)
 
     # Use the new backend option if set or fall back to the older api_class
     default_backend = backend or api_class
@@ -80,25 +87,25 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     if bkm is not None:
         if barbican_endpoint is not None:
             conf.set_default('barbican_endpoint', barbican_endpoint,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if barbican_api_version is not None:
             conf.set_default('barbican_api_version', barbican_api_version,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if auth_endpoint is not None:
             conf.set_default('auth_endpoint', auth_endpoint,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if retry_delay is not None:
             conf.set_default('retry_delay', retry_delay,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if number_of_retries is not None:
             conf.set_default('number_of_retries', number_of_retries,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if verify_ssl is not None:
             conf.set_default('verify_ssl', verify_ssl,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
         if barbican_endpoint_type is not None:
             conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
-                             group=bkm.BARBICAN_OPT_GROUP)
+                             group=bkm._BARBICAN_OPT_GROUP)
 
     if vkm is not None:
         if vault_root_token_id is not None:
@@ -151,12 +158,16 @@ def list_opts():
     :returns: a list of (group_name, opts) tuples
     """
     key_manager_opts = []
-    key_manager_opts.extend(km.key_manager_opts)
+    key_manager_opts.extend(key_manager.key_manager_opts)
     key_manager_opts.extend(utils.credential_opts)
     opts = [('key_manager', key_manager_opts)]
 
-    if bkm is not None:
-        opts.append((bkm.BARBICAN_OPT_GROUP, bkm.barbican_opts))
-    if vkm is not None:
-        opts.append((vkm.VAULT_OPT_GROUP, vkm.vault_opts))
+    ext_mgr = ExtensionManager(
+        "castellan.drivers",
+        invoke_on_load=True,
+        invoke_args=[cfg.CONF])
+
+    for driver in ext_mgr.names():
+        opts.extend(ext_mgr[driver].obj.list_options_for_discovery())
+
     return opts
