@@ -77,6 +77,7 @@ class KeyManagerTestCase(object):
     def setUp(self):
         super(KeyManagerTestCase, self).setUp()
         self.key_mgr = self._create_key_manager()
+        self.ctxt = None
 
     def _get_valid_object_uuid(self, managed_object):
         object_uuid = self.key_mgr.store(self.ctxt, managed_object)

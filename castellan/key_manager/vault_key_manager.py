@@ -205,11 +205,6 @@ class VaultKeyManager(key_manager.KeyManager):
                         expiration=None, name=None):
         """Creates an asymmetric key pair."""
 
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
-
         if algorithm.lower() != 'rsa':
             raise NotImplementedError(
                 "VaultKeyManager only implements rsa keys"
@@ -281,11 +276,6 @@ class VaultKeyManager(key_manager.KeyManager):
     def create_key(self, context, algorithm, length, name=None, **kwargs):
         """Creates a symmetric key."""
 
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
-
         if length % 8:
             msg = _("Length must be multiple of 8.")
             raise ValueError(msg)
@@ -303,21 +293,11 @@ class VaultKeyManager(key_manager.KeyManager):
     def store(self, context, key_value, **kwargs):
         """Stores (i.e., registers) a key with the key manager."""
 
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
-
         key_id = uuid.uuid4().hex
         return self._store_key_value(key_id, key_value)
 
     def get(self, context, key_id, metadata_only=False):
         """Retrieves the key identified by the specified id."""
-
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
 
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
@@ -359,11 +339,6 @@ class VaultKeyManager(key_manager.KeyManager):
     def delete(self, context, key_id):
         """Represents deleting the key."""
 
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
-
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
 
@@ -375,11 +350,6 @@ class VaultKeyManager(key_manager.KeyManager):
 
     def list(self, context, object_type=None, metadata_only=False):
         """Lists the managed objects given the criteria."""
-
-        # Confirm context is provided, if not raise forbidden
-        if not context:
-            msg = _("User is not authorized to use key manager.")
-            raise exception.Forbidden(msg)
 
         if object_type and object_type not in self._secret_type_dict:
             msg = _("Invalid secret type: %s") % object_type
