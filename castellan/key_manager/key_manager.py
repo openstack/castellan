@@ -19,6 +19,13 @@ Key manager API
 
 import abc
 
+from castellan.common.objects import opaque_data as op_data
+from castellan.common.objects import passphrase
+from castellan.common.objects import private_key as pri_key
+from castellan.common.objects import public_key as pub_key
+from castellan.common.objects import symmetric_key as sym_key
+from castellan.common.objects import x_509
+
 
 class KeyManager(object, metaclass=abc.ABCMeta):
     """Base Key Manager Interface
@@ -26,6 +33,14 @@ class KeyManager(object, metaclass=abc.ABCMeta):
     A Key Manager is responsible for managing encryption keys for volumes. A
     Key Manager is responsible for creating, reading, and deleting keys.
     """
+
+    _secret_type_dict = {
+        op_data.OpaqueData: "opaque",
+        passphrase.Passphrase: "passphrase",
+        pri_key.PrivateKey: "private",
+        pub_key.PublicKey: "public",
+        sym_key.SymmetricKey: "symmetric",
+        x_509.X509: "certificate"}
 
     @abc.abstractmethod
     def __init__(self, configuration):
