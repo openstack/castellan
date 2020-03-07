@@ -21,11 +21,8 @@ is the base class to represent all objects managed by the key manager.
 """
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class ManagedObject(object):
+class ManagedObject(object, metaclass=abc.ABCMeta):
     """Base class to represent all managed objects."""
 
     def __init__(self, name=None, created=None, id=None):

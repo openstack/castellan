@@ -31,7 +31,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import requests
-import six
 
 from castellan.common import exception
 from castellan.common.objects import opaque_data as op_data
@@ -174,11 +173,11 @@ class VaultKeyManager(key_manager.KeyManager):
                                           json=params,
                                           verify=self._verify_server)
             except requests.exceptions.Timeout as ex:
-                raise exception.KeyManagerError(six.text_type(ex))
+                raise exception.KeyManagerError(str(ex))
             except requests.exceptions.ConnectionError as ex:
-                raise exception.KeyManagerError(six.text_type(ex))
+                raise exception.KeyManagerError(str(ex))
             except Exception as ex:
-                raise exception.KeyManagerError(six.text_type(ex))
+                raise exception.KeyManagerError(str(ex))
 
             if resp.status_code in _EXCEPTIONS_BY_CODE:
                 raise exception.KeyManagerError(resp.reason)
@@ -200,11 +199,11 @@ class VaultKeyManager(key_manager.KeyManager):
         try:
             resp = method(resource, headers=headers, json=json, verify=verify)
         except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
+            raise exception.KeyManagerError(str(ex))
         except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
+            raise exception.KeyManagerError(str(ex))
         except Exception as ex:
-            raise exception.KeyManagerError(six.text_type(ex))
+            raise exception.KeyManagerError(str(ex))
 
         if resp.status_code in _EXCEPTIONS_BY_CODE:
             raise exception.KeyManagerError(resp.reason)

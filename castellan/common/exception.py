@@ -17,7 +17,7 @@
 Castellan exception subclasses
 """
 
-import six.moves.urllib.parse as urlparse
+import urllib
 
 from castellan.i18n import _
 
@@ -26,7 +26,7 @@ _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
 class RedirectException(Exception):
     def __init__(self, url):
-        self.url = urlparse.urlparse(url)
+        self.url = urllib.parse.urlparse(url)
 
 
 class CastellanException(Exception):

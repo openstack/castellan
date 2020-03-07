@@ -19,8 +19,6 @@
 import functools
 import types
 
-import six
-
 
 def construct_new_test_function(original_func, name, build_params):
     """Builds a new test function based on parameterized data.
@@ -32,10 +30,10 @@ def construct_new_test_function(original_func, name, build_params):
     :return: A new function object
     """
     new_func = types.FunctionType(
-        six.get_function_code(original_func),
-        six.get_function_globals(original_func),
+        original_func.__code__,
+        original_func.__globals__,
         name=name,
-        argdefs=six.get_function_defaults(original_func)
+        argdefs=original_func.__defaults__,
     )
 
     for key, val in original_func.__dict__.items():

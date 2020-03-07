@@ -21,14 +21,11 @@ represent all encryption keys. The basis for this class was copied
 from Java.
 """
 
-from castellan.common.objects import managed_object
-
 import abc
 
-import six
+from castellan.common.objects import managed_object
 
 
-@six.add_metaclass(abc.ABCMeta)
 class Key(managed_object.ManagedObject):
     """Base class to represent all keys."""
 

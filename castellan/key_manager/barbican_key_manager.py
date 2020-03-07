@@ -18,6 +18,7 @@ Key manager implementation for Barbican
 """
 import calendar
 import time
+import urllib
 
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import serialization
@@ -44,7 +45,6 @@ from castellan.key_manager import key_manager
 from barbicanclient import client as barbican_client_import
 from barbicanclient import exceptions as barbican_exceptions
 from oslo_utils import timeutils
-from six.moves import urllib
 
 
 _barbican_opts = [

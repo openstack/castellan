@@ -19,13 +19,8 @@ Base Certificate Class
 This module defines the Certificate class.
 """
 
-import abc
-
-import six
-
 from castellan.common.objects import managed_object
 
 
-@six.add_metaclass(abc.ABCMeta)
 class Certificate(managed_object.ManagedObject):
     """Base class to represent all certificates."""

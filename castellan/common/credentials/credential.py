@@ -23,11 +23,8 @@ authenticating.
 
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class Credential(object):
+class Credential(object, metaclass=abc.ABCMeta):
     """Base class to represent all credentials."""
 
     def __init__(self):
