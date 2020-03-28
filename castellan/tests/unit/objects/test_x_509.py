@@ -67,7 +67,7 @@ class X509TestCase(base.CertificateTestCase):
         self.assertTrue(self.cert is self.cert)
 
         self.assertFalse(self.cert is None)
-        self.assertFalse(None == self.cert)
+        self.assertFalse(None == self.cert)  # noqa: E711
 
         other_x_509 = x_509.X509(self.data)
         self.assertTrue(self.cert == other_x_509)
@@ -75,7 +75,7 @@ class X509TestCase(base.CertificateTestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.cert is not None)
-        self.assertTrue(None != self.cert)
+        self.assertTrue(None != self.cert)  # noqa: E711
 
     def test___ne___data(self):
         other_x509 = x_509.X509(b'\x00\x00\x00', self.name)

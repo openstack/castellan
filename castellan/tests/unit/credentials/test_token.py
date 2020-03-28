@@ -39,7 +39,7 @@ class TokenTestCase(base.TestCase):
         self.assertTrue(self.token_credential is self.token_credential)
 
         self.assertFalse(self.token_credential is None)
-        self.assertFalse(None == self.token_credential)
+        self.assertFalse(None == self.token_credential)  # noqa: E711
 
         other_token_credential = token.Token(self.token)
         self.assertTrue(self.token_credential == other_token_credential)
@@ -47,7 +47,7 @@ class TokenTestCase(base.TestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.token_credential is not None)
-        self.assertTrue(None != self.token_credential)
+        self.assertTrue(None != self.token_credential)  # noqa: E711
 
     def test___ne___token(self):
         other_token = "fe32af1fe47e4744a48254e60ae80012"

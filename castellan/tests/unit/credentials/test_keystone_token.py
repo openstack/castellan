@@ -93,7 +93,7 @@ class KeystoneTokenTestCase(base.TestCase):
                         self.ks_token_credential)
 
         self.assertFalse(self.ks_token_credential is None)
-        self.assertFalse(None == self.ks_token_credential)
+        self.assertFalse(None == self.ks_token_credential)  # noqa: E711
 
         other_ks_token_credential = keystone_token.KeystoneToken(
             self.token,
@@ -112,7 +112,7 @@ class KeystoneTokenTestCase(base.TestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.ks_token_credential is not None)
-        self.assertTrue(None != self.ks_token_credential)
+        self.assertTrue(None != self.ks_token_credential)  # noqa: E711
 
     def test___ne___token(self):
         other_token = "5c59e3217d3d4dd297589b297aee2a6f"

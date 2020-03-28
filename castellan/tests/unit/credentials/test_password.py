@@ -46,7 +46,7 @@ class PasswordTestCase(base.TestCase):
         self.assertTrue(self.password_credential is self.password_credential)
 
         self.assertFalse(self.password_credential is None)
-        self.assertFalse(None == self.password_credential)
+        self.assertFalse(None == self.password_credential)  # noqa: E711
 
         other_password_credential = password.Password(self.username,
                                                       self.password)
@@ -55,7 +55,7 @@ class PasswordTestCase(base.TestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.password_credential is not None)
-        self.assertTrue(None != self.password_credential)
+        self.assertTrue(None != self.password_credential)  # noqa: E711
 
     def test___ne___username(self):
         other_username = "service"

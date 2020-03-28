@@ -67,7 +67,7 @@ class PassphraseTestCase(base.TestCase):
         self.assertTrue(self.passphrase is self.passphrase)
 
         self.assertFalse(self.passphrase is None)
-        self.assertFalse(None == self.passphrase)
+        self.assertFalse(None == self.passphrase)  # noqa: E711
 
         other_passphrase = passphrase.Passphrase(self.passphrase_data)
         self.assertTrue(self.passphrase == other_passphrase)
@@ -75,7 +75,7 @@ class PassphraseTestCase(base.TestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.passphrase is not None)
-        self.assertTrue(None != self.passphrase)
+        self.assertTrue(None != self.passphrase)  # noqa: E711
 
     def test___ne___data(self):
         other_phrase = passphrase.Passphrase(b"other passphrase", self.name)
