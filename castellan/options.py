@@ -110,25 +110,25 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     if vkm is not None:
         if vault_root_token_id is not None:
             conf.set_default('root_token_id', vault_root_token_id,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_approle_role_id is not None:
             conf.set_default('approle_role_id', vault_approle_role_id,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_approle_secret_id is not None:
             conf.set_default('approle_secret_id', vault_approle_secret_id,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_kv_mountpoint is not None:
             conf.set_default('kv_mountpoint', vault_kv_mountpoint,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_url is not None:
             conf.set_default('vault_url', vault_url,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_ssl_ca_crt_file is not None:
             conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
         if vault_use_ssl is not None:
             conf.set_default('use_ssl', vault_use_ssl,
-                             group=vkm.VAULT_OPT_GROUP)
+                             group=vkm._VAULT_OPT_GROUP)
 
 
 def enable_logging(conf=None, app_name='castellan'):
