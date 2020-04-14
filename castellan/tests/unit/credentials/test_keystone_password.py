@@ -117,7 +117,7 @@ class KeystonePasswordTestCase(base.TestCase):
                         self.ks_password_credential)
 
         self.assertFalse(self.ks_password_credential is None)
-        self.assertFalse(None == self.ks_password_credential)
+        self.assertFalse(None == self.ks_password_credential)  # noqa: E711
 
         other_ks_password_credential = keystone_password.KeystonePassword(
             self.password,
@@ -140,7 +140,7 @@ class KeystonePasswordTestCase(base.TestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.ks_password_credential is not None)
-        self.assertTrue(None != self.ks_password_credential)
+        self.assertTrue(None != self.ks_password_credential)  # noqa: E711
 
     def test___ne___password(self):
         other_password = "wheresmyCat??"

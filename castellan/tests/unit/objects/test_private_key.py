@@ -83,7 +83,7 @@ class PrivateKeyTestCase(base.KeyTestCase):
         self.assertTrue(self.key is self.key)
 
         self.assertFalse(self.key is None)
-        self.assertFalse(None == self.key)
+        self.assertFalse(None == self.key)  # noqa: E711
 
         other_key = private_key.PrivateKey(self.algorithm,
                                            self.bit_length,
@@ -93,7 +93,7 @@ class PrivateKeyTestCase(base.KeyTestCase):
 
     def test___ne___none(self):
         self.assertTrue(self.key is not None)
-        self.assertTrue(None != self.key)
+        self.assertTrue(None != self.key)  # noqa: E711
 
     def test___ne___algorithm(self):
         other_key = private_key.PrivateKey('DSA',
