@@ -17,9 +17,9 @@
 Test cases for the barbican key manager.
 """
 import calendar
+from unittest import mock
 
 from barbicanclient import exceptions as barbican_exceptions
-import mock
 from oslo_utils import timeutils
 
 from castellan.common import exception

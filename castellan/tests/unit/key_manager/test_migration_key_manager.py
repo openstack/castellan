@@ -18,7 +18,7 @@ Test cases for the migration key manager.
 """
 
 import binascii
-import mock
+from unittest import mock
 
 from oslo_config import cfg
 
