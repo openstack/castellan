@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Add a new parameter, ``verify_ssl_path``, that can be used to
+    configure the path to CA certs when verifying requests to
+    Barbican.

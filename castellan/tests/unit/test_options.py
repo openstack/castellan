@@ -62,10 +62,15 @@ class TestOptions(base.TestCase):
         self.assertEqual(number_of_retries,
                          conf.get(bkm.BARBICAN_OPT_GROUP).number_of_retries)
 
-        verify_ssl = True
-        options.set_defaults(conf, verify_ssl=True)
+        verify_ssl = False
+        options.set_defaults(conf, verify_ssl=False)
         self.assertEqual(verify_ssl,
                          conf.get(bkm.BARBICAN_OPT_GROUP).verify_ssl)
+
+        verify_ssl_path = '/mnt'
+        options.set_defaults(conf, verify_ssl_path='/mnt')
+        self.assertEqual(verify_ssl_path,
+                         conf.barbican.verify_ssl_path)
 
         barbican_endpoint_type = 'internal'
         options.set_defaults(conf, barbican_endpoint_type='internal')

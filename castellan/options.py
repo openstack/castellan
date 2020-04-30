@@ -39,6 +39,7 @@ _DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
 def set_defaults(conf, backend=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
                  retry_delay=None, number_of_retries=None, verify_ssl=None,
+                 verify_ssl_path=None,
                  api_class=None, vault_root_token_id=None,
                  vault_approle_role_id=None, vault_approle_secret_id=None,
                  vault_kv_mountpoint=None, vault_url=None,
@@ -55,6 +56,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param retry_delay: Use this attribute to set retry delay.
     :param number_of_retries: Use this attribute to set number of retries.
     :param verify_ssl: Use this to specify if ssl should be verified.
+    :param verify_ssl_path: Use this to specify the CA path.
     :param vault_root_token_id: Use this for the root token id for vault.
     :param vault_approle_role_id: Use this for the approle role_id for vault.
     :param vault_approle_secret_id: Use this for the approle secret_id
@@ -95,6 +97,9 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                              group=bkm.BARBICAN_OPT_GROUP)
         if verify_ssl is not None:
             conf.set_default('verify_ssl', verify_ssl,
+                             group=bkm.BARBICAN_OPT_GROUP)
+        if verify_ssl_path is not None:
+            conf.set_default('verify_ssl_path', verify_ssl_path,
                              group=bkm.BARBICAN_OPT_GROUP)
         if barbican_endpoint_type is not None:
             conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
