@@ -64,7 +64,14 @@ _barbican_opts = [
     cfg.BoolOpt('verify_ssl',
                 default=True,
                 help='Specifies if insecure TLS (https) requests. If False, '
-                     'the server\'s certificate will not be validated'),
+                     'the server\'s certificate will not be validated, if '
+                     'True, we can set the verify_ssl_path config meanwhile.'),
+    cfg.StrOpt('verify_ssl_path',
+               default=None,
+               help='A path to a bundle or CA certs to check against, or '
+                    'None for requests to attempt to locate and use '
+                    'certificates which verify_ssh is True. If verify_ssl '
+                    'is False, this is ignored.'),
     cfg.StrOpt('barbican_endpoint_type',
                default='public',
                choices=['public', 'internal', 'admin'],
@@ -109,8 +116,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         try:
             auth = self._get_keystone_auth(context)
-            sess = session.Session(auth=auth,
-                                   verify=self.conf.barbican.verify_ssl)
+            verify_ssl = self.conf.barbican.verify_ssl
+            verify_ssl_path = self.conf.barbican.verify_ssl_path
+            verify = verify_ssl and verify_ssl_path or verify_ssl
+            sess = session.Session(auth=auth, verify=verify)
 
             self._barbican_endpoint = self._get_barbican_endpoint(auth, sess)
             self._barbican_client = barbican_client_import.Client(
