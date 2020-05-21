@@ -48,7 +48,7 @@ add_function_parentheses = True
 add_module_names = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -59,11 +59,6 @@ html_theme = 'openstackdocs'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
-
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
-# html_last_updated_fmt = '%b %d, %Y'
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # Add any paths that contain "extra" files, such as .htaccess or
 # robots.txt.
@@ -90,6 +85,8 @@ latex_use_xindy = False
 #intersphinx_mapping = {'https://docs.python.org/3/': None}
 
 # -- Options for openstackdocstheme -------------------------------------------
-repository_name = 'openstack/castellan'
-bug_project = 'castellan'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/castellan'
+openstackdocs_pdf_link = True
+openstackdocs_auto_name = False
+openstackdocs_bug_project = 'castellan'
+openstackdocs_bug_tag = ''
