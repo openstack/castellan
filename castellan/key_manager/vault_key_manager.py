@@ -173,10 +173,14 @@ class VaultKeyManager(key_manager.KeyManager):
             if resp.status_code == requests.codes['forbidden']:
                 raise exception.Forbidden()
 
-            resp = resp.json()
-            self._cached_approle_token_id = resp['auth']['client_token']
+            resp_data = resp.json()
+
+            if resp.status_code == requests.codes['bad_request']:
+                raise exception.KeyManagerError(', '.join(resp_data['errors']))
+
+            self._cached_approle_token_id = resp_data['auth']['client_token']
             self._approle_token_issue = token_issue_utc
-            self._approle_token_ttl = resp['auth']['lease_duration']
+            self._approle_token_ttl = resp_data['auth']['lease_duration']
             return {'X-Vault-Token': self._approle_token_id}
 
         return {}
