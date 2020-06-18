@@ -41,6 +41,7 @@ from castellan.key_manager import key_manager
 
 _DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
 _DEFAULT_MOUNTPOINT = "secret"
+_DEFAULT_VERSION = 2
 
 _vault_opts = [
     cfg.StrOpt('root_token_id',
@@ -53,6 +54,10 @@ _vault_opts = [
                default=_DEFAULT_MOUNTPOINT,
                help='Mountpoint of KV store in Vault to use, for example: '
                     '{}'.format(_DEFAULT_MOUNTPOINT)),
+    cfg.IntOpt('kv_version',
+               default=_DEFAULT_VERSION,
+               help='Version of KV store in Vault to use, for example: '
+                    '{}'.format(_DEFAULT_VERSION)),
     cfg.StrOpt('vault_url',
                default=_DEFAULT_VAULT_URL,
                help='Use this endpoint to connect to Vault, for example: '
@@ -92,41 +97,24 @@ class VaultKeyManager(key_manager.KeyManager):
         self._approle_token_ttl = None
         self._approle_token_issue = None
         self._kv_mountpoint = self._conf.vault.kv_mountpoint
+        self._kv_version = self._conf.vault.kv_version
         self._vault_url = self._conf.vault.vault_url
         if self._vault_url.startswith("https://"):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
         else:
             self._verify_server = False
-        self._vault_kv_version = None
 
     def _get_url(self):
         if not self._vault_url.endswith('/'):
             self._vault_url += '/'
         return self._vault_url
 
-    def _get_api_version(self):
-        if self._vault_kv_version:
-            return self._vault_kv_version
-
-        resource_url = '{}v1/sys/internal/ui/mounts/{}'.format(
-            self._get_url(),
-            self._kv_mountpoint
-        )
-        resp = self._do_http_request(self._session.get, resource_url)
-
-        if resp.status_code == requests.codes['not_found']:
-            self._vault_kv_version = '1'
-        else:
-            self._vault_kv_version = resp.json()['data']['options']['version']
-
-        return self._vault_kv_version
-
     def _get_resource_url(self, key_id=None):
         return '{}v1/{}/{}{}'.format(
             self._get_url(),
             self._kv_mountpoint,
 
-            '' if self._get_api_version() == '1' else
+            '' if self._kv_version == 1 else
             'data/' if key_id else
             'metadata/',  # no key_id is for listing and 'data/' doesn't works
 
@@ -268,7 +256,7 @@ class VaultKeyManager(key_manager.KeyManager):
             'name': value.name,
             'created': value.created
         }
-        if self._get_api_version() != '1':
+        if self._kv_version > 1:
             record = {'data': record}
 
         self._do_http_request(self._session.post,
@@ -313,7 +301,7 @@ class VaultKeyManager(key_manager.KeyManager):
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
         record = resp.json()['data']
-        if self._get_api_version() != '1':
+        if self._kv_version > 1:
             record = record['data']
 
         key = None if metadata_only else binascii.unhexlify(record['value'])

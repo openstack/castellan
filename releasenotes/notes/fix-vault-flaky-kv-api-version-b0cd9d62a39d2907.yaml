@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    In some situations, vault will not provide KV API version in the options
+    structure. Vault documentation [1] doesn't cover cases when KV API version
+    is not provided. A new configuration option, with default value equivalent
+    to the latest KV API version available (kv_version=2) was added to allow
+    precise configuration of the KV API being used.
+
+    [1] https://learn.hashicorp.com/vault/secrets-management/sm-versioned-kv
