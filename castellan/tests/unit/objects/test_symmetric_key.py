@@ -16,6 +16,7 @@
 """
 Test cases for the symmetric key class.
 """
+from castellan.common import objects
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.tests import base
 
@@ -115,3 +116,7 @@ class SymmetricKeyTestCase(base.KeyTestCase):
                                          different_encoded,
                                          self.name)
         self.assertTrue(self.key != other_key)
+
+    def test_to_and_from_dict(self):
+        other = objects.from_dict(self.key.to_dict())
+        self.assertEqual(self.key, other)

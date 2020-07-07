@@ -31,15 +31,17 @@ class OpaqueData(managed_object.ManagedObject):
         Expected type for data is a bytestring.
         """
         self._data = data
-        super(OpaqueData, self).__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id)
+
+    @classmethod
+    def managed_type(cls):
+        return "opaque"
 
     @property
     def format(self):
-        """This method returns 'Opaque'."""
         return "Opaque"
 
     def get_encoded(self):
-        """Returns the data in its original format."""
         return self._data
 
     def __eq__(self, other):

@@ -31,15 +31,17 @@ class Passphrase(managed_object.ManagedObject):
         The expected type for the passphrase is a bytestring.
         """
         self._passphrase = passphrase
-        super(Passphrase, self).__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id)
+
+    @classmethod
+    def managed_type(cls):
+        return "passphrase"
 
     @property
     def format(self):
-        """This method returns 'RAW'."""
         return "RAW"
 
     def get_encoded(self):
-        """Returns the data in a bytestring."""
         return self._passphrase
 
     def __eq__(self, other):

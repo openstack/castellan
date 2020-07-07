@@ -19,7 +19,11 @@ Base ManagedObject Class
 This module defines the ManagedObject class. The ManagedObject class
 is the base class to represent all objects managed by the key manager.
 """
+
 import abc
+import binascii
+
+from castellan.common import exception
 
 
 class ManagedObject(object, metaclass=abc.ABCMeta):
@@ -69,7 +73,8 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         """
         return self._created
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def format(self):
         """Returns the encoding format.
 
@@ -77,6 +82,11 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         encoded.
         """
         pass
+
+    @property
+    def value(self):
+        """Returns the managed object value."""
+        return self.get_encoded()
 
     @abc.abstractmethod
     def get_encoded(self):
@@ -90,3 +100,63 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
     def is_metadata_only(self):
         """Returns if the associated object is only metadata or not."""
         return self.get_encoded() is None
+
+    @classmethod
+    @abc.abstractmethod
+    def managed_type(cls):
+        """Returns the managed object type identifier.
+
+        Returns the object's type identifier for serialization purpose.
+        """
+        pass
+
+    @classmethod
+    def from_dict(cls, dict_fields, id=None, metadata_only=False):
+        """Returns an instance of this class based on a dict object.
+
+        :param dict_fields: The dictionary containing all necessary params
+                            to create one instance.
+        :param id: The optional param 'id' to be passed to the constructor.
+        :param metadata_only: A switch to create an instance with metadata
+                              only, without the secret itself.
+        """
+        try:
+            value = None
+
+            # NOTE(moguimar): the managed object's value is exported as
+            # a hex string. For now, this is a compatibility thing with
+            # the already existent vault_key_manager backend.
+            if not metadata_only and dict_fields["value"] is not None:
+                value = binascii.unhexlify(dict_fields["value"])
+
+            return cls(
+                value,
+                name=dict_fields["name"],
+                created=dict_fields["created"],
+                id=id,
+            )
+        except KeyError as e:
+            raise exception.InvalidManagedObjectDictError(field=str(e))
+
+    def to_dict(self, metadata_only=False):
+        """Returns a dict that can be used with the from_dict() method.
+
+        :param metadata_only: A switch to create an dictionary with metadata
+                              only, without the secret itself.
+
+        :rtype: dict
+        """
+        value = None
+
+        # NOTE(moguimar): the managed object's value is exported as
+        # a hex string. For now, this is a compatibility thing with
+        # the already existent vault_key_manager backend.
+        if not metadata_only and self.value is not None:
+            value = binascii.hexlify(self.value).decode("utf-8")
+
+        return {
+            "type": self.managed_type(),
+            "name": self.name,
+            "created": self.created,
+            "value": value,
+        }

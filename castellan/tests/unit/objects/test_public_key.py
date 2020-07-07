@@ -16,6 +16,7 @@
 """
 Test cases for the public key class.
 """
+from castellan.common import objects
 from castellan.common.objects import public_key
 from castellan.tests import base
 from castellan.tests import utils
@@ -116,3 +117,7 @@ class PublicKeyTestCase(base.KeyTestCase):
                                          different_encoded,
                                          self.name)
         self.assertTrue(self.key != other_key)
+
+    def test_to_and_from_dict(self):
+        other = objects.from_dict(self.key.to_dict())
+        self.assertEqual(self.key, other)

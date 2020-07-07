@@ -16,6 +16,7 @@
 """
 Test cases for the passphrase class.
 """
+from castellan.common import objects
 from castellan.common.objects import passphrase
 from castellan.tests import base
 
@@ -80,3 +81,7 @@ class PassphraseTestCase(base.TestCase):
     def test___ne___data(self):
         other_phrase = passphrase.Passphrase(b"other passphrase", self.name)
         self.assertTrue(self.passphrase != other_phrase)
+
+    def test_to_and_from_dict(self):
+        other = objects.from_dict(self.passphrase.to_dict())
+        self.assertEqual(self.passphrase, other)
