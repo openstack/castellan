@@ -15,12 +15,10 @@ Functional test cases for the Vault key manager.
 
 Note: This requires local running instance of Vault.
 """
-import abc
 import os
 import uuid
 
 from oslo_config import cfg
-from oslo_context import context
 from oslo_utils import uuidutils
 from oslotest import base
 import requests
@@ -34,7 +32,8 @@ from castellan.tests.functional.key_manager import test_key_manager
 CONF = config.get_config()
 
 
-class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
+class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase,
+                              base.BaseTestCase):
     def _create_key_manager(self):
         key_mgr = vault_key_manager.VaultKeyManager(cfg.CONF)
 
@@ -46,26 +45,6 @@ class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         key_mgr._vault_url = os.environ['VAULT_TEST_URL']
         return key_mgr
 
-    @abc.abstractmethod
-    def get_context(self):
-        """Retrieves Context for Authentication"""
-        return
-
-    def setUp(self):
-        super(VaultKeyManagerTestCase, self).setUp()
-        self.ctxt = self.get_context()
-
-    def tearDown(self):
-        super(VaultKeyManagerTestCase, self).tearDown()
-
-    def test_create_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key, None, 'AES', 256)
-
-    def test_create_key_pair_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key_pair, None, 'RSA', 2048)
-
     def test_create_key_pair_bad_algorithm(self):
         self.assertRaises(
             NotImplementedError,
@@ -73,23 +52,9 @@ class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
             self.ctxt, 'DSA', 2048
         )
 
-    def test_delete_null_context(self):
-        key_uuid = self._get_valid_object_uuid(
-            test_key_manager._get_test_symmetric_key())
-        self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete, None, key_uuid)
-
     def test_delete_null_object(self):
         self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.delete, self.ctxt, None)
-
-    def test_get_null_context(self):
-        key_uuid = self._get_valid_object_uuid(
-            test_key_manager._get_test_symmetric_key())
-        self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get, None, key_uuid)
 
     def test_get_null_object(self):
         self.assertRaises(exception.KeyManagerError,
@@ -99,18 +64,6 @@ class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         bad_key_uuid = uuidutils.generate_uuid()
         self.assertRaises(exception.ManagedObjectNotFoundError,
                           self.key_mgr.get, self.ctxt, bad_key_uuid)
-
-    def test_store_null_context(self):
-        key = test_key_manager._get_test_symmetric_key()
-
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store, None, key)
-
-
-class VaultKeyManagerOSLOContextTestCase(VaultKeyManagerTestCase,
-                                         base.BaseTestCase):
-    def get_context(self):
-        return context.get_admin_context()
 
 
 TEST_POLICY = '''
@@ -128,7 +81,7 @@ POLICY_ENDPOINT = 'v1/sys/policy/{policy_name}'
 APPROLE_ENDPOINT = 'v1/auth/approle/role/{role_name}'
 
 
-class VaultKeyManagerAppRoleTestCase(VaultKeyManagerOSLOContextTestCase):
+class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
 
     mountpoint = 'secret'
 
