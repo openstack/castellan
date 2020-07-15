@@ -35,25 +35,25 @@ class SymmetricKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super(SymmetricKey, self).__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id)
+
+    @classmethod
+    def managed_type(cls):
+        return "symmetric"
 
     @property
     def algorithm(self):
-        """Returns the algorithm for symmetric encryption."""
         return self._alg
 
     @property
     def format(self):
-        """This method returns 'RAW'."""
         return "RAW"
 
     def get_encoded(self):
-        """Returns the key in its encoded format."""
         return self._key
 
     @property
     def bit_length(self):
-        """Returns the key length."""
         return self._bit_length
 
     def __eq__(self, other):

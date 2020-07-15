@@ -16,6 +16,7 @@
 """
 Test cases for the opaque data class.
 """
+from castellan.common import objects
 from castellan.common.objects import opaque_data
 from castellan.tests import base
 
@@ -80,3 +81,7 @@ class OpaqueDataTestCase(base.TestCase):
     def test___ne___data(self):
         other_opaque = opaque_data.OpaqueData(b'other data', self.name)
         self.assertTrue(self.opaque_data != other_opaque)
+
+    def test_to_and_from_dict(self):
+        other = objects.from_dict(self.opaque_data.to_dict())
+        self.assertEqual(self.opaque_data, other)

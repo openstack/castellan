@@ -31,15 +31,17 @@ class X509(certificate.Certificate):
         The data should be in a bytestring.
         """
         self._data = data
-        super(X509, self).__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id)
+
+    @classmethod
+    def managed_type(cls):
+        return "certificate"
 
     @property
     def format(self):
-        """This method returns 'X.509'."""
         return "X.509"
 
     def get_encoded(self):
-        """Returns the data in its encoded format."""
         return self._data
 
     def __eq__(self, other):

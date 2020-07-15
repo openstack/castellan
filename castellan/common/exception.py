@@ -64,6 +64,14 @@ class ManagedObjectNotFoundError(CastellanException):
     message = _("Key not found, uuid: %(uuid)s")
 
 
+class InvalidManagedObjectDictError(CastellanException):
+    message = _("Dict has no field '%(field)s'.")
+
+
+class UnknownManagedObjectTypeError(CastellanException):
+    message = _("Type not found, type: %(type)s")
+
+
 class AuthTypeInvalidError(CastellanException):
     message = _("Invalid auth_type was specified, auth_type: %(type)s")
 

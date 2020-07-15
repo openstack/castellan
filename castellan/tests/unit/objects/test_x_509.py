@@ -16,6 +16,7 @@
 """
 Test cases for the X.509 certificate class.
 """
+from castellan.common import objects
 from castellan.common.objects import x_509
 from castellan.tests import base
 from castellan.tests import utils
@@ -80,3 +81,7 @@ class X509TestCase(base.CertificateTestCase):
     def test___ne___data(self):
         other_x509 = x_509.X509(b'\x00\x00\x00', self.name)
         self.assertTrue(self.cert != other_x509)
+
+    def test_to_and_from_dict(self):
+        other = objects.from_dict(self.cert.to_dict())
+        self.assertEqual(self.cert, other)

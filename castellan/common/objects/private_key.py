@@ -35,25 +35,25 @@ class PrivateKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super(PrivateKey, self).__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id)
+
+    @classmethod
+    def managed_type(cls):
+        return "private"
 
     @property
     def algorithm(self):
-        """Returns the algorithm for asymmetric encryption."""
         return self._alg
 
     @property
     def format(self):
-        """This method returns 'PKCS8'."""
         return "PKCS8"
 
     @property
     def bit_length(self):
-        """Returns the key length."""
         return self._bit_length
 
     def get_encoded(self):
-        """Returns the key in DER encoded format."""
         return self._key
 
     def __eq__(self, other):

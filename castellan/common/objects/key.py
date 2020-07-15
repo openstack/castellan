@@ -22,14 +22,17 @@ from Java.
 """
 
 import abc
+import binascii
 
+from castellan.common.objects import exception
 from castellan.common.objects import managed_object
 
 
 class Key(managed_object.ManagedObject):
     """Base class to represent all keys."""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def algorithm(self):
         """Returns the key's algorithm.
 
@@ -38,7 +41,8 @@ class Key(managed_object.ManagedObject):
         """
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def bit_length(self):
         """Returns the key's bit length.
 
@@ -47,3 +51,33 @@ class Key(managed_object.ManagedObject):
         the length of the modulus.
         """
         pass
+
+    def to_dict(self):
+        dict_fields = super().to_dict()
+
+        dict_fields["algorithm"] = self.algorithm
+        dict_fields["bit_length"] = self.bit_length
+
+        return dict_fields
+
+    @classmethod
+    def from_dict(cls, dict_fields, id=None, metadata_only=False):
+        try:
+            value = None
+
+            # NOTE(moguimar): the managed object's value is exported as
+            # a hex string. For now, this is a compatibility thing with
+            # the already existent vault_key_manager backend.
+            if not metadata_only and dict_fields["value"] is not None:
+                value = binascii.unhexlify(dict_fields["value"])
+
+            return cls(
+                algorithm=dict_fields["algorithm"],
+                bit_length=dict_fields["bit_length"],
+                key=value,
+                name=dict_fields["name"],
+                created=dict_fields["created"],
+                id=id,
+            )
+        except KeyError as e:
+            raise exception.InvalidManagedObjectDictError(field=str(e))

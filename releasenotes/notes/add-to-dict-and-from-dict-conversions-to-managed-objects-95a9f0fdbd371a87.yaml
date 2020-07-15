@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Historically, the vault key manager backend converts its managed objects
+    to dictionaries in order to send them as a json object.  To promote
+    cross-backend compatibility, suck feature should be migrated to managed
+    objects.  Methods from_dict() and to_dict() added to class ManagedObject.
+    The Method from_dict() is a class method to create instances based on a
+    dictionary while the method to_dict() is an instance method to translate
+    an instance to a dictionary.
