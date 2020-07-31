@@ -193,7 +193,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             return barbican.barbican_endpoint
         elif getattr(auth, 'service_catalog', None):
             endpoint_data = auth.service_catalog.endpoint_data_for(
-                service_type='key-manager')
+                service_type='key-manager',
+                interface=barbican.barbican_endpoint_type)
             return endpoint_data.url
         else:
             service_parameters = {'service_type': 'key-manager',
