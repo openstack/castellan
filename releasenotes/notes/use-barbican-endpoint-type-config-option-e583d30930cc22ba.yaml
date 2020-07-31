@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    ``barbican_endpoint_type`` is now used to retrieve Barbican endpoint URL
+    from service catalog. This config option is set to 'public' by default so
+    it will not change the current behaviour.
