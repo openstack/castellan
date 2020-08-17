@@ -51,12 +51,12 @@
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - barbican-simple-crypto-devstack-tempest-castellan-from-git
+        - barbican-tempest-plugin-simple-crypto-castellan-src
     gate:
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - barbican-simple-crypto-devstack-tempest-castellan-from-git
+        - barbican-tempest-plugin-simple-crypto-castellan-src
     templates:
       - check-requirements
       - openstack-lower-constraints-jobs
