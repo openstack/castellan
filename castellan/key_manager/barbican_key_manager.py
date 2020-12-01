@@ -198,7 +198,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
             return endpoint_data.url
         else:
             service_parameters = {'service_type': 'key-manager',
-                                  'service_name': 'barbican',
                                   'interface': barbican.barbican_endpoint_type}
             return auth.get_endpoint(sess, **service_parameters)
 
