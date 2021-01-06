@@ -122,7 +122,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertRaises(exception.KeyManagerError,
                           self.key_mgr._create_base_url,
                           auth, sess, endpoint)
-        auth.get_discovery.asser_called_once_with(sess, url=endpoint)
+        auth.get_discovery.assert_called_once_with(sess, url=endpoint)
         self.assertEqual(1, discovery.raw_version_data.call_count)
 
     def test_base_url_get_discovery(self):
@@ -136,10 +136,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         endpoint = "http://localhost/key_manager"
 
         base_url = self.key_mgr._create_base_url(auth,
-                                                 mock.Mock(),
+                                                 sess,
                                                  endpoint)
         self.assertEqual(endpoint + "/" + version, base_url)
-        auth.get_discovery.asser_called_once_with(sess, url=endpoint)
+        auth.get_discovery.assert_called_once_with(sess, url=endpoint)
         self.assertEqual(1, discovery.raw_version_data.call_count)
 
     def test_create_key(self):
