@@ -20,6 +20,9 @@ import calendar
 from unittest import mock
 
 from barbicanclient import exceptions as barbican_exceptions
+from keystoneauth1 import identity
+from keystoneauth1 import service_token
+from oslo_context import context
 from oslo_utils import timeutils
 
 from castellan.common import exception
@@ -37,8 +40,10 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         super(BarbicanKeyManagerTestCase, self).setUp()
 
         # Create fake auth_token
-        self.ctxt = mock.Mock()
+        self.ctxt = mock.Mock(spec=context.RequestContext)
         self.ctxt.auth_token = "fake_token"
+        self.ctxt.project_name = "foo"
+        self.ctxt.project_domain_name = "foo"
 
         # Create mock barbican client
         self._build_mock_barbican()
@@ -162,6 +167,15 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         auth.get_endpoint.assert_called_once_with(
             sess, service_type='key-manager', interface='public',
             region_name='regionOne')
+
+    def test__get_keystone_auth(self):
+        auth = self.key_mgr._get_keystone_auth(self.ctxt)
+        self.assertIsInstance(auth, identity.Token)
+
+    def test__get_keystone_auth_service_user(self):
+        self.key_mgr.conf.barbican.send_service_user_token = True
+        auth = self.key_mgr._get_keystone_auth(self.ctxt)
+        self.assertIsInstance(auth, service_token.ServiceTokenAuthWrapper)
 
     def test_base_url_old_version(self):
         version = "v1"
@@ -607,3 +621,16 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
     def test_list_with_invalid_object_type(self):
         self.assertRaises(exception.KeyManagerError,
                           self.key_mgr.list, self.ctxt, "invalid_type")
+
+    def test_list_options_for_discovery(self):
+        opts = self.key_mgr.list_options_for_discovery()
+        expected_sections = ['barbican', 'barbican_service_user']
+        self.assertEqual(expected_sections, [section[0] for section in opts])
+        barbican_opts = [opt.name for opt in opts[0][1]]
+        # From Castellan opts.
+        self.assertIn('barbican_endpoint', barbican_opts)
+        barbican_service_user_opts = [opt.name for opt in opts[1][1]]
+        # From session opts.
+        self.assertIn('cafile', barbican_service_user_opts)
+        # From auth common opts.
+        self.assertIn('auth_section', barbican_service_user_opts)

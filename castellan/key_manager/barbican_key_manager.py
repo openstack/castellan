@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography import x509 as cryptography_x509
 from keystoneauth1 import identity
 from keystoneauth1 import loading
+from keystoneauth1 import service_token
 from keystoneauth1 import session
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -80,10 +81,25 @@ _barbican_opts = [
     cfg.StrOpt('barbican_region_name',
                default=None,
                help='Specifies the region of the chosen endpoint.'),
+    cfg.BoolOpt('send_service_user_token',
+                default=False,
+                help="""
+When True, if sending a user token to a REST API, also send a service token.
 
+Nova often reuses the user token provided to the nova-api to talk to other REST
+APIs, such as Cinder, Glance and Neutron. It is possible that while the user
+token was valid when the request was made to Nova, the token may expire before
+it reaches the other service. To avoid any failures, and to make it clear it is
+Nova calling the service on the user's behalf, we include a service token along
+with the user token. Should the user's token have expired, a valid service
+token ensures the REST API request will still be accepted by the keystone
+middleware.
+"""),
 ]
 
+
 _BARBICAN_OPT_GROUP = 'barbican'
+_BARBICAN_SERVICE_USER_OPT_GROUP = 'barbican_service_user'
 
 LOG = logging.getLogger(__name__)
 
@@ -97,6 +113,11 @@ class BarbicanKeyManager(key_manager.KeyManager):
         self.conf = configuration
         self.conf.register_opts(_barbican_opts, group=_BARBICAN_OPT_GROUP)
         loading.register_session_conf_options(self.conf, _BARBICAN_OPT_GROUP)
+
+        loading.register_session_conf_options(self.conf,
+                                              _BARBICAN_SERVICE_USER_OPT_GROUP)
+        loading.register_auth_conf_options(self.conf,
+                                           _BARBICAN_SERVICE_USER_OPT_GROUP)
 
     def _get_barbican_client(self, context):
         """Creates a client to connect to the Barbican service.
@@ -144,7 +165,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
     def _get_keystone_auth(self, context):
         if context.__class__.__name__ == 'KeystonePassword':
-            return identity.Password(
+            auth = identity.Password(
                 auth_url=context.auth_url,
                 username=context.username,
                 password=context.password,
@@ -160,7 +181,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 project_domain_name=context.project_domain_name,
                 reauthenticate=context.reauthenticate)
         elif context.__class__.__name__ == 'KeystoneToken':
-            return identity.Token(
+            auth = identity.Token(
                 auth_url=context.auth_url,
                 token=context.token,
                 trust_id=context.trust_id,
@@ -175,9 +196,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # projects begin to use utils.credential_factory
         elif context.__class__.__name__ == 'RequestContext':
             if getattr(context, 'get_auth_plugin', None):
-                return context.get_auth_plugin()
+                auth = context.get_auth_plugin()
             else:
-                return identity.Token(
+                auth = identity.Token(
                     auth_url=self.conf.barbican.auth_endpoint,
                     token=context.auth_token,
                     project_id=context.project_id,
@@ -189,6 +210,16 @@ class BarbicanKeyManager(key_manager.KeyManager):
                     "KeystoneToken, or RequestContext.")
             LOG.error(msg)
             raise exception.Forbidden(reason=msg)
+
+        if self.conf.barbican.send_service_user_token:
+            service_auth = loading.load_auth_from_conf_options(
+                self.conf,
+                group=_BARBICAN_SERVICE_USER_OPT_GROUP)
+            auth = service_token.ServiceTokenAuthWrapper(
+                user_auth=auth,
+                service_auth=service_auth)
+
+        return auth
 
     def _get_barbican_endpoint(self, auth, sess):
         if self.conf.barbican.barbican_endpoint:
@@ -653,4 +684,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return objects
 
     def list_options_for_discovery(self):
-        return [(_BARBICAN_OPT_GROUP, _barbican_opts)]
+        barbican_service_user_opts = loading.get_session_conf_options()
+        barbican_service_user_opts += loading.get_auth_common_conf_options()
+
+        return [
+            (_BARBICAN_OPT_GROUP, _barbican_opts),
+            (_BARBICAN_SERVICE_USER_OPT_GROUP, barbican_service_user_opts),
+        ]
