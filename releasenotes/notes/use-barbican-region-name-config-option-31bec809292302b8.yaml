@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    The new ``[barbican] barbican_region_name`` option has been added.
+    This parameter is used to determine the proper Barbican endpoint in
+    the multi-region deployment which has a different Barbican endpoint in
+    each region.

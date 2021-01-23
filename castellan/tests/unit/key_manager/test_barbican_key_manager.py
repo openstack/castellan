@@ -76,6 +76,93 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr._barbican_client = self.mock_barbican
         self.key_mgr._current_context = self.ctxt
 
+    def test_barbican_endpoint(self):
+        endpoint_data = mock.Mock()
+        endpoint_data.url = 'http://localhost:9311'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, mock.Mock())
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager', interface='public',
+            region_name=None)
+
+    def test_barbican_endpoint_with_endpoint_type(self):
+        self.key_mgr.conf.barbican.barbican_endpoint_type = 'internal'
+
+        endpoint_data = mock.Mock()
+        endpoint_data.url = 'http://localhost:9311'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, mock.Mock())
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager', interface='internal',
+            region_name=None)
+
+    def test_barbican_endpoint_with_region_name(self):
+        self.key_mgr.conf.barbican.barbican_region_name = 'regionOne'
+
+        endpoint_data = mock.Mock()
+        endpoint_data.url = 'http://localhost:9311'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, mock.Mock())
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager', interface='public',
+            region_name='regionOne')
+
+    def test_barbican_endpoint_from_config(self):
+        self.key_mgr.conf.barbican.barbican_endpoint = 'http://localhost:9311'
+
+        endpoint = self.key_mgr._get_barbican_endpoint(
+            mock.Mock(), mock.Mock())
+        self.assertEqual(endpoint, 'http://localhost:9311')
+
+    def test_barbican_endpoint_by_get_endpoint(self):
+        auth = mock.Mock(spec=['get_endppint'])
+        sess = mock.Mock()
+        auth.get_endpoint = mock.Mock(return_value='http://localhost:9311')
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, sess)
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.get_endpoint.assert_called_once_with(
+            sess, service_type='key-manager', interface='public',
+            region_name=None)
+
+    def test_barbican_endpoint_by_get_endpoint_with_endpoint_type(self):
+        self.key_mgr.conf.barbican.barbican_endpoint_type = 'internal'
+
+        auth = mock.Mock(spec=['get_endppint'])
+        sess = mock.Mock()
+        auth.get_endpoint = mock.Mock(return_value='http://localhost:9311')
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, sess)
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.get_endpoint.assert_called_once_with(
+            sess, service_type='key-manager', interface='internal',
+            region_name=None)
+
+    def test_barbican_endpoint_by_get_endpoint_with_region_name(self):
+        self.key_mgr.conf.barbican.barbican_region_name = 'regionOne'
+
+        auth = mock.Mock(spec=['get_endppint'])
+        sess = mock.Mock()
+        auth.get_endpoint = mock.Mock(return_value='http://localhost:9311')
+
+        endpoint = self.key_mgr._get_barbican_endpoint(auth, sess)
+        self.assertEqual(endpoint, 'http://localhost:9311')
+        auth.get_endpoint.assert_called_once_with(
+            sess, service_type='key-manager', interface='public',
+            region_name='regionOne')
+
     def test_base_url_old_version(self):
         version = "v1"
         self.key_mgr.conf.barbican.barbican_api_version = version
@@ -108,7 +195,46 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                                                  endpoint)
         self.assertEqual(endpoint + "/" + endpoint_data.api_version, base_url)
         auth.service_catalog.endpoint_data_for.assert_called_once_with(
-            service_type='key-manager')
+            service_type='key-manager', interface='public',
+            region_name=None)
+
+    def test_base_url_service_catalog_with_endpoint_type(self):
+        self.key_mgr.conf.barbican.barbican_endpoint_type = 'internal'
+
+        endpoint_data = mock.Mock()
+        endpoint_data.api_version = 'v321'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = "http://localhost/key_manager"
+
+        base_url = self.key_mgr._create_base_url(auth,
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + endpoint_data.api_version, base_url)
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager', interface='internal',
+            region_name=None)
+
+    def test_base_url_service_catalog_with_region_name(self):
+        self.key_mgr.conf.barbican.barbican_region_name = 'regionOne'
+
+        endpoint_data = mock.Mock()
+        endpoint_data.api_version = 'v321'
+
+        auth = mock.Mock(spec=['service_catalog'])
+        auth.service_catalog.endpoint_data_for.return_value = endpoint_data
+
+        endpoint = "http://localhost/key_manager"
+
+        base_url = self.key_mgr._create_base_url(auth,
+                                                 mock.Mock(),
+                                                 endpoint)
+        self.assertEqual(endpoint + "/" + endpoint_data.api_version, base_url)
+        auth.service_catalog.endpoint_data_for.assert_called_once_with(
+            service_type='key-manager', interface='public',
+            region_name='regionOne')
 
     def test_base_url_raise_exception(self):
         auth = mock.Mock(spec=['get_discovery'])

@@ -77,6 +77,9 @@ _barbican_opts = [
                choices=['public', 'internal', 'admin'],
                help='Specifies the type of endpoint.  Allowed values are: '
                     'public, private, and admin'),
+    cfg.StrOpt('barbican_region_name',
+               default=None,
+               help='Specifies the region of the chosen endpoint.'),
 
 ]
 
@@ -194,20 +197,25 @@ class BarbicanKeyManager(key_manager.KeyManager):
         elif getattr(auth, 'service_catalog', None):
             endpoint_data = auth.service_catalog.endpoint_data_for(
                 service_type='key-manager',
-                interface=barbican.barbican_endpoint_type)
+                interface=barbican.barbican_endpoint_type,
+                region_name=barbican.barbican_region_name)
             return endpoint_data.url
         else:
             service_parameters = {'service_type': 'key-manager',
-                                  'interface': barbican.barbican_endpoint_type}
+                                  'interface': barbican.barbican_endpoint_type,
+                                  'region_name': barbican.barbican_region_name}
             return auth.get_endpoint(sess, **service_parameters)
 
     def _create_base_url(self, auth, sess, endpoint):
+        barbican = self.conf.barbican
         api_version = None
-        if self.conf.barbican.barbican_api_version:
-            api_version = self.conf.barbican.barbican_api_version
+        if barbican.barbican_api_version:
+            api_version = barbican.barbican_api_version
         elif getattr(auth, 'service_catalog', None):
             endpoint_data = auth.service_catalog.endpoint_data_for(
-                service_type='key-manager')
+                service_type='key-manager',
+                interface=barbican.barbican_endpoint_type,
+                region_name=barbican.barbican_region_name)
             api_version = endpoint_data.api_version
         elif getattr(auth, 'get_discovery', None):
             discovery = auth.get_discovery(sess, url=endpoint)
