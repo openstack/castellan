@@ -191,31 +191,30 @@ class BarbicanKeyManager(key_manager.KeyManager):
             raise exception.Forbidden(reason=msg)
 
     def _get_barbican_endpoint(self, auth, sess):
-        barbican = self.conf.barbican
-        if barbican.barbican_endpoint:
-            return barbican.barbican_endpoint
+        if self.conf.barbican.barbican_endpoint:
+            return self.conf.barbican.barbican_endpoint
         elif getattr(auth, 'service_catalog', None):
             endpoint_data = auth.service_catalog.endpoint_data_for(
                 service_type='key-manager',
-                interface=barbican.barbican_endpoint_type,
-                region_name=barbican.barbican_region_name)
+                interface=self.conf.barbican.barbican_endpoint_type,
+                region_name=self.conf.barbican.barbican_region_name)
             return endpoint_data.url
         else:
-            service_parameters = {'service_type': 'key-manager',
-                                  'interface': barbican.barbican_endpoint_type,
-                                  'region_name': barbican.barbican_region_name}
-            return auth.get_endpoint(sess, **service_parameters)
+            return auth.get_endpoint(
+                sess,
+                service_type='key-manager',
+                interface=self.conf.barbican.barbican_endpoint_type,
+                region_name=self.conf.barbican.barbican_region_name)
 
     def _create_base_url(self, auth, sess, endpoint):
-        barbican = self.conf.barbican
         api_version = None
-        if barbican.barbican_api_version:
-            api_version = barbican.barbican_api_version
+        if self.conf.barbican.barbican_api_version:
+            api_version = self.conf.barbican.barbican_api_version
         elif getattr(auth, 'service_catalog', None):
             endpoint_data = auth.service_catalog.endpoint_data_for(
                 service_type='key-manager',
-                interface=barbican.barbican_endpoint_type,
-                region_name=barbican.barbican_region_name)
+                interface=self.conf.barbican.barbican_endpoint_type,
+                region_name=self.conf.barbican.barbican_region_name)
             api_version = endpoint_data.api_version
         elif getattr(auth, 'get_discovery', None):
             discovery = auth.get_discovery(sess, url=endpoint)
