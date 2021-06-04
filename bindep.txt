@@ -2,3 +2,6 @@
 # see https://docs.openstack.org/infra/bindep/ for additional information.
 
 unzip
+
+# PDF Docs package dependencies
+tex-gyre [doc platform:dpkg]
