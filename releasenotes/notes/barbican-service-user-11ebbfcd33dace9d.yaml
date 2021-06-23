@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Adds support for using a service user with the Barbican key manager.
+    This is enabled via ``[barbican] send_service_user_token``, with
+    credentials for the service user configured via keystoneauth options in the
+    ``[barbican_service_user]`` group.
