@@ -17,14 +17,14 @@ Before you start contributing take a look at the `Openstack Developers Guide`_.
 
 .. _`Openstack Developers Guide`: https://docs.openstack.org/infra/manual/developers.html
 
-Freenode IRC (Chat)
--------------------
-You can find Castellaneers in our publicly accessible channel on `freenode`_
+OFTC IRC (Chat)
+---------------
+You can find Castellaneers in our publicly accessible channel on `OFTC`_
 ``#openstack-barbican``. All conversations are logged and stored for your
 convenience at `eavesdrop.openstack.org`_. For more information regarding
 OpenStack IRC channels please visit the `OpenStack IRC Wiki`_.
 
-.. _`freenode`: https://freenode.net
+.. _`OFTC`: https://oftc.net
 .. _`OpenStack IRC Wiki`: https://wiki.openstack.org/wiki/IRC
 .. _`eavesdrop.openstack.org`: http://eavesdrop.openstack.org/irclogs/
                               %23openstack-barbican/
