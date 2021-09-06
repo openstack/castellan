@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Added support for Vault Namespaces, which is a `feature of Vault Enterprise
+    <https://www.vaultproject.io/docs/enterprise/namespaces>`_.
+    A new config option ``namespace`` is added to the configuration of Vault
+    key manager to support this feature.

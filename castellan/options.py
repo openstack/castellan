@@ -46,6 +46,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                  vault_approle_role_id=None, vault_approle_secret_id=None,
                  vault_kv_mountpoint=None, vault_url=None,
                  vault_ssl_ca_crt_file=None, vault_use_ssl=None,
+                 vault_namespace=None,
                  barbican_endpoint_type=None):
     """Set defaults for configuration values.
 
@@ -67,6 +68,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param vault_url: Use this for the url for vault.
     :param vault_use_ssl: Use this to force vault driver to use ssl.
     :param vault_ssl_ca_crt_file: Use this for the CA file for vault.
+    :param vault_namespace: Namespace to use for all requests to Vault.
     :param barbican_endpoint_type: Use this to specify the type of URL.
     :                              Valid values are: public, internal or admin.
     """
@@ -133,6 +135,9 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                              group=vkm._VAULT_OPT_GROUP)
         if vault_use_ssl is not None:
             conf.set_default('use_ssl', vault_use_ssl,
+                             group=vkm._VAULT_OPT_GROUP)
+        if vault_namespace is not None:
+            conf.set_default('namespace', vault_namespace,
                              group=vkm._VAULT_OPT_GROUP)
 
 

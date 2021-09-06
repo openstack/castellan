@@ -67,6 +67,10 @@ _vault_opts = [
     cfg.BoolOpt('use_ssl',
                 default=False,
                 help=_('SSL Enabled/Disabled')),
+    cfg.StrOpt("namespace",
+               help=_("Vault Namespace to use for all requests to Vault. "
+                      "Vault Namespaces feature is available only in "
+                      "Vault Enterprise")),
 ]
 
 _VAULT_OPT_GROUP = 'vault'
@@ -99,6 +103,7 @@ class VaultKeyManager(key_manager.KeyManager):
         self._kv_mountpoint = self._conf.vault.kv_mountpoint
         self._kv_version = self._conf.vault.kv_version
         self._vault_url = self._conf.vault.vault_url
+        self._namespace = self._conf.vault.namespace
         if self._vault_url.startswith("https://"):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
         else:
@@ -128,12 +133,19 @@ class VaultKeyManager(key_manager.KeyManager):
             self._cached_approle_token_id = None
         return self._cached_approle_token_id
 
+    def _set_namespace(self, headers):
+        if self._namespace:
+            headers["X-Vault-Namespace"] = self._namespace
+        return headers
+
     def _build_auth_headers(self):
         if self._root_token_id:
-            return {'X-Vault-Token': self._root_token_id}
+            return self._set_namespace(
+                {'X-Vault-Token': self._root_token_id})
 
         if self._approle_token_id:
-            return {'X-Vault-Token': self._approle_token_id}
+            return self._set_namespace(
+                {'X-Vault-Token': self._approle_token_id})
 
         if self._approle_role_id:
             params = {
@@ -145,9 +157,11 @@ class VaultKeyManager(key_manager.KeyManager):
                 self._get_url()
             )
             token_issue_utc = timeutils.utcnow()
+            headers = self._set_namespace({})
             try:
                 resp = self._session.post(url=approle_login_url,
                                           json=params,
+                                          headers=headers,
                                           verify=self._verify_server)
             except requests.exceptions.Timeout as ex:
                 raise exception.KeyManagerError(str(ex))
@@ -169,7 +183,8 @@ class VaultKeyManager(key_manager.KeyManager):
             self._cached_approle_token_id = resp_data['auth']['client_token']
             self._approle_token_issue = token_issue_utc
             self._approle_token_ttl = resp_data['auth']['lease_duration']
-            return {'X-Vault-Token': self._approle_token_id}
+            return self._set_namespace(
+                {'X-Vault-Token': self._approle_token_id})
 
         return {}
 
