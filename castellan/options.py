@@ -47,7 +47,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                  vault_kv_mountpoint=None, vault_url=None,
                  vault_ssl_ca_crt_file=None, vault_use_ssl=None,
                  vault_namespace=None,
-                 barbican_endpoint_type=None):
+                 barbican_endpoint_type=None,
+                 vault_kv_version=None):
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -71,6 +72,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param vault_namespace: Namespace to use for all requests to Vault.
     :param barbican_endpoint_type: Use this to specify the type of URL.
     :                              Valid values are: public, internal or admin.
+    :param vault_kv_version: Use this for the kv version for vault.
     """
     conf.register_opts(key_manager.key_manager_opts, group='key_manager')
 
@@ -138,6 +140,9 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                              group=vkm._VAULT_OPT_GROUP)
         if vault_namespace is not None:
             conf.set_default('namespace', vault_namespace,
+                             group=vkm._VAULT_OPT_GROUP)
+        if vault_kv_version is not None:
+            conf.set_default('kv_version', vault_kv_version,
                              group=vkm._VAULT_OPT_GROUP)
 
 
