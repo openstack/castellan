@@ -28,7 +28,7 @@ pip-log.txt
 .stestr/
 .venv
 cover
-vault_*
+/vault_*
 
 # Translations
 *.mo
