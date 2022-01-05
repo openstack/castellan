@@ -293,7 +293,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         # Create order and assign return value
         order = mock.Mock()
         order.secret_ref = self.secret_ref
-        order.status = u'ACTIVE'
+        order.status = 'ACTIVE'
         self.mock_barbican.orders.get.return_value = order
 
         # Create the key, get the UUID
@@ -330,7 +330,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         container_id = "16caa8f4-dd34-4fb3-bf67-6c20533a30e4"
         container_ref = ("http://localhost:9311/v1/containers/" + container_id)
         order.container_ref = container_ref
-        order.status = u'ACTIVE'
+        order.status = 'ACTIVE'
         self.mock_barbican.orders.get.return_value = order
 
         # Create container and assign return value
@@ -503,12 +503,12 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                          "4fe939b7-72bc-49aa-bd1e-e979589858af")
 
         pending_order = mock.Mock()
-        pending_order.status = u'PENDING'
+        pending_order.status = 'PENDING'
         pending_order.order_ref = order_ref_url
 
         active_order = mock.Mock()
         active_order.secret_ref = self.secret_ref
-        active_order.status = u'ACTIVE'
+        active_order.status = 'ACTIVE'
         active_order.order_ref = order_ref_url
 
         self.mock_barbican.orders.get.side_effect = [pending_order,
@@ -528,7 +528,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         number_of_retries = self.key_mgr.conf.barbican.number_of_retries
 
         pending_order = mock.Mock()
-        pending_order.status = u'PENDING'
+        pending_order.status = 'PENDING'
         pending_order.order_ref = order_ref_url
 
         self.mock_barbican.orders.get.return_value = pending_order
@@ -546,7 +546,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
                          "4fe939b7-72bc-49aa-bd1e-e979589858af")
 
         error_order = mock.Mock()
-        error_order.status = u'ERROR'
+        error_order.status = 'ERROR'
         error_order.order_ref = order_ref_url
         error_order.error_status_code = u"500"
         error_order.error_reason = u"Test Error"

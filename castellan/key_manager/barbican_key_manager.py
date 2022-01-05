@@ -433,8 +433,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         Barbican key creation is done asynchronously, so this loop continues
         checking until the order is active or a timeout occurs.
         """
-        active_status = u'ACTIVE'
-        error_status = u'ERROR'
+        active_status = 'ACTIVE'
+        error_status = 'ERROR'
         number_of_retries = self.conf.barbican.number_of_retries
         retry_delay = self.conf.barbican.retry_delay
         order = barbican_client.orders.get(order_ref)

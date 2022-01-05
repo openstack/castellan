@@ -38,8 +38,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'castellan'
-copyright = u'2013, OpenStack Foundation'
+project = 'castellan'
+copyright = '2013, OpenStack Foundation'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -72,8 +72,8 @@ html_extra_path = ['_extra']
 latex_documents = [
     ('index',
      'doc-castellan.tex',
-     u'%s Documentation' % project,
-     u'OpenStack Foundation', 'manual'),
+     '%s Documentation' % project,
+     'OpenStack Foundation', 'manual'),
 ]
 
 latex_elements = {

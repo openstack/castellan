@@ -56,8 +56,8 @@ openstackdocs_repo_name = 'openstack/castellan'
 openstackdocs_auto_name = False
 openstackdocs_bug_project = 'castellan'
 openstackdocs_bug_tag = 'doc'
-project = u'Castellan Release Notes'
-copyright = u'2017, Castellan Developers'
+project = 'Castellan Release Notes'
+copyright = '2017, Castellan Developers'
 
 # Release notes do not need a version number in the title, they
 # cover multiple releases.
@@ -204,8 +204,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'CastellanReleaseNotes.tex',
-     u'Castellan Release Notes Documentation',
-     u'Castellan Developers', 'manual'),
+     'Castellan Release Notes Documentation',
+     'Castellan Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -235,8 +235,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'castellanreleasenotes',
-     u'Castellan Release Notes Documentation',
-     [u'Castellan Developers'], 1)
+     'Castellan Release Notes Documentation',
+     ['Castellan Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -250,8 +250,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'CastellanReleaseNotes',
-     u'Castellan Release Notes Documentation',
-     u'Castellan Developers', 'CastellanReleaseNotes',
+     'Castellan Release Notes Documentation',
+     'Castellan Developers', 'CastellanReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]
