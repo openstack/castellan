@@ -107,7 +107,7 @@ that is being abstracted.
     sess = session.Session()
 
     ctxt = context.RequestContext(auth_token=auth.get_token(sess),
-                                  tenant=auth.get_project_id(sess))
+                                  project_id=auth.get_project_id(sess))
 
 ctxt can then be passed into any key_manager api call.
 
