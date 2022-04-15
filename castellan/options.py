@@ -32,11 +32,6 @@ from castellan.common import utils
 
 _DEFAULT_LOG_LEVELS = ['castellan=WARN']
 
-_DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
-                                   '%(levelname)s %(name)s [%(request_id)s '
-                                   '%(user_identity)s] %(instance)s'
-                                   '%(message)s')
-
 
 def set_defaults(conf, backend=None, barbican_endpoint=None,
                  barbican_api_version=None, auth_endpoint=None,
@@ -150,8 +145,7 @@ def enable_logging(conf=None, app_name='castellan'):
     conf = conf or cfg.CONF
 
     log.register_options(conf)
-    log.set_defaults(_DEFAULT_LOGGING_CONTEXT_FORMAT,
-                     _DEFAULT_LOG_LEVELS)
+    log.set_defaults(default_log_levels=_DEFAULT_LOG_LEVELS)
 
     log.setup(conf, app_name)
 
