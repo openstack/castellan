@@ -1,6 +1,6 @@
 - job:
     name: castellan-functional-vault
-    parent: openstack-tox-py36
+    parent: openstack-tox-py38
     description: |
       Run tox functional-vault target
     required-projects:
