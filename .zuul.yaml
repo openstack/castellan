@@ -59,7 +59,7 @@
         - barbican-tempest-plugin-simple-crypto-castellan-src
     templates:
       - check-requirements
-      - openstack-python3-zed-jobs
+      - openstack-python3-antelope-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
