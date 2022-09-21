@@ -18,6 +18,7 @@ Test cases for a key manager.
 
 These test cases should pass against any key manager.
 """
+from oslo_utils import uuidutils
 
 from castellan.common import exception
 from castellan.common.objects import opaque_data
@@ -57,13 +58,13 @@ def _get_test_certificate():
 
 
 def _get_test_opaque_data():
-    data = bytes(b'opaque data')
+    data = bytes(uuidutils.generate_uuid(), encoding='utf-8')
     opaque_object = opaque_data.OpaqueData(data)
     return opaque_object
 
 
 def _get_test_passphrase():
-    data = bytes(b'passphrase')
+    data = bytes(uuidutils.generate_uuid(), encoding='utf-8')
     passphrase_object = passphrase.Passphrase(data)
     return passphrase_object
 
