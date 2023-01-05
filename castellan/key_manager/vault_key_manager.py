@@ -54,6 +54,9 @@ _vault_opts = [
                default=_DEFAULT_MOUNTPOINT,
                help='Mountpoint of KV store in Vault to use, for example: '
                     '{}'.format(_DEFAULT_MOUNTPOINT)),
+    cfg.StrOpt('kv_path',
+               help='Path relative to root of KV store in Vault to use.'
+               ),
     cfg.IntOpt('kv_version',
                default=_DEFAULT_VERSION,
                help='Version of KV store in Vault to use, for example: '
@@ -101,6 +104,7 @@ class VaultKeyManager(key_manager.KeyManager):
         self._approle_token_ttl = None
         self._approle_token_issue = None
         self._kv_mountpoint = self._conf.vault.kv_mountpoint
+        self._kv_path = self._conf.vault.kv_path
         self._kv_version = self._conf.vault.kv_version
         self._vault_url = self._conf.vault.vault_url
         self._namespace = self._conf.vault.namespace
@@ -115,14 +119,14 @@ class VaultKeyManager(key_manager.KeyManager):
         return self._vault_url
 
     def _get_resource_url(self, key_id=None):
-        return '{}v1/{}/{}{}'.format(
+        return '{}v1/{}/{}{}{}'.format(
             self._get_url(),
             self._kv_mountpoint,
 
             '' if self._kv_version == 1 else
             'data/' if key_id else
             'metadata/',  # no key_id is for listing and 'data/' doesn't works
-
+            (self._kv_path + '/') if self._kv_path else '',
             key_id if key_id else '?list=true')
 
     @property
