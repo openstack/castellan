@@ -57,6 +57,7 @@ class Key(managed_object.ManagedObject):
 
         dict_fields["algorithm"] = self.algorithm
         dict_fields["bit_length"] = self.bit_length
+        dict_fields["consumers"] = self.consumers
 
         return dict_fields
 
@@ -78,6 +79,7 @@ class Key(managed_object.ManagedObject):
                 name=dict_fields["name"],
                 created=dict_fields["created"],
                 id=id,
+                consumers=dict_fields["consumers"]
             )
         except KeyError as e:
             raise exception.InvalidManagedObjectDictError(field=str(e))

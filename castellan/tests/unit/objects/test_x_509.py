@@ -27,12 +27,16 @@ class X509TestCase(base.CertificateTestCase):
     def _create_cert(self):
         return x_509.X509(self.data,
                           self.name,
-                          self.created)
+                          self.created,
+                          consumers=self.consumers)
 
     def setUp(self):
         self.data = utils.get_certificate_der()
         self.name = 'my cert'
         self.created = 1448088699
+        self.consumers = [{'service': 'service_test',
+                           'resource_type': 'type_test',
+                           'resource_id': 'id_test'}]
 
         super(X509TestCase, self).setUp()
 
@@ -55,11 +59,15 @@ class X509TestCase(base.CertificateTestCase):
     def test_get_created(self):
         self.assertEqual(self.created, self.cert.created)
 
+    def test_get_consumers(self):
+        self.assertEqual(self.consumers, self.cert.consumers)
+
     def test_get_created_none(self):
         created = None
         cert = x_509.X509(self.data,
                           self.name,
-                          created)
+                          created,
+                          consumers=self.consumers)
 
         self.assertEqual(created, cert.created)
 
@@ -81,6 +89,16 @@ class X509TestCase(base.CertificateTestCase):
     def test___ne___data(self):
         other_x509 = x_509.X509(b'\x00\x00\x00', self.name)
         self.assertTrue(self.cert != other_x509)
+
+    def test___ne___consumers(self):
+        different_consumers = [{'service': 'other_service',
+                                'resource_type': 'other_type',
+                                'resource_id': 'other_id'}]
+        other_cert = x_509.X509(self.data,
+                                self.name,
+                                self.created,
+                                consumers=different_consumers)
+        self.assertTrue(self.cert is not other_cert)
 
     def test_to_and_from_dict(self):
         other = objects.from_dict(self.cert.to_dict())

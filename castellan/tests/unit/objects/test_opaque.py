@@ -26,12 +26,16 @@ class OpaqueDataTestCase(base.TestCase):
     def _create_data(self):
         return opaque_data.OpaqueData(self.data,
                                       self.name,
-                                      self.created)
+                                      self.created,
+                                      consumers=self.consumers)
 
     def setUp(self):
         self.data = bytes(b"secret opaque data")
         self.name = 'my opaque'
         self.created = 1448088699
+        self.consumers = [{'service': 'service_test',
+                           'resource_type': 'type_test',
+                           'resource_id': 'id_test'}]
         self.opaque_data = self._create_data()
 
         super(OpaqueDataTestCase, self).setUp()
@@ -55,11 +59,15 @@ class OpaqueDataTestCase(base.TestCase):
     def test_get_created(self):
         self.assertEqual(self.created, self.opaque_data.created)
 
+    def test_get_consumers(self):
+        self.assertEqual(self.consumers, self.opaque_data.consumers)
+
     def test_get_created_none(self):
         created = None
         data = opaque_data.OpaqueData(self.data,
                                       self.name,
-                                      created)
+                                      created,
+                                      consumers=self.consumers)
 
         self.assertEqual(created, data.created)
 

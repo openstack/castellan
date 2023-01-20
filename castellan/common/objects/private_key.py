@@ -26,7 +26,7 @@ class PrivateKey(key.Key):
     """This class represents private keys."""
 
     def __init__(self, algorithm, bit_length, key,
-                 name=None, created=None, id=None):
+                 name=None, created=None, id=None, consumers=[]):
         """Create a new PrivateKey object.
 
         The arguments specify the algorithm and bit length for the asymmetric
@@ -35,7 +35,8 @@ class PrivateKey(key.Key):
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
-        super().__init__(name=name, created=created, id=id)
+        super().__init__(name=name, created=created, id=id,
+                         consumers=consumers)
 
     @classmethod
     def managed_type(cls):

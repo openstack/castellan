@@ -29,12 +29,13 @@ from castellan.common import exception
 class ManagedObject(object, metaclass=abc.ABCMeta):
     """Base class to represent all managed objects."""
 
-    def __init__(self, name=None, created=None, id=None):
+    def __init__(self, name=None, created=None, id=None, consumers=[]):
         """Managed Object
 
         :param name: the name of the managed object.
         :param created: the time a managed object was created.
         :param id: the ID of the object, generated after storing the object.
+        :param consumers: the list of object's consumers.
         """
         self._name = name
 
@@ -46,6 +47,7 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
                              type(created))
 
         self._id = id
+        self._consumers = consumers
 
     @property
     def id(self):
@@ -72,6 +74,14 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         the object does not have one, meaning it has not been persisted.
         """
         return self._created
+
+    @property
+    def consumers(self):
+        """Returns the list of consumers for this object.
+
+        Returns the object's consumers or [] if the object does not have any.
+        """
+        return self._consumers
 
     @property
     @abc.abstractmethod
@@ -111,7 +121,8 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         pass
 
     @classmethod
-    def from_dict(cls, dict_fields, id=None, metadata_only=False):
+    def from_dict(cls, dict_fields, id=None, metadata_only=False,
+                  consumers=[]):
         """Returns an instance of this class based on a dict object.
 
         :param dict_fields: The dictionary containing all necessary params
@@ -119,6 +130,7 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         :param id: The optional param 'id' to be passed to the constructor.
         :param metadata_only: A switch to create an instance with metadata
                               only, without the secret itself.
+        :param consumers: A list with object's consumers.
         """
         try:
             value = None
@@ -134,6 +146,7 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
                 name=dict_fields["name"],
                 created=dict_fields["created"],
                 id=id,
+                consumers=consumers
             )
         except KeyError as e:
             raise exception.InvalidManagedObjectDictError(field=str(e))
@@ -159,4 +172,5 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
             "name": self.name,
             "created": self.created,
             "value": value,
+            "consumers": self.consumers
         }

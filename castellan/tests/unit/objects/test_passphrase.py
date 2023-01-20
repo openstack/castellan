@@ -26,12 +26,16 @@ class PassphraseTestCase(base.TestCase):
     def _create_passphrase(self):
         return passphrase.Passphrase(self.passphrase_data,
                                      self.name,
-                                     self.created)
+                                     self.created,
+                                     consumers=self.consumers)
 
     def setUp(self):
         self.passphrase_data = bytes(b"secret passphrase")
         self.name = 'my phrase'
         self.created = 1448088699
+        self.consumers = [{'service': 'service_test',
+                           'resource_type': 'type_test',
+                           'resource_id': 'id_test'}]
         self.passphrase = self._create_passphrase()
 
         super(PassphraseTestCase, self).setUp()
@@ -55,11 +59,15 @@ class PassphraseTestCase(base.TestCase):
     def test_get_created(self):
         self.assertEqual(self.created, self.passphrase.created)
 
+    def test_get_consumers(self):
+        self.assertEqual(self.consumers, self.passphrase.consumers)
+
     def test_get_created_none(self):
         created = None
         phrase = passphrase.Passphrase(self.passphrase_data,
                                        self.name,
-                                       created)
+                                       created,
+                                       consumers=self.consumers)
 
         self.assertEqual(created, phrase.created)
 

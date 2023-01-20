@@ -28,7 +28,8 @@ class SymmetricKeyTestCase(base.KeyTestCase):
                                     self.bit_length,
                                     self.encoded,
                                     self.name,
-                                    self.created)
+                                    self.created,
+                                    consumers=self.consumers)
 
     def setUp(self):
         self.algorithm = 'AES'
@@ -36,6 +37,9 @@ class SymmetricKeyTestCase(base.KeyTestCase):
         self.bit_length = len(self.encoded) * 8
         self.name = 'my key'
         self.created = 1448088699
+        self.consumers = [{'service': 'service_test',
+                           'resource_type': 'type_test',
+                           'resource_id': 'id_test'}]
 
         super(SymmetricKeyTestCase, self).setUp()
 
@@ -47,7 +51,8 @@ class SymmetricKeyTestCase(base.KeyTestCase):
                                  self.bit_length,
                                  None,
                                  self.name,
-                                 self.created)
+                                 self.created,
+                                 consumers=self.consumers)
         self.assertTrue(k.is_metadata_only())
 
     def test_get_format(self):
@@ -68,13 +73,17 @@ class SymmetricKeyTestCase(base.KeyTestCase):
     def test_get_created(self):
         self.assertEqual(self.created, self.key.created)
 
+    def test_get_consumers(self):
+        self.assertEqual(self.consumers, self.key.consumers)
+
     def test_get_created_none(self):
         created = None
         key = sym_key.SymmetricKey(self.algorithm,
                                    self.bit_length,
                                    self.encoded,
                                    self.name,
-                                   created)
+                                   created,
+                                   consumers=self.consumers)
 
         self.assertEqual(created, key.created)
 
@@ -87,7 +96,8 @@ class SymmetricKeyTestCase(base.KeyTestCase):
 
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length,
-                                         self.encoded)
+                                         self.encoded,
+                                         consumers=self.consumers)
         self.assertTrue(self.key == other_key)
         self.assertFalse(self.key is other_key)
 
@@ -99,14 +109,16 @@ class SymmetricKeyTestCase(base.KeyTestCase):
         other_key = sym_key.SymmetricKey('DES',
                                          self.bit_length,
                                          self.encoded,
-                                         self.name)
+                                         self.name,
+                                         consumers=self.consumers)
         self.assertTrue(self.key != other_key)
 
     def test___ne___bit_length(self):
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length * 2,
                                          self.encoded,
-                                         self.name)
+                                         self.name,
+                                         consumers=self.consumers)
         self.assertTrue(self.key != other_key)
 
     def test___ne___encoded(self):
@@ -114,8 +126,20 @@ class SymmetricKeyTestCase(base.KeyTestCase):
         other_key = sym_key.SymmetricKey(self.algorithm,
                                          self.bit_length,
                                          different_encoded,
-                                         self.name)
+                                         self.name,
+                                         consumers=self.consumers)
         self.assertTrue(self.key != other_key)
+
+    def test___ne___consumers(self):
+        different_consumers = [{'service': 'other_service',
+                                'resource_type': 'other_type',
+                                'resource_id': 'other_id'}]
+        other_key = sym_key.SymmetricKey(self.algorithm,
+                                         self.bit_length,
+                                         self.encoded,
+                                         self.name,
+                                         consumers=different_consumers)
+        self.assertTrue(self.key is not other_key)
 
     def test_to_and_from_dict(self):
         other = objects.from_dict(self.key.to_dict())
