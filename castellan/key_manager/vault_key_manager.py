@@ -355,6 +355,16 @@ class VaultKeyManager(key_manager.KeyManager):
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
+    def add_consumer(self, context, managed_object_id, consumer_data):
+        raise NotImplementedError(
+            "VaultKeyManager does not implement adding consumers"
+        )
+
+    def remove_consumer(self, context, managed_object_id, consumer_data):
+        raise NotImplementedError(
+            "VaultKeyManager does not implement deleting consumers"
+        )
+
     def list(self, context, object_type=None, metadata_only=False):
         """Lists the managed objects given the criteria."""
 
