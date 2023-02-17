@@ -106,7 +106,7 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def delete(self, context, managed_object_id):
+    def delete(self, context, managed_object_id, force=False):
         """Deletes the specified managed object.
 
         Implementations should verify that the caller has permission to delete
@@ -119,6 +119,10 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         UUIDs of objects that belong to other users by repeatedly calling this
         method. That is, objects that belong to other users should be
         considered "non-existent" and completely invisible.
+
+        Implementations that block the deletion of secrets with consumers
+        without making the "force" parameter equals True should raise
+        an exception.
         """
         pass
 

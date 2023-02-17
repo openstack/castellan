@@ -347,8 +347,12 @@ class VaultKeyManager(key_manager.KeyManager):
                          record['created'],
                          key_id)
 
-    def delete(self, context, key_id):
-        """Represents deleting the key."""
+    def delete(self, context, key_id, force=False):
+        """Represents deleting the key.
+
+        The 'force' parameter is not used whatsoever and only kept to allow
+        consistency with the Barbican implementation.
+        """
 
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
