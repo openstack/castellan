@@ -39,7 +39,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                  verify_ssl_path=None,
                  api_class=None, vault_root_token_id=None,
                  vault_approle_role_id=None, vault_approle_secret_id=None,
-                 vault_kv_mountpoint=None, vault_url=None,
+                 vault_kv_mountpoint=None, vault_kv_path=None, vault_url=None,
                  vault_ssl_ca_crt_file=None, vault_use_ssl=None,
                  vault_namespace=None,
                  barbican_endpoint_type=None,
@@ -61,6 +61,7 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     :param vault_approle_secret_id: Use this for the approle secret_id
                                     for vault.
     :param vault_kv_mountpoint: Mountpoint of KV store in vault to use.
+    :param vault_kv_path: Path relative to root of KV store in Vault to use.
     :param vault_url: Use this for the url for vault.
     :param vault_use_ssl: Use this to force vault driver to use ssl.
     :param vault_ssl_ca_crt_file: Use this for the CA file for vault.
@@ -123,6 +124,9 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
                              group=vkm._VAULT_OPT_GROUP)
         if vault_kv_mountpoint is not None:
             conf.set_default('kv_mountpoint', vault_kv_mountpoint,
+                             group=vkm._VAULT_OPT_GROUP)
+        if vault_kv_path is not None:
+            conf.set_default('kv_path', vault_kv_path,
                              group=vkm._VAULT_OPT_GROUP)
         if vault_url is not None:
             conf.set_default('vault_url', vault_url,
