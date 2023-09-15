@@ -173,47 +173,6 @@ delete the key by using its identifier. Under normal conditions, this call
 will not return anything but may raise exceptions if there are communication,
 identification, or authorization issues.
 
-**Example. Secret consumers.**
-
-.. code:: python
-
-    import myapp
-    from castellan import key_manager
-
-    manager = key_manager.API()
-
-    # Listing consumers:
-    stored_secret = self.key_mgr.get(myapp.context(), stored_id)
-    consumer_list = stored_secret.consumers  # consumers is a list of dicts
-
-    # Adding consumers:
-    consumer = {'service': 'glance',
-	        'resource_type': 'image',
-                'resource_id': 'image_id'}
-    try:
-        manager.add_consumer(myapp.context(), stored_id, consumer)
-    except NotImplementedError:
-        pass  # backends like Vault don't support adding/removing consumers
-
-    # Remove the consumer before calling secret delete without the force flag:
-    try:
-	manager.remove_consumer(myapp.context(), stored_id, consumer)
-    except NotImplementedError:
-        pass
-    manager.delete(myapp.context(), stored_key_id)
-
-    # Alternatively, force delete a secret
-    manager.delete(myapp.context(), stored_key_id, force=True)
-
-After creating a secret, we can add consumers to it. Secrets with consumers
-cannot be deleted without using the force flag.
-
-.. note::
-
-  Secret consumers are currently only avaliable for the Barbican backend.
-  https://docs.openstack.org/barbican/latest/api/reference/secret_consumers.html
-
-
 Configuring castellan
 ~~~~~~~~~~~~~~~~~~~~~
 
