@@ -48,7 +48,7 @@ class NotImplementedKeyManager(key_manager.KeyManager):
     def list(self, context, object_type=None):
         raise NotImplementedError()
 
-    def delete(self, context, managed_object_id, force=False):
+    def delete(self, context, managed_object_id):
         raise NotImplementedError()
 
     def add_consumer(self, context, managed_object_id, consumer_data):

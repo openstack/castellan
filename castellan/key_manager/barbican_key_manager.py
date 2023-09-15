@@ -619,23 +619,19 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 raise exception.KeyManagerError(reason=e)
 
-    def delete(self, context, managed_object_id, force=False):
+    def delete(self, context, managed_object_id):
         """Deletes the specified managed object.
 
         :param context: contains information of the user and the environment
                      for the request (castellan/context.py)
         :param managed_object_id: the UUID of the object to delete
-        :param force: specifies if the secret must be deleted even when they
-                     have consumers.
-        :raises ValueError: if the secret has consumers but no force parameter
-                     is provided or if force equals False.
         :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
         barbican_client = self._get_barbican_client(context)
         try:
             secret_ref = self._create_secret_ref(managed_object_id)
-            barbican_client.secrets.delete(secret_ref, force)
+            barbican_client.secrets.delete(secret_ref)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:

@@ -383,30 +383,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
 
     def test_delete_key(self):
         self.key_mgr.delete(self.ctxt, self.key_id)
-        self.delete.assert_called_once_with(self.secret_ref, False)
-
-    def test_delete_secret_with_consumers_no_force_parameter(self):
-        self.mock_barbican.secrets.delete = mock.Mock(
-            side_effect=exception.KeyManagerError(
-                "Secret has consumers! Use the 'force' parameter."))
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete, self.ctxt, self.key_id)
-        self.mock_barbican.secrets.delete.assert_called_once_with(
-            self.secret_ref, False)
-
-    def test_delete_secret_with_consumers_force_parameter_false(self):
-        self.mock_barbican.secrets.delete = mock.Mock(
-            side_effect=barbican_exceptions.HTTPClientError(
-                "Secret has consumers! Use the 'force' parameter."))
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete, self.ctxt, self.key_id,
-                          force=False)
-        self.mock_barbican.secrets.delete.assert_called_once_with(
-            self.secret_ref, False)
-
-    def test_delete_secret_with_consumers_force_parameter_true(self):
-        self.key_mgr.delete(self.ctxt, self.key_id, force=True)
-        self.delete.assert_called_once_with(self.secret_ref, True)
+        self.delete.assert_called_once_with(self.secret_ref)
 
     def test_delete_unknown_key(self):
         self.assertRaises(exception.KeyManagerError,
