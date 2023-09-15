@@ -199,22 +199,6 @@ class MockKeyManager(key_manager.KeyManager):
 
         del self.keys[managed_object_id]
 
-    def add_consumer(self, context, managed_object_id, consumer_data):
-        if context is None:
-            raise exception.Forbidden()
-        if managed_object_id not in self.keys:
-            raise exception.ManagedObjectNotFoundError()
-        self.keys[managed_object_id].consumers.append(consumer_data)
-
-    def remove_consumer(self, context, managed_object_id, consumer_data):
-        if context is None:
-            raise exception.Forbidden()
-        if managed_object_id not in self.keys:
-            raise exception.ManagedObjectNotFoundError()
-        self.keys[managed_object_id].consumers = [
-            c for c in self.keys[managed_object_id].consumers
-            if c != consumer_data]
-
     def _generate_password(self, length, symbolgroups):
         """Generate a random password from the supplied symbol groups.
 

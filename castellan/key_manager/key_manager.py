@@ -122,40 +122,6 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractmethod
-    def add_consumer(self, context, managed_object_id, consumer_data):
-        """Add a consumer to a managed object.
-
-        Implementations should verify that the caller has permission to
-        add a consumer to the managed object by checking the context object
-        (context). A NotAuthorized exception should be raised if the caller
-        lacks permission.
-
-        If the specified object does not exist, then a KeyError should be
-        raised. Implementations should preclude users from discerning the
-        UUIDs of objects that belong to other users by repeatedly calling this
-        method. That is, objects that belong to other users should be
-        considered "non-existent" and completely invisible.
-        """
-        pass
-
-    @abc.abstractmethod
-    def remove_consumer(self, context, managed_object_id, consumer_data):
-        """Remove a consumer from a managed object.
-
-        Implementations should verify that the caller has permission to
-        remove a consumer to the managed object by checking the context object
-        (context). A NotAuthorized exception should be raised if the caller
-        lacks permission.
-
-        If the specified object does not exist, then a KeyError should be
-        raised. Implementations should preclude users from discerning the
-        UUIDs of objects that belong to other users by repeatedly calling this
-        method. That is, objects that belong to other users should be
-        considered "non-existent" and completely invisible.
-        """
-        pass
-
     def list(self, context, object_type=None, metadata_only=False):
         """Lists the managed objects given the criteria.
 

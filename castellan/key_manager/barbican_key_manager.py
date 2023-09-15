@@ -37,6 +37,7 @@ from castellan.common.objects import opaque_data as op_data
 from castellan.i18n import _
 from castellan.key_manager import key_manager
 
+
 from barbicanclient import client as barbican_client_import
 from barbicanclient import exceptions as barbican_exceptions
 from oslo_utils import timeutils
@@ -159,6 +160,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         self._base_url = self._create_base_url(auth,
                                                sess,
                                                self._barbican_endpoint)
+
         return self._barbican_client
 
     def _get_keystone_auth(self, context):
@@ -550,20 +552,17 @@ class BarbicanKeyManager(key_manager.KeyManager):
             created = calendar.timegm(time_stamp)
 
         if issubclass(secret_type, key_base_class.Key):
-            return secret_type(algorithm=secret.algorithm,
-                               bit_length=secret.bit_length,
-                               key=secret_data,
-                               name=secret.name,
-                               created=created,
-                               id=object_id,
-                               consumers=secret.consumers)
+            return secret_type(secret.algorithm,
+                               secret.bit_length,
+                               secret_data,
+                               secret.name,
+                               created,
+                               object_id)
         else:
-            # Opaque Data or Passphrase
             return secret_type(secret_data,
-                               name=secret.name,
-                               created=created,
-                               id=object_id,
-                               consumers=secret.consumers)
+                               secret.name,
+                               created,
+                               object_id)
 
     def _get_secret(self, context, object_id):
         """Returns the metadata of the secret.
@@ -629,6 +628,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
         barbican_client = self._get_barbican_client(context)
+
         try:
             secret_ref = self._create_secret_ref(managed_object_id)
             barbican_client.secrets.delete(secret_ref)
@@ -636,50 +636,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
             LOG.error("Error deleting object: %s", e)
-            if self._is_secret_not_found_error(e):
-                raise exception.ManagedObjectNotFoundError(
-                    uuid=managed_object_id)
-            else:
-                raise exception.KeyManagerError(reason=e)
-
-    def add_consumer(self, context, managed_object_id, consumer_data):
-        """Add a consumer to the specified managed object
-
-        :param context: contains information of the user and the environment
-                     for the request (castellan/context.py)
-        :param managed_object_id: the UUID of the object to update
-        :param consumer_data: dict containing consumer data
-        :raises KeyManagerError: if object deletion fails
-        :raises ManagedObjectNotFoundError: if the object could not be found
-        """
-
-        barbican_client = self._get_barbican_client(context)
-        try:
-            secret_ref = self._create_secret_ref(managed_object_id)
-            barbican_client.secrets.register_consumer(
-                secret_ref, **consumer_data)
-
-        except (barbican_exceptions.HTTPAuthError,
-                barbican_exceptions.HTTPClientError,
-                barbican_exceptions.HTTPServerError) as e:
-            LOG.error("Error adding consumer: %s", e)
-            if self._is_secret_not_found_error(e):
-                raise exception.ManagedObjectNotFoundError(
-                    uuid=managed_object_id)
-            else:
-                raise exception.KeyManagerError(reason=e)
-
-    def remove_consumer(self, context, managed_object_id, consumer_data):
-
-        barbican_client = self._get_barbican_client(context)
-        try:
-            secret_ref = self._create_secret_ref(managed_object_id)
-            barbican_client.secrets.remove_consumer(
-                secret_ref, **consumer_data)
-        except (barbican_exceptions.HTTPAuthError,
-                barbican_exceptions.HTTPClientError,
-                barbican_exceptions.HTTPServerError) as e:
-            LOG.error("Error removing consumer: %s", e)
             if self._is_secret_not_found_error(e):
                 raise exception.ManagedObjectNotFoundError(
                     uuid=managed_object_id)
