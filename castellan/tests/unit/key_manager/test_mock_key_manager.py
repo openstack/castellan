@@ -229,8 +229,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
 
         keys = self.key_mgr.list(self.context)
         self.assertEqual(2, len(keys))
-        self.assertTrue(key1 in keys)
-        self.assertTrue(key2 in keys)
+        self.assertIn(key1, keys)
+        self.assertIn(key2, keys)
 
         for key in keys:
             self.assertIsNotNone(key.id)
@@ -246,7 +246,7 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         bit_length_list = [key1.bit_length, key2.bit_length]
         for key in keys:
             self.assertTrue(key.is_metadata_only())
-            self.assertTrue(key.bit_length in bit_length_list)
+            self.assertIn(key.bit_length, bit_length_list)
 
         for key in keys:
             self.assertIsNotNone(key.id)
