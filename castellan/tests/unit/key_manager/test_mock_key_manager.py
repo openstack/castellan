@@ -201,22 +201,26 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
                           self.key_mgr.get, None, None)
 
     def test_get_unknown_key(self):
-        self.assertRaises(KeyError, self.key_mgr.get, self.context, None)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError, self.key_mgr.get,
+            self.context, None)
 
     def test_delete_key(self):
         key_id = self.key_mgr.create_key(self.context)
         self.key_mgr.delete(self.context, key_id)
 
-        self.assertRaises(KeyError, self.key_mgr.get, self.context,
-                          key_id)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError, self.key_mgr.get,
+            self.context, key_id)
 
     def test_delete_null_context(self):
         self.assertRaises(exception.Forbidden,
                           self.key_mgr.delete, None, None)
 
     def test_delete_unknown_key(self):
-        self.assertRaises(KeyError, self.key_mgr.delete, self.context,
-                          None)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError, self.key_mgr.delete,
+            self.context, None)
 
     def test_list_null_context(self):
         self.assertRaises(exception.Forbidden, self.key_mgr.list, None)
