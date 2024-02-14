@@ -40,7 +40,7 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         self._name = name
 
         # If None or POSIX times
-        if not created or type(created) == int:
+        if not created or isinstance(created, int):
             self._created = created
         else:
             raise ValueError('created must be of long type, actual type %s' %

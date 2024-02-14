@@ -256,6 +256,6 @@ class MockKeyManager(key_manager.KeyManager):
         objects = []
         for obj_id in self.keys:
             obj = self.get(context, obj_id, metadata_only=metadata_only)
-            if type(obj) == object_type or object_type is None:
+            if object_type is None or isinstance(obj, object_type):
                 objects.append(obj)
         return objects

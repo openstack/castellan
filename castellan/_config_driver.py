@@ -95,7 +95,7 @@ class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
 
 
 class CastellanConfigurationSource(sources.ConfigurationSource):
-    """A configuration source for configuration values served through castellan.
+    """A configuration source for configuration values served through castellan.  # noqa
 
     :param config_file: The path to a castellan configuration file.
 

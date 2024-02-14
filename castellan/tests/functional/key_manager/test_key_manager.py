@@ -194,7 +194,7 @@ class KeyManagerTestCase(object):
         # created if older objects were not cleaned up, so we will simply
         # check if the object we created is in the list
         retrieved_objects = self.key_mgr.list(self.ctxt)
-        self.assertTrue(managed_object in retrieved_objects)
+        self.assertIn(managed_object, retrieved_objects)
         for retrieved_object in retrieved_objects:
             self.assertFalse(retrieved_object.is_metadata_only())
             self.assertIsNotNone(retrieved_object.id)
@@ -217,7 +217,7 @@ class KeyManagerTestCase(object):
         # created if older objects were not cleaned up, so we will simply
         # check if the object we created is in the list
         retrieved_objects = self.key_mgr.list(self.ctxt, metadata_only=True)
-        self.assertTrue(expected_obj in retrieved_objects)
+        self.assertIn(expected_obj, retrieved_objects)
         for retrieved_object in retrieved_objects:
             self.assertTrue(retrieved_object.is_metadata_only())
             self.assertIsNotNone(retrieved_object.id)
@@ -242,4 +242,4 @@ class KeyManagerTestCase(object):
         for retrieved_object in retrieved_objects:
             self.assertEqual(type(object_1), type(retrieved_object))
             self.assertIsNotNone(retrieved_object.id)
-        self.assertTrue(object_1 in retrieved_objects)
+        self.assertIn(object_1, retrieved_objects)
