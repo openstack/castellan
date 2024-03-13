@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The new ``[vault] timeout`` option has been added. This determines timeout
+    in each HTTP request to Vault server. It defaults to 60 seconds.

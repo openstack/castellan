@@ -26,7 +26,6 @@ import os
 import time
 import uuid
 
-from keystoneauth1 import loading
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
@@ -74,6 +73,9 @@ _vault_opts = [
                help=_("Vault Namespace to use for all requests to Vault. "
                       "Vault Namespaces feature is available only in "
                       "Vault Enterprise")),
+    cfg.FloatOpt('timeout',
+                 default=60,
+                 help=_('Timeout (in seconds) in each request to Vault')),
 ]
 
 _VAULT_OPT_GROUP = 'vault'
@@ -95,7 +97,6 @@ class VaultKeyManager(key_manager.KeyManager):
     def __init__(self, configuration):
         self._conf = configuration
         self._conf.register_opts(_vault_opts, group=_VAULT_OPT_GROUP)
-        loading.register_session_conf_options(self._conf, _VAULT_OPT_GROUP)
         self._session = requests.Session()
         self._root_token_id = self._conf.vault.root_token_id
         self._approle_role_id = self._conf.vault.approle_role_id
@@ -108,6 +109,7 @@ class VaultKeyManager(key_manager.KeyManager):
         self._kv_version = self._conf.vault.kv_version
         self._vault_url = self._conf.vault.vault_url
         self._namespace = self._conf.vault.namespace
+        self._timeout = self._conf.vault.timeout
         if self._vault_url.startswith("https://"):
             self._verify_server = self._conf.vault.ssl_ca_crt_file or True
         else:
@@ -166,7 +168,8 @@ class VaultKeyManager(key_manager.KeyManager):
                 resp = self._session.post(url=approle_login_url,
                                           json=params,
                                           headers=headers,
-                                          verify=self._verify_server)
+                                          verify=self._verify_server,
+                                          timeout=self._timeout)
             except requests.exceptions.Timeout as ex:
                 raise exception.KeyManagerError(str(ex))
             except requests.exceptions.ConnectionError as ex:
@@ -193,11 +196,11 @@ class VaultKeyManager(key_manager.KeyManager):
         return {}
 
     def _do_http_request(self, method, resource, json=None):
-        verify = self._verify_server
         headers = self._build_auth_headers()
 
         try:
-            resp = method(resource, headers=headers, json=json, verify=verify)
+            resp = method(resource, headers=headers, json=json,
+                          verify=self._verfy_server, timeout=self._timeout)
         except requests.exceptions.Timeout as ex:
             raise exception.KeyManagerError(str(ex))
         except requests.exceptions.ConnectionError as ex:
