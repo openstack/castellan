@@ -23,3 +23,12 @@ repos:
     hooks:
       - id: hacking
         additional_dependencies: []
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        # B105-B107: hardcoded password checks - likely to generate false
+        #            positives in a gate environment
+        # B607: start process with a partial path - this should be a project
+        #       level decision
+        args: ['-x', 'tests', '-s', 'B105,B106,B107,B607']
