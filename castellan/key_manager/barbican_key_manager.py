@@ -75,8 +75,7 @@ _barbican_opts = [
     cfg.StrOpt('barbican_endpoint_type',
                default='public',
                choices=['public', 'internal', 'admin'],
-               help='Specifies the type of endpoint.  Allowed values are: '
-                    'public, private, and admin'),
+               help='Specifies the type of endpoint.'),
     cfg.StrOpt('barbican_region_name',
                default=None,
                help='Specifies the region of the chosen endpoint.'),
