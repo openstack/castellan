@@ -15,14 +15,15 @@ Functional test cases for the Vault key manager.
 
 Note: This requires local running instance of Vault.
 """
+
 import os
+import unittest
 import uuid
 
 from oslo_config import cfg
 from oslo_utils import uuidutils
 from oslotest import base
 import requests
-from testtools import testcase
 
 from castellan.common import exception
 from castellan.key_manager import vault_key_manager
@@ -39,7 +40,7 @@ class VaultKeyManagerTestCase(test_key_manager.KeyManagerTestCase,
 
         if ('VAULT_TEST_URL' not in os.environ or
                 'VAULT_TEST_ROOT_TOKEN' not in os.environ):
-            raise testcase.TestSkipped('Missing Vault setup information')
+            raise unittest.SkipTest('Missing Vault setup information')
 
         key_mgr._root_token_id = os.environ['VAULT_TEST_ROOT_TOKEN']
         key_mgr._vault_url = os.environ['VAULT_TEST_URL']
@@ -90,7 +91,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
 
         if ('VAULT_TEST_URL' not in os.environ or
                 'VAULT_TEST_ROOT_TOKEN' not in os.environ):
-            raise testcase.TestSkipped('Missing Vault setup information')
+            raise unittest.SkipTest('Missing Vault setup information')
 
         self.root_token_id = os.environ['VAULT_TEST_ROOT_TOKEN']
         self.vault_url = os.environ['VAULT_TEST_URL']
