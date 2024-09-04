@@ -547,6 +547,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             time_stamp = timeutils.parse_isotime(
                 str(secret.created)).timetuple()
             created = calendar.timegm(time_stamp)
+        else:
+            created = None
 
         if issubclass(secret_type, key_base_class.Key):
             return secret_type(algorithm=secret.algorithm,
