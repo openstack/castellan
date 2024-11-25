@@ -25,14 +25,6 @@
     timeout: 9000
     vars:
       devstack_services:
-        # is there a way to disable all services?  I only want barbican
-        ceilometer-acentral: false
-        ceilometer-acompute: false
-        ceilometer-alarm-evaluator: false
-        ceilometer-alarm-notifier: false
-        ceilometer-anotification: false
-        ceilometer-api: false
-        ceilometer-collector: false
         horizon: false
         s-account: false
         s-container: false
