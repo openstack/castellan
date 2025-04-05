@@ -123,19 +123,19 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
 
         except KeyError:
             # no mapping 'option = castellan_id'
-            LOG.info("option '[%s] %s' not present in '[%s] mapping_file'",
-                     group_name, option_name, self._name)
+            LOG.debug("option '[%s] %s' not present in '[%s] mapping_file'",
+                      group_name, option_name, self._name)
 
         except KeyManagerError:
             # bad mapping 'option =' without a castellan_id
-            LOG.warning("missing castellan_id for option "
-                        "'[%s] %s' in '[%s] mapping_file'",
-                        group_name, option_name, self._name)
+            LOG.error("missing castellan_id for option '[%s] %s' in '[%s] "
+                      "mapping_file'",
+                      group_name, option_name, self._name)
 
         except ManagedObjectNotFoundError:
             # good mapping, but unknown castellan_id by secret manager
-            LOG.warning("invalid castellan_id for option "
-                        "'[%s] %s' in '[%s] mapping_file'",
-                        group_name, option_name, self._name)
+            LOG.error("invalid castellan_id for option '[%s] %s' in '[%s] "
+                      "mapping_file'",
+                      group_name, option_name, self._name)
 
         return (sources._NoValue, None)
