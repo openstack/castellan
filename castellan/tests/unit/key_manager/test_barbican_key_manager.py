@@ -18,6 +18,7 @@ Test cases for the barbican key manager.
 """
 import calendar
 from unittest import mock
+import uuid
 
 from barbicanclient import exceptions as barbican_exceptions
 from keystoneauth1 import identity
@@ -44,7 +45,9 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.ctxt = mock.Mock(spec=context.RequestContext)
         self.ctxt.auth_token = "fake_token"
         self.ctxt.project_name = "foo"
+        self.ctxt.project_id = str(uuid.uuid4()).replace('-', '')
         self.ctxt.project_domain_name = "foo"
+        self.ctxt.project_domain_id = str(uuid.uuid4()).replace('-', '')
 
         # Create mock barbican client
         self._build_mock_barbican()
