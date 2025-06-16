@@ -106,8 +106,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
     """Key Manager Interface that wraps the Barbican client API."""
 
     def __init__(self, configuration):
-        self._barbican_client = None
-        self._base_url = None
         self.conf = configuration
         self.conf.register_opts(_barbican_opts, group=_BARBICAN_OPT_GROUP)
         loading.register_session_conf_options(self.conf, _BARBICAN_OPT_GROUP)
@@ -116,12 +114,15 @@ class BarbicanKeyManager(key_manager.KeyManager):
                                               _BARBICAN_SERVICE_USER_OPT_GROUP)
         loading.register_auth_conf_options(self.conf,
                                            _BARBICAN_SERVICE_USER_OPT_GROUP)
+        verify_ssl = self.conf.barbican.verify_ssl
+        verify_ssl_path = self.conf.barbican.verify_ssl_path
+        self._verify = verify_ssl and (verify_ssl_path or verify_ssl)
 
     def _get_barbican_client(self, context):
         """Creates a client to connect to the Barbican service.
 
         :param context: the user context for authentication
-        :return: a Barbican Client object
+        :return: tuple of a Barbican Client object and its endpoint
         :raises Forbidden: if the context is None
         :raises KeyManagerError: if context is missing tenant or tenant is
                                  None or error occurs while creating client
@@ -133,32 +134,24 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error(msg)
             raise exception.Forbidden(msg)
 
-        if self._barbican_client and self._current_context == context:
-            return self._barbican_client
-
         try:
             auth = self._get_keystone_auth(context)
-            verify_ssl = self.conf.barbican.verify_ssl
-            verify_ssl_path = self.conf.barbican.verify_ssl_path
-            verify = verify_ssl and verify_ssl_path or verify_ssl
-            sess = session.Session(auth=auth, verify=verify)
+            sess = session.Session(auth=auth, verify=self._verify)
 
-            self._barbican_endpoint = self._get_barbican_endpoint(auth, sess)
-            self._barbican_client = barbican_client_import.Client(
-                session=sess,
-                endpoint=self._barbican_endpoint)
-            self._current_context = context
+            endpoint = self._get_barbican_endpoint(auth, sess)
+            return (
+                barbican_client_import.Client(
+                    version=self.conf.barbican.barbican_api_version,
+                    session=sess,
+                    endpoint=endpoint),
+                self._create_base_url(auth, sess, endpoint)
+            )
 
         # TODO(pbourke): more fine grained exception handling - we are eating
         # tracebacks here
         except Exception as e:
             LOG.error("Error creating Barbican client: %s", e)
             raise exception.KeyManagerError(reason=e)
-
-        self._base_url = self._create_base_url(auth,
-                                               sess,
-                                               self._barbican_endpoint)
-        return self._barbican_client
 
     def _get_keystone_auth(self, context):
         if context.__class__.__name__ == 'KeystonePassword':
@@ -258,8 +251,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         if endpoint[-1] != '/':
             endpoint += '/'
 
-        base_url = urllib.parse.urljoin(
-            endpoint, api_version)
+        base_url = urllib.parse.urljoin(endpoint, api_version)
 
         return base_url
 
@@ -276,7 +268,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :return: the UUID of the new key
         :raises KeyManagerError: if key creation fails
         """
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, _ = self._get_barbican_client(context)
 
         try:
             key_order = barbican_client.orders.create_key(
@@ -307,7 +299,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises NotImplementedError: until implemented
         :raises KeyManagerError: if key pair creation fails
         """
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, _ = self._get_barbican_client(context)
 
         try:
             key_pair_order = barbican_client.orders.create_asymmetric(
@@ -396,7 +388,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :returns: the UUID of the stored object
         :raises KeyManagerError: if object store fails
         """
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, _ = self._get_barbican_client(context)
 
         try:
             secret = self._get_barbican_object(barbican_client,
@@ -410,16 +402,16 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error("Error storing object: %s", e)
             raise exception.KeyManagerError(reason=e)
 
-    def _create_secret_ref(self, object_id):
+    def _create_secret_ref(self, base_url, object_id):
         """Creates the URL required for accessing a secret.
 
+        :param endpoint: Base endpoint URL
         :param object_id: the UUID of the key to copy
         :return: the URL of the requested secret
         """
         if not object_id:
             msg = _("Key ID is None")
             raise exception.KeyManagerError(reason=msg)
-        base_url = self._base_url
         if base_url[-1] != '/':
             base_url += '/'
         return urllib.parse.urljoin(base_url, "secrets/" + object_id)
@@ -578,10 +570,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises HTTPServerError: if object retrieval fails with 5xx
         """
 
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, base_url = self._get_barbican_client(context)
 
         try:
-            secret_ref = self._create_secret_ref(object_id)
+            secret_ref = self._create_secret_ref(base_url, object_id)
             return barbican_client.secrets.get(secret_ref)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
@@ -633,9 +625,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, base_url = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(managed_object_id)
+            secret_ref = self._create_secret_ref(base_url, managed_object_id)
             barbican_client.secrets.delete(secret_ref, force)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
@@ -658,9 +650,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
 
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, base_url = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(managed_object_id)
+            secret_ref = self._create_secret_ref(base_url, managed_object_id)
             barbican_client.secrets.register_consumer(
                 secret_ref, **consumer_data)
 
@@ -676,9 +668,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
     def remove_consumer(self, context, managed_object_id, consumer_data):
 
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, base_url = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(managed_object_id)
+            secret_ref = self._create_secret_ref(base_url, managed_object_id)
             barbican_client.secrets.remove_consumer(
                 secret_ref, **consumer_data)
         except (barbican_exceptions.HTTPAuthError,
@@ -703,7 +695,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises KeyManagerError: if listing secrets fails
         """
         objects = []
-        barbican_client = self._get_barbican_client(context)
+        barbican_client, _ = self._get_barbican_client(context)
 
         if object_type and object_type not in self._secret_type_dict:
             msg = _("Invalid secret type: %s") % object_type
