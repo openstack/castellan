@@ -18,15 +18,8 @@ from oslo_config import cfg
 from oslo_log import log
 
 from castellan import key_manager
-try:
-    from castellan.key_manager import barbican_key_manager as bkm
-except ImportError:
-    bkm = None
-
-try:
-    from castellan.key_manager import vault_key_manager as vkm
-except ImportError:
-    vkm = None
+from castellan.key_manager import barbican_key_manager as bkm
+from castellan.key_manager import vault_key_manager as vkm
 
 from castellan.common import utils
 
@@ -86,63 +79,61 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     if default_backend is not None:
         conf.set_default('backend', default_backend, group='key_manager')
 
-    if bkm is not None:
-        if barbican_endpoint is not None:
-            conf.set_default('barbican_endpoint', barbican_endpoint,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if barbican_api_version is not None:
-            conf.set_default('barbican_api_version', barbican_api_version,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if auth_endpoint is not None:
-            conf.set_default('auth_endpoint', auth_endpoint,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if retry_delay is not None:
-            conf.set_default('retry_delay', retry_delay,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if number_of_retries is not None:
-            conf.set_default('number_of_retries', number_of_retries,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if verify_ssl is not None:
-            conf.set_default('verify_ssl', verify_ssl,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if verify_ssl_path is not None:
-            conf.set_default('verify_ssl_path', verify_ssl_path,
-                             group=bkm._BARBICAN_OPT_GROUP)
-        if barbican_endpoint_type is not None:
-            conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
-                             group=bkm._BARBICAN_OPT_GROUP)
+    if barbican_endpoint is not None:
+        conf.set_default('barbican_endpoint', barbican_endpoint,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if barbican_api_version is not None:
+        conf.set_default('barbican_api_version', barbican_api_version,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if auth_endpoint is not None:
+        conf.set_default('auth_endpoint', auth_endpoint,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if retry_delay is not None:
+        conf.set_default('retry_delay', retry_delay,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if number_of_retries is not None:
+        conf.set_default('number_of_retries', number_of_retries,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if verify_ssl is not None:
+        conf.set_default('verify_ssl', verify_ssl,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if verify_ssl_path is not None:
+        conf.set_default('verify_ssl_path', verify_ssl_path,
+                         group=bkm._BARBICAN_OPT_GROUP)
+    if barbican_endpoint_type is not None:
+        conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
+                         group=bkm._BARBICAN_OPT_GROUP)
 
-    if vkm is not None:
-        if vault_root_token_id is not None:
-            conf.set_default('root_token_id', vault_root_token_id,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_approle_role_id is not None:
-            conf.set_default('approle_role_id', vault_approle_role_id,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_approle_secret_id is not None:
-            conf.set_default('approle_secret_id', vault_approle_secret_id,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_kv_mountpoint is not None:
-            conf.set_default('kv_mountpoint', vault_kv_mountpoint,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_kv_path is not None:
-            conf.set_default('kv_path', vault_kv_path,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_url is not None:
-            conf.set_default('vault_url', vault_url,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_ssl_ca_crt_file is not None:
-            conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_use_ssl is not None:
-            conf.set_default('use_ssl', vault_use_ssl,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_namespace is not None:
-            conf.set_default('namespace', vault_namespace,
-                             group=vkm._VAULT_OPT_GROUP)
-        if vault_kv_version is not None:
-            conf.set_default('kv_version', vault_kv_version,
-                             group=vkm._VAULT_OPT_GROUP)
+    if vault_root_token_id is not None:
+        conf.set_default('root_token_id', vault_root_token_id,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_approle_role_id is not None:
+        conf.set_default('approle_role_id', vault_approle_role_id,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_approle_secret_id is not None:
+        conf.set_default('approle_secret_id', vault_approle_secret_id,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_kv_mountpoint is not None:
+        conf.set_default('kv_mountpoint', vault_kv_mountpoint,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_kv_path is not None:
+        conf.set_default('kv_path', vault_kv_path,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_url is not None:
+        conf.set_default('vault_url', vault_url,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_ssl_ca_crt_file is not None:
+        conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_use_ssl is not None:
+        conf.set_default('use_ssl', vault_use_ssl,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_namespace is not None:
+        conf.set_default('namespace', vault_namespace,
+                         group=vkm._VAULT_OPT_GROUP)
+    if vault_kv_version is not None:
+        conf.set_default('kv_version', vault_kv_version,
+                         group=vkm._VAULT_OPT_GROUP)
 
 
 def enable_logging(conf=None, app_name='castellan'):
