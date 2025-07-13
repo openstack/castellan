@@ -181,7 +181,7 @@ class MockKeyManager(key_manager.KeyManager):
         try:
             obj = copy.deepcopy(self.keys[managed_object_id])
         except KeyError:
-            raise exception.ManagedObjectNotFoundError()
+            raise exception.ManagedObjectNotFoundError(managed_object_id)
 
         if metadata_only:
             if hasattr(obj, "_key"):
@@ -204,20 +204,20 @@ class MockKeyManager(key_manager.KeyManager):
         try:
             del self.keys[managed_object_id]
         except KeyError:
-            raise exception.ManagedObjectNotFoundError()
+            raise exception.ManagedObjectNotFoundError(managed_object_id)
 
     def add_consumer(self, context, managed_object_id, consumer_data):
         if context is None:
             raise exception.Forbidden()
         if managed_object_id not in self.keys:
-            raise exception.ManagedObjectNotFoundError()
+            raise exception.ManagedObjectNotFoundError(managed_object_id)
         self.keys[managed_object_id].consumers.append(consumer_data)
 
     def remove_consumer(self, context, managed_object_id, consumer_data):
         if context is None:
             raise exception.Forbidden()
         if managed_object_id not in self.keys:
-            raise exception.ManagedObjectNotFoundError()
+            raise exception.ManagedObjectNotFoundError(managed_object_id)
         self.keys[managed_object_id].consumers = [
             c for c in self.keys[managed_object_id].consumers
             if c != consumer_data]
