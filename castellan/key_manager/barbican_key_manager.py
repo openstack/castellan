@@ -725,10 +725,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
         return objects
 
     def list_options_for_discovery(self):
+        barbican_opts = _barbican_opts
+        barbican_opts += loading.get_session_conf_options()
         barbican_service_user_opts = loading.get_session_conf_options()
         barbican_service_user_opts += loading.get_auth_common_conf_options()
 
         return [
-            (_BARBICAN_OPT_GROUP, _barbican_opts),
+            (_BARBICAN_OPT_GROUP, barbican_opts),
             (_BARBICAN_SERVICE_USER_OPT_GROUP, barbican_service_user_opts),
         ]
