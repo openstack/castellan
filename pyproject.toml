@@ -1,3 +1,47 @@
 [build-system]
 requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "castellan"
+description = "Generic Key Manager interface for OpenStack"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "Apache-2.0"}
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/castellan/"
+Repository = "https://opendev.org/openstack/castellan/"
+
+[project.entry-points."oslo.config.opts"]
+"castellan.tests.functional.config" = "castellan.tests.functional.config:list_opts"
+"castellan.config" = "castellan.options:list_opts"
+
+[project.entry-points."oslo.config.driver"]
+castellan = "castellan._config_driver:CastellanConfigurationSourceDriver"
+
+[project.entry-points."castellan.drivers"]
+barbican = "castellan.key_manager.barbican_key_manager:BarbicanKeyManager"
+vault = "castellan.key_manager.vault_key_manager:VaultKeyManager"
+
+[tool.setuptools]
+packages = [
+    "castellan"
+]
