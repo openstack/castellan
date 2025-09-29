@@ -255,6 +255,20 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         return base_url
 
+    def _delete_order(self, client, order_ref):
+        try:
+            client.orders.delete(order_ref)
+        except Exception as e:
+            LOG.warning("Failed to delete temporary order %s: %s",
+                        order_ref, e)
+
+    def _delete_container(self, client, container_ref):
+        try:
+            client.containers.delete(container_ref)
+        except Exception as e:
+            LOG.warning("Failed to delete temporary container %s: %s",
+                        container_ref, e)
+
     def create_key(self, context, algorithm, length,
                    expiration=None, name=None):
         """Creates a symmetric key.
@@ -278,7 +292,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 expiration=expiration)
             order_ref = key_order.submit()
             order = self._get_active_order(barbican_client, order_ref)
-            return self._retrieve_secret_uuid(order.secret_ref)
+            secret_ref = self._retrieve_secret_uuid(order.secret_ref)
+            self._delete_order(barbican_client, order_ref)
+            return secret_ref
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
@@ -316,6 +332,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 container.secret_refs['private_key'])
             public_key_uuid = self._retrieve_secret_uuid(
                 container.secret_refs['public_key'])
+            self._delete_container(barbican_client, order.container_ref)
+            self._delete_order(barbican_client, order_ref)
             return private_key_uuid, public_key_uuid
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
