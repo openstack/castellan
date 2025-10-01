@@ -73,7 +73,7 @@ class CastellanSourceTestCase(base.BaseTestCase):
                              opaque_data.OpaqueData(b"super_secret!"))
 
         # driver config
-        config = "[key_manager]\nbackend=vault"
+        config = "[key_manager]\nbackend=vault\nauth_type=keystone_password\n"
         mapping = "[DEFAULT]\nmy_secret=" + secret_id
 
         # creating temp files
@@ -106,3 +106,31 @@ class CastellanSourceTestCase(base.BaseTestCase):
                                  source.get("DEFAULT",
                                             "my_secret",
                                             cfg.StrOpt(""))[0])
+
+    def test_missing_auth_type(self):
+        # driver config without auth_type
+        config = "[key_manager]\nbackend=vault\n"
+        mapping = "[DEFAULT]\nmy_secret=some_id"
+
+        # creating temp files
+        with tempfile.NamedTemporaryFile() as config_file:
+            config_file.write(config.encode("utf-8"))
+            config_file.flush()
+
+            with tempfile.NamedTemporaryFile() as mapping_file:
+                mapping_file.write(mapping.encode("utf-8"))
+                mapping_file.flush()
+
+                self.conf_fixture.load_raw_values(
+                    group='castellan_source',
+                    driver='castellan',
+                    config_file=config_file.name,
+                    mapping_file=mapping_file.name,
+                )
+
+                source = self.driver.open_source_from_opt_group(
+                    self.conf,
+                    'castellan_source')
+
+                # testing that context is None
+                self.assertIsNone(source._context)
