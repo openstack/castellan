@@ -45,3 +45,11 @@ vault = "castellan.key_manager.vault_key_manager:VaultKeyManager"
 packages = [
     "castellan"
 ]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+# B105-B107: hardcoded password checks - likely to generate false
+#            positives in a gate environment
+# B607: start process with a partial path - this should be a project
+#       level decision
+skips = ['B105', 'B106', 'B107', 'B607']
