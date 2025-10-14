@@ -195,12 +195,7 @@ class TestUtils(base.TestCase):
         self.assertEqual(auth_token_value, ks_token_context.token)
         self.assertEqual(project_id_value, ks_token_context.project_id)
 
-    def test_invalid_auth_type(self):
-        self.config_fixture.config(
-            auth_type='hotdog',
-            group='key_manager'
-        )
-
+    def test_no_auth_type(self):
         self.assertRaises(exception.AuthTypeInvalidError,
                           utils.credential_factory,
                           conf=CONF)
