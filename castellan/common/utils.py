@@ -53,7 +53,7 @@ credential_opts = [
                "'keystone_password' auth_type."),
 
     # keystone credential opts
-    cfg.StrOpt('auth_url',
+    cfg.URIOpt('auth_url',
                help="Use this endpoint to connect to Keystone."),
     cfg.StrOpt('user_id',
                help="User ID for authentication. Optional for "
