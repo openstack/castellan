@@ -43,12 +43,12 @@ from oslo_utils import timeutils
 
 
 _barbican_opts = [
-    cfg.StrOpt('barbican_endpoint',
+    cfg.URIOpt('barbican_endpoint',
                help='Use this endpoint to connect to Barbican, for example: '
                     '"http://localhost:9311/"'),
     cfg.StrOpt('barbican_api_version',
                help='Version of the Barbican API, for example: "v1"'),
-    cfg.StrOpt('auth_endpoint',
+    cfg.URIOpt('auth_endpoint',
                default='http://localhost/identity/v3',
                deprecated_name='auth_url',
                deprecated_group='key_manager',
