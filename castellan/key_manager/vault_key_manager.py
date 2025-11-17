@@ -173,10 +173,6 @@ class VaultKeyManager(key_manager.KeyManager):
                                           headers=headers,
                                           verify=self._verify_server,
                                           timeout=self._timeout)
-            except requests.exceptions.Timeout as ex:
-                raise exception.KeyManagerError(str(ex))
-            except requests.exceptions.ConnectionError as ex:
-                raise exception.KeyManagerError(str(ex))
             except Exception as ex:
                 raise exception.KeyManagerError(str(ex))
 
@@ -204,10 +200,6 @@ class VaultKeyManager(key_manager.KeyManager):
         try:
             resp = method(resource, headers=headers, json=json,
                           verify=self._verify_server, timeout=self._timeout)
-        except requests.exceptions.Timeout as ex:
-            raise exception.KeyManagerError(str(ex))
-        except requests.exceptions.ConnectionError as ex:
-            raise exception.KeyManagerError(str(ex))
         except Exception as ex:
             raise exception.KeyManagerError(str(ex))
 
