@@ -42,8 +42,10 @@ The Configuration Source Class
 .. autoclass:: CastellanConfigurationSource
 
 """
+from castellan.common.exception import AuthTypeInvalidError
 from castellan.common.exception import KeyManagerError
 from castellan.common.exception import ManagedObjectNotFoundError
+from castellan.common import utils
 from castellan import key_manager
 
 from oslo_config import cfg
@@ -110,6 +112,17 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
         self._mngr = key_manager.API(conf)
         self._mapping = {}
 
+        try:
+            self._context = utils.credential_factory(conf)
+        except AuthTypeInvalidError:
+            self._context = None
+
+            LOG.warning("Invalid 'auth_type' in '%s', auth_type: %s. "
+                        "Context set to 'None'. Supported 'auth_type' values: "
+                        "'token', 'password', 'keystone_token', "
+                        "'keystone_password'.",
+                        config_file, conf.key_manager.auth_type)
+
         cfg.ConfigParser(mapping_file, self._mapping).parse()
 
     def get(self, group_name, option_name, opt):
@@ -118,7 +131,8 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
 
             castellan_id = self._mapping[group_name][option_name][0]
 
-            return (self._mngr.get("ctx", castellan_id).get_encoded().decode(),
+            return (self._mngr.get(self._context, castellan_id)
+                    .get_encoded().decode(),
                     cfg.LocationInfo(cfg.Locations.user, castellan_id))
 
         except KeyError:
@@ -127,10 +141,10 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
                       group_name, option_name, self._name)
 
         except KeyManagerError:
-            # bad mapping 'option =' without a castellan_id
-            LOG.error("missing castellan_id for option '[%s] %s' in '[%s] "
-                      "mapping_file'",
-                      group_name, option_name, self._name)
+            # error retrieving the secret from the key manager
+            LOG.exception("Failed to retrieve secret for option '[%s] %s' in "
+                          "'[%s] mapping_file'",
+                          group_name, option_name, self._name)
 
         except ManagedObjectNotFoundError:
             # good mapping, but unknown castellan_id by secret manager
