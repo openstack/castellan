@@ -43,43 +43,58 @@ _DEFAULT_MOUNTPOINT = "secret"
 _DEFAULT_VERSION = 2
 
 _vault_opts = [
-    cfg.StrOpt('root_token_id',
-               secret=True,
-               help='root token for vault'),
-    cfg.StrOpt('approle_role_id',
-               secret=True,
-               help='AppRole role_id for authentication with vault'),
-    cfg.StrOpt('approle_secret_id',
-               secret=True,
-               help='AppRole secret_id for authentication with vault'),
-    cfg.StrOpt('kv_mountpoint',
-               default=_DEFAULT_MOUNTPOINT,
-               help='Mountpoint of KV store in Vault to use'),
-    cfg.StrOpt('kv_path',
-               help='Path relative to root of KV store in Vault to use.'
-               ),
-    cfg.IntOpt('kv_version',
-               default=_DEFAULT_VERSION,
-               choices=(1, 2),
-               help='Version of KV store in Vault to use.'),
-    cfg.URIOpt('vault_url',
-               default=_DEFAULT_VAULT_URL,
-               schemes=('http', 'https'),
-               help='Use this endpoint to connect to Vault'),
-    cfg.StrOpt('ssl_ca_crt_file',
-               help='Absolute path to ca cert file'),
-    cfg.BoolOpt('use_ssl',
-                default=False,
-                deprecated_for_removal=True,
-                deprecated_reason='This option has no effect.',
-                help=_('SSL Enabled/Disabled')),
-    cfg.StrOpt("namespace",
-               help=_("Vault Namespace to use for all requests to Vault. "
-                      "Vault Namespaces feature is available only in "
-                      "Vault Enterprise")),
-    cfg.FloatOpt('timeout',
-                 default=60,
-                 help=_('Timeout (in seconds) in each request to Vault')),
+    cfg.StrOpt('root_token_id', secret=True, help='root token for vault'),
+    cfg.StrOpt(
+        'approle_role_id',
+        secret=True,
+        help='AppRole role_id for authentication with vault',
+    ),
+    cfg.StrOpt(
+        'approle_secret_id',
+        secret=True,
+        help='AppRole secret_id for authentication with vault',
+    ),
+    cfg.StrOpt(
+        'kv_mountpoint',
+        default=_DEFAULT_MOUNTPOINT,
+        help='Mountpoint of KV store in Vault to use',
+    ),
+    cfg.StrOpt(
+        'kv_path', help='Path relative to root of KV store in Vault to use.'
+    ),
+    cfg.IntOpt(
+        'kv_version',
+        default=_DEFAULT_VERSION,
+        choices=(1, 2),
+        help='Version of KV store in Vault to use.',
+    ),
+    cfg.URIOpt(
+        'vault_url',
+        default=_DEFAULT_VAULT_URL,
+        schemes=('http', 'https'),
+        help='Use this endpoint to connect to Vault',
+    ),
+    cfg.StrOpt('ssl_ca_crt_file', help='Absolute path to ca cert file'),
+    cfg.BoolOpt(
+        'use_ssl',
+        default=False,
+        deprecated_for_removal=True,
+        deprecated_reason='This option has no effect.',
+        help=_('SSL Enabled/Disabled'),
+    ),
+    cfg.StrOpt(
+        "namespace",
+        help=_(
+            "Vault Namespace to use for all requests to Vault. "
+            "Vault Namespaces feature is available only in "
+            "Vault Enterprise"
+        ),
+    ),
+    cfg.FloatOpt(
+        'timeout',
+        default=60,
+        help=_('Timeout (in seconds) in each request to Vault'),
+    ),
 ]
 
 _VAULT_OPT_GROUP = 'vault'
@@ -128,18 +143,23 @@ class VaultKeyManager(key_manager.KeyManager):
         return '{}v1/{}/{}{}{}'.format(
             self._get_url(),
             self._kv_mountpoint,
-
-            '' if self._kv_version == 1 else
-            'data/' if key_id else
-            'metadata/',  # no key_id is for listing and 'data/' doesn't works
+            # no key_id is for listing and 'data/' doesn't works
+            ''
+            if self._kv_version == 1
+            else 'data/'
+            if key_id
+            else 'metadata/',
             (self._kv_path + '/') if self._kv_path else '',
-            key_id if key_id else '?list=true')
+            key_id if key_id else '?list=true',
+        )
 
     @property
     def _approle_token_id(self):
-        if (all((self._approle_token_issue, self._approle_token_ttl)) and
-                timeutils.is_older_than(self._approle_token_issue,
-                                        self._approle_token_ttl)):
+        if all(
+            (self._approle_token_issue, self._approle_token_ttl)
+        ) and timeutils.is_older_than(
+            self._approle_token_issue, self._approle_token_ttl
+        ):
             self._cached_approle_token_id = None
         return self._cached_approle_token_id
 
@@ -150,30 +170,28 @@ class VaultKeyManager(key_manager.KeyManager):
 
     def _build_auth_headers(self):
         if self._root_token_id:
-            return self._set_namespace(
-                {'X-Vault-Token': self._root_token_id})
+            return self._set_namespace({'X-Vault-Token': self._root_token_id})
 
         if self._approle_token_id:
             return self._set_namespace(
-                {'X-Vault-Token': self._approle_token_id})
+                {'X-Vault-Token': self._approle_token_id}
+            )
 
         if self._approle_role_id:
-            params = {
-                'role_id': self._approle_role_id
-            }
+            params = {'role_id': self._approle_role_id}
             if self._approle_secret_id:
                 params['secret_id'] = self._approle_secret_id
-            approle_login_url = '{}v1/auth/approle/login'.format(
-                self._get_url()
-            )
+            approle_login_url = f'{self._get_url()}v1/auth/approle/login'
             token_issue_utc = timeutils.utcnow()
             headers = self._set_namespace({})
             try:
-                resp = self._session.post(url=approle_login_url,
-                                          json=params,
-                                          headers=headers,
-                                          verify=self._verify_server,
-                                          timeout=self._timeout)
+                resp = self._session.post(
+                    url=approle_login_url,
+                    json=params,
+                    headers=headers,
+                    verify=self._verify_server,
+                    timeout=self._timeout,
+                )
             except Exception as ex:
                 raise exception.KeyManagerError(str(ex))
 
@@ -191,7 +209,8 @@ class VaultKeyManager(key_manager.KeyManager):
             self._approle_token_issue = token_issue_utc
             self._approle_token_ttl = resp_data['auth']['lease_duration']
             return self._set_namespace(
-                {'X-Vault-Token': self._approle_token_id})
+                {'X-Vault-Token': self._approle_token_id}
+            )
 
         return {}
 
@@ -199,8 +218,13 @@ class VaultKeyManager(key_manager.KeyManager):
         headers = self._build_auth_headers()
 
         try:
-            resp = method(resource, headers=headers, json=json,
-                          verify=self._verify_server, timeout=self._timeout)
+            resp = method(
+                resource,
+                headers=headers,
+                json=json,
+                verify=self._verify_server,
+                timeout=self._timeout,
+            )
         except Exception as ex:
             raise exception.KeyManagerError(str(ex))
 
@@ -211,8 +235,9 @@ class VaultKeyManager(key_manager.KeyManager):
 
         return resp
 
-    def create_key_pair(self, context, algorithm, length,
-                        expiration=None, name=None):
+    def create_key_pair(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates an asymmetric key pair."""
 
         if algorithm.lower() != 'rsa':
@@ -221,9 +246,7 @@ class VaultKeyManager(key_manager.KeyManager):
             )
 
         priv_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=length,
-            backend=default_backend()
+            public_exponent=65537, key_size=length, backend=default_backend()
         )
 
         private_key = pri_key.PrivateKey(
@@ -231,14 +254,11 @@ class VaultKeyManager(key_manager.KeyManager):
             length,
             priv_key.private_bytes(
                 Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
-            )
+            ),
         )
 
         private_key_id = uuid.uuid4().hex
-        private_id = self._store_key_value(
-            private_key_id,
-            private_key
-        )
+        private_id = self._store_key_value(private_key_id, private_key)
 
         # pub_key = priv_key.public_key()
         public_key = pub_key.PublicKey(
@@ -246,14 +266,11 @@ class VaultKeyManager(key_manager.KeyManager):
             length,
             priv_key.public_key().public_bytes(
                 Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
-            )
+            ),
         )
 
         public_key_id = uuid.uuid4().hex
-        public_id = self._store_key_value(
-            public_key_id,
-            public_key
-        )
+        public_id = self._store_key_value(public_key_id, public_key)
 
         return private_id, public_id
 
@@ -262,29 +279,33 @@ class VaultKeyManager(key_manager.KeyManager):
         type_value = self._secret_type_dict.get(type(value))
         if type_value is None:
             raise exception.KeyManagerError(
-                "Unknown type for value : %r" % value)
+                f"Unknown type for value : {value!r}"
+            )
 
         record = {
             'type': type_value,
             'value': binascii.hexlify(value.get_encoded()).decode('utf-8'),
-            'algorithm': (value.algorithm if hasattr(value, 'algorithm')
-                          else None),
-            'bit_length': (value.bit_length if hasattr(value, 'bit_length')
-                           else None),
+            'algorithm': (
+                value.algorithm if hasattr(value, 'algorithm') else None
+            ),
+            'bit_length': (
+                value.bit_length if hasattr(value, 'bit_length') else None
+            ),
             'name': value.name,
-            'created': value.created
+            'created': value.created,
         }
         if self._kv_version > 1:
             record = {'data': record}
 
-        self._do_http_request(self._session.post,
-                              self._get_resource_url(key_id),
-                              json=record)
+        self._do_http_request(
+            self._session.post, self._get_resource_url(key_id), json=record
+        )
 
         return key_id
 
-    def create_key(self, context, algorithm, length,
-                   expiration=None, name=None):
+    def create_key(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates a symmetric key."""
 
         if length % 8:
@@ -293,11 +314,13 @@ class VaultKeyManager(key_manager.KeyManager):
 
         key_id = uuid.uuid4().hex
         key_value = os.urandom((length or 256) // 8)
-        key = sym_key.SymmetricKey(algorithm,
-                                   length or 256,
-                                   key_value,
-                                   key_id,
-                                   name or int(time.time()))
+        key = sym_key.SymmetricKey(
+            algorithm,
+            length or 256,
+            key_value,
+            key_id,
+            name or int(time.time()),
+        )
 
         return self._store_key_value(key_id, key)
 
@@ -313,8 +336,9 @@ class VaultKeyManager(key_manager.KeyManager):
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
 
-        resp = self._do_http_request(self._session.get,
-                                     self._get_resource_url(key_id))
+        resp = self._do_http_request(
+            self._session.get, self._get_resource_url(key_id)
+        )
 
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
@@ -332,20 +356,20 @@ class VaultKeyManager(key_manager.KeyManager):
 
         if clazz is None:
             raise exception.KeyManagerError(
-                "Unknown type : %r" % record['type'])
+                "Unknown type : {!r}".format(record['type'])
+            )
 
         if hasattr(clazz, 'algorithm') and hasattr(clazz, 'bit_length'):
-            return clazz(record['algorithm'],
-                         record['bit_length'],
-                         key,
-                         record['name'],
-                         record['created'],
-                         key_id)
+            return clazz(
+                record['algorithm'],
+                record['bit_length'],
+                key,
+                record['name'],
+                record['created'],
+                key_id,
+            )
         else:
-            return clazz(key,
-                         record['name'],
-                         record['created'],
-                         key_id)
+            return clazz(key, record['name'], record['created'], key_id)
 
     def delete(self, context, key_id, force=False):
         """Represents deleting the key.
@@ -357,8 +381,9 @@ class VaultKeyManager(key_manager.KeyManager):
         if not key_id:
             raise exception.KeyManagerError('key identifier not provided')
 
-        resp = self._do_http_request(self._session.delete,
-                                     self._get_resource_url(key_id))
+        resp = self._do_http_request(
+            self._session.delete, self._get_resource_url(key_id)
+        )
 
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
@@ -380,8 +405,9 @@ class VaultKeyManager(key_manager.KeyManager):
             msg = _("Invalid secret type: %s") % object_type
             raise exception.KeyManagerError(reason=msg)
 
-        resp = self._do_http_request(self._session.get,
-                                     self._get_resource_url())
+        resp = self._do_http_request(
+            self._session.get, self._get_resource_url()
+        )
 
         if resp.status_code == requests.codes['not_found']:
             keys = []
@@ -395,8 +421,11 @@ class VaultKeyManager(key_manager.KeyManager):
                 if object_type is None or isinstance(obj, object_type):
                     objects.append(obj)
             except exception.ManagedObjectNotFoundError as e:
-                LOG.warning("Error occurred while retrieving object "
-                            "metadata, not adding it to the list: %s", e)
+                LOG.warning(
+                    "Error occurred while retrieving object "
+                    "metadata, not adding it to the list: %s",
+                    e,
+                )
                 pass
         return objects
 

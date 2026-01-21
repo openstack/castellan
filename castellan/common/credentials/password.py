@@ -46,8 +46,10 @@ class Password(credential.Credential):
 
     def __eq__(self, other):
         if isinstance(other, Password):
-            return (self._username == other._username and
-                    self._password == other._password)
+            return (
+                self._username == other._username
+                and self._password == other._password
+            )
         else:
             return False
 

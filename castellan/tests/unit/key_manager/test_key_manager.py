@@ -28,12 +28,11 @@ CONF = cfg.CONF
 
 
 class KeyManagerTestCase(base.TestCase):
-
     def _create_key_manager(self):
         raise NotImplementedError()
 
     def setUp(self):
-        super(KeyManagerTestCase, self).setUp()
+        super().setUp()
 
         self.conf = self.useFixture(fixture.Config()).conf
 
@@ -41,12 +40,12 @@ class KeyManagerTestCase(base.TestCase):
 
 
 class DefaultKeyManagerImplTestCase(KeyManagerTestCase):
-
     def _create_key_manager(self):
         return key_manager.API(self.conf)
 
     def test_default_key_manager(self):
         self.assertEqual("barbican", self.conf.key_manager.backend)
         self.assertIsNotNone(self.key_mgr)
-        self.assertIsInstance(self.key_mgr,
-                              barbican_key_manager.BarbicanKeyManager)
+        self.assertIsInstance(
+            self.key_mgr, barbican_key_manager.BarbicanKeyManager
+        )

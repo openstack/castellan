@@ -28,9 +28,8 @@ CONF = cfg.CONF
 
 
 class TestUtils(base.TestCase):
-
     def setUp(self):
-        super(TestUtils, self).setUp()
+        super().setUp()
         self.config_fixture = self.useFixture(config_fixture.Config(CONF))
         CONF.register_opts(utils.credential_opts, group=utils.OPT_GROUP)
 
@@ -38,9 +37,7 @@ class TestUtils(base.TestCase):
         token_value = 'ec9799cd921e4e0a8ab6111c08ebf065'
 
         self.config_fixture.config(
-            auth_type='token',
-            token=token_value,
-            group='key_manager'
+            auth_type='token', token=token_value, group='key_manager'
         )
 
         token_context = utils.credential_factory(conf=CONF)
@@ -53,10 +50,7 @@ class TestUtils(base.TestCase):
         token_value = 'ec9799cd921e4e0a8ab6111c08ebf065'
         ctxt = context.RequestContext(auth_token=token_value)
 
-        self.config_fixture.config(
-            auth_type='token',
-            group='key_manager'
-        )
+        self.config_fixture.config(auth_type='token', group='key_manager')
 
         token_context = utils.credential_factory(conf=CONF, context=ctxt)
         token_context_class = token_context.__class__.__name__
@@ -71,9 +65,7 @@ class TestUtils(base.TestCase):
         conf_token_value = 'ec9799cd921e4e0a8ab6111c08ebf065'
 
         self.config_fixture.config(
-            auth_type='token',
-            token=conf_token_value,
-            group='key_manager'
+            auth_type='token', token=conf_token_value, group='key_manager'
         )
 
         token_context = utils.credential_factory(conf=CONF, context=ctxt)
@@ -83,22 +75,19 @@ class TestUtils(base.TestCase):
         self.assertEqual(conf_token_value, token_context.token)
 
     def test_token_credential_exception(self):
-        self.config_fixture.config(
-            auth_type='token',
-            group='key_manager'
-        )
+        self.config_fixture.config(auth_type='token', group='key_manager')
 
-        self.assertRaises(exception.InsufficientCredentialDataError,
-                          utils.credential_factory,
-                          CONF)
+        self.assertRaises(
+            exception.InsufficientCredentialDataError,
+            utils.credential_factory,
+            CONF,
+        )
 
     def test_password_credential(self):
         password_value = 'p4ssw0rd'
 
         self.config_fixture.config(
-            auth_type='password',
-            password=password_value,
-            group='key_manager'
+            auth_type='password', password=password_value, group='key_manager'
         )
 
         password_context = utils.credential_factory(conf=CONF)
@@ -111,9 +100,7 @@ class TestUtils(base.TestCase):
         token_value = 'ec9799cd921e4e0a8ab6111c08ebf065'
 
         self.config_fixture.config(
-            auth_type='keystone_token',
-            token=token_value,
-            group='key_manager'
+            auth_type='keystone_token', token=token_value, group='key_manager'
         )
 
         ks_token_context = utils.credential_factory(conf=CONF)
@@ -127,8 +114,7 @@ class TestUtils(base.TestCase):
         ctxt = context.RequestContext(auth_token=token_value)
 
         self.config_fixture.config(
-            auth_type='keystone_token',
-            group='key_manager'
+            auth_type='keystone_token', group='key_manager'
         )
 
         ks_token_context = utils.credential_factory(conf=CONF, context=ctxt)
@@ -146,7 +132,7 @@ class TestUtils(base.TestCase):
         self.config_fixture.config(
             auth_type='keystone_token',
             token=conf_token_value,
-            group='key_manager'
+            group='key_manager',
         )
 
         ks_token_context = utils.credential_factory(conf=CONF, context=ctxt)
@@ -157,13 +143,14 @@ class TestUtils(base.TestCase):
 
     def test_keystone_token_credential_exception(self):
         self.config_fixture.config(
-            auth_type='keystone_token',
-            group='key_manager'
+            auth_type='keystone_token', group='key_manager'
         )
 
-        self.assertRaises(exception.InsufficientCredentialDataError,
-                          utils.credential_factory,
-                          CONF)
+        self.assertRaises(
+            exception.InsufficientCredentialDataError,
+            utils.credential_factory,
+            CONF,
+        )
 
     def test_keystone_password_credential(self):
         password_value = 'p4ssw0rd'
@@ -171,7 +158,7 @@ class TestUtils(base.TestCase):
         self.config_fixture.config(
             auth_type='keystone_password',
             password=password_value,
-            group='key_manager'
+            group='key_manager',
         )
 
         ks_password_context = utils.credential_factory(conf=CONF)
@@ -185,8 +172,8 @@ class TestUtils(base.TestCase):
         project_id_value = '00c6ef5ad2984af2acd7d42c299935c0'
 
         ctxt = context.RequestContext(
-            auth_token=auth_token_value,
-            project_id=project_id_value)
+            auth_token=auth_token_value, project_id=project_id_value
+        )
 
         ks_token_context = utils.credential_factory(context=ctxt)
         ks_token_context_class = ks_token_context.__class__.__name__
@@ -196,6 +183,6 @@ class TestUtils(base.TestCase):
         self.assertEqual(project_id_value, ks_token_context.project_id)
 
     def test_no_auth_type(self):
-        self.assertRaises(exception.AuthTypeInvalidError,
-                          utils.credential_factory,
-                          conf=CONF)
+        self.assertRaises(
+            exception.AuthTypeInvalidError, utils.credential_factory, conf=CONF
+        )

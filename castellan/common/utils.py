@@ -32,63 +32,89 @@ credential_opts = [
     # auth_type opt
     cfg.StrOpt(
         'auth_type',
-        choices=(
-            'token', 'password', 'keystone_token', 'keystone_password'
-        ),
+        choices=('token', 'password', 'keystone_token', 'keystone_password'),
         help="The type of authentication credential to create. "
-             "Required if no context is passed to the credential factory."),
-
+        "Required if no context is passed to the credential factory.",
+    ),
     # token opt
-    cfg.StrOpt('token', secret=True,
-               help="Token for authentication. Required for 'token' and "
-               "'keystone_token' auth_type if no context is passed to the "
-               "credential factory."),
-
+    cfg.StrOpt(
+        'token',
+        secret=True,
+        help="Token for authentication. Required for 'token' and "
+        "'keystone_token' auth_type if no context is passed to the "
+        "credential factory.",
+    ),
     # password opts
-    cfg.StrOpt('username',
-               help="Username for authentication. Required for 'password' "
-               "auth_type. Optional for the 'keystone_password' auth_type."),
-    cfg.StrOpt('password', secret=True,
-               help="Password for authentication. Required for 'password' and "
-               "'keystone_password' auth_type."),
-
+    cfg.StrOpt(
+        'username',
+        help="Username for authentication. Required for 'password' "
+        "auth_type. Optional for the 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'password',
+        secret=True,
+        help="Password for authentication. Required for 'password' and "
+        "'keystone_password' auth_type.",
+    ),
     # keystone credential opts
-    cfg.URIOpt('auth_url',
-               help="Use this endpoint to connect to Keystone."),
-    cfg.StrOpt('user_id',
-               help="User ID for authentication. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('user_domain_id',
-               help="User's domain ID for authentication. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('user_domain_name',
-               help="User's domain name for authentication. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('trust_id',
-               help="Trust ID for trust scoping. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('domain_id',
-               help="Domain ID for domain scoping. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('domain_name',
-               help="Domain name for domain scoping. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('project_id',
-               help="Project ID for project scoping. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('project_name',
-               help="Project name for project scoping. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('project_domain_id',
-               help="Project's domain ID for project. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.StrOpt('project_domain_name',
-               help="Project's domain name for project. Optional for "
-               "'keystone_token' and 'keystone_password' auth_type."),
-    cfg.BoolOpt('reauthenticate', default=True,
-                help="Allow fetching a new token if the current one is "
-                "going to expire. Optional for 'keystone_token' and "
-                "'keystone_password' auth_type.")
+    cfg.URIOpt('auth_url', help="Use this endpoint to connect to Keystone."),
+    cfg.StrOpt(
+        'user_id',
+        help="User ID for authentication. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'user_domain_id',
+        help="User's domain ID for authentication. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'user_domain_name',
+        help="User's domain name for authentication. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'trust_id',
+        help="Trust ID for trust scoping. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'domain_id',
+        help="Domain ID for domain scoping. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'domain_name',
+        help="Domain name for domain scoping. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'project_id',
+        help="Project ID for project scoping. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'project_name',
+        help="Project name for project scoping. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'project_domain_id',
+        help="Project's domain ID for project. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.StrOpt(
+        'project_domain_name',
+        help="Project's domain name for project. Optional for "
+        "'keystone_token' and 'keystone_password' auth_type.",
+    ),
+    cfg.BoolOpt(
+        'reauthenticate',
+        default=True,
+        help="Allow fetching a new token if the current one is "
+        "going to expire. Optional for 'keystone_token' and "
+        "'keystone_password' auth_type.",
+    ),
 ]
 
 OPT_GROUP = 'key_manager'
@@ -128,8 +154,8 @@ def credential_factory(conf=None, context=None):
 
         elif conf.key_manager.auth_type == 'password':
             return password.Password(
-                conf.key_manager.username,
-                conf.key_manager.password)
+                conf.key_manager.username, conf.key_manager.password
+            )
 
         elif conf.key_manager.auth_type == 'keystone_password':
             return keystone_password.KeystonePassword(
@@ -146,7 +172,8 @@ def credential_factory(conf=None, context=None):
                 project_name=conf.key_manager.project_name,
                 project_domain_id=conf.key_manager.project_domain_id,
                 project_domain_name=conf.key_manager.project_domain_name,
-                reauthenticate=conf.key_manager.reauthenticate)
+                reauthenticate=conf.key_manager.reauthenticate,
+            )
 
         elif conf.key_manager.auth_type == 'keystone_token':
             if conf.key_manager.token:
@@ -166,12 +193,14 @@ def credential_factory(conf=None, context=None):
                 project_name=conf.key_manager.project_name,
                 project_domain_id=conf.key_manager.project_domain_id,
                 project_domain_name=conf.key_manager.project_domain_name,
-                reauthenticate=conf.key_manager.reauthenticate)
+                reauthenticate=conf.key_manager.reauthenticate,
+            )
 
         else:
             LOG.error("Invalid auth_type specified.")
             raise exception.AuthTypeInvalidError(
-                type=conf.key_manager.auth_type)
+                type=conf.key_manager.auth_type
+            )
 
     # for compatibility between _TokenData and RequestContext
     if hasattr(context, 'tenant') and context.tenant:
@@ -180,5 +209,5 @@ def credential_factory(conf=None, context=None):
         project_id = context.project_id
 
     return keystone_token.KeystoneToken(
-        context.auth_token,
-        project_id=project_id)
+        context.auth_token, project_id=project_id
+    )

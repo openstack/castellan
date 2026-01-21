@@ -39,7 +39,7 @@ class Token(credential.Credential):
 
     def __eq__(self, other):
         if isinstance(other, Token):
-            return (self._token == other._token)
+            return self._token == other._token
         else:
             return False
 

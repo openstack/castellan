@@ -59,7 +59,7 @@ pygments_style = 'native'
 html_theme = 'openstackdocs'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = '%sdoc' % project
+htmlhelp_basename = f'{project}doc'
 
 # Add any paths that contain "extra" files, such as .htaccess or
 # robots.txt.
@@ -70,10 +70,13 @@ html_extra_path = ['_extra']
 # [howto/manual]).
 
 latex_documents = [
-    ('index',
-     'doc-castellan.tex',
-     '%s Documentation' % project,
-     'OpenStack Foundation', 'manual'),
+    (
+        'index',
+        'doc-castellan.tex',
+        f'{project} Documentation',
+        'OpenStack Foundation',
+        'manual',
+    ),
 ]
 
 latex_elements = {

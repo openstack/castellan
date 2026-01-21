@@ -27,17 +27,29 @@ from castellan.common import utils
 _DEFAULT_LOG_LEVELS = ['castellan=WARN']
 
 
-def set_defaults(conf, backend=None, barbican_endpoint=None,
-                 barbican_api_version=None, auth_endpoint=None,
-                 retry_delay=None, number_of_retries=None, verify_ssl=None,
-                 verify_ssl_path=None,
-                 api_class=None, vault_root_token_id=None,
-                 vault_approle_role_id=None, vault_approle_secret_id=None,
-                 vault_kv_mountpoint=None, vault_kv_path=None, vault_url=None,
-                 vault_ssl_ca_crt_file=None, vault_use_ssl=None,
-                 vault_namespace=None,
-                 barbican_endpoint_type=None,
-                 vault_kv_version=None):
+def set_defaults(
+    conf,
+    backend=None,
+    barbican_endpoint=None,
+    barbican_api_version=None,
+    auth_endpoint=None,
+    retry_delay=None,
+    number_of_retries=None,
+    verify_ssl=None,
+    verify_ssl_path=None,
+    api_class=None,
+    vault_root_token_id=None,
+    vault_approle_role_id=None,
+    vault_approle_secret_id=None,
+    vault_kv_mountpoint=None,
+    vault_kv_path=None,
+    vault_url=None,
+    vault_ssl_ca_crt_file=None,
+    vault_use_ssl=None,
+    vault_namespace=None,
+    barbican_endpoint_type=None,
+    vault_kv_version=None,
+):
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -67,9 +79,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
     conf.register_opts(key_manager.key_manager_opts, group='key_manager')
 
     ext_mgr = ExtensionManager(
-        "castellan.drivers",
-        invoke_on_load=True,
-        invoke_args=[cfg.CONF])
+        "castellan.drivers", invoke_on_load=True, invoke_args=[cfg.CONF]
+    )
 
     for km in ext_mgr.names():
         for group, opts in ext_mgr[km].obj.list_options_for_discovery():
@@ -81,60 +92,88 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
         conf.set_default('backend', default_backend, group='key_manager')
 
     if barbican_endpoint is not None:
-        conf.set_default('barbican_endpoint', barbican_endpoint,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'barbican_endpoint',
+            barbican_endpoint,
+            group=bkm._BARBICAN_OPT_GROUP,
+        )
     if barbican_api_version is not None:
-        conf.set_default('barbican_api_version', barbican_api_version,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'barbican_api_version',
+            barbican_api_version,
+            group=bkm._BARBICAN_OPT_GROUP,
+        )
     if auth_endpoint is not None:
-        conf.set_default('auth_endpoint', auth_endpoint,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'auth_endpoint', auth_endpoint, group=bkm._BARBICAN_OPT_GROUP
+        )
     if retry_delay is not None:
-        conf.set_default('retry_delay', retry_delay,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'retry_delay', retry_delay, group=bkm._BARBICAN_OPT_GROUP
+        )
     if number_of_retries is not None:
-        conf.set_default('number_of_retries', number_of_retries,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'number_of_retries',
+            number_of_retries,
+            group=bkm._BARBICAN_OPT_GROUP,
+        )
     if verify_ssl is not None:
-        conf.set_default('verify_ssl', verify_ssl,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'verify_ssl', verify_ssl, group=bkm._BARBICAN_OPT_GROUP
+        )
     if verify_ssl_path is not None:
-        conf.set_default('verify_ssl_path', verify_ssl_path,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'verify_ssl_path', verify_ssl_path, group=bkm._BARBICAN_OPT_GROUP
+        )
     if barbican_endpoint_type is not None:
-        conf.set_default('barbican_endpoint_type', barbican_endpoint_type,
-                         group=bkm._BARBICAN_OPT_GROUP)
+        conf.set_default(
+            'barbican_endpoint_type',
+            barbican_endpoint_type,
+            group=bkm._BARBICAN_OPT_GROUP,
+        )
 
     if vault_root_token_id is not None:
-        conf.set_default('root_token_id', vault_root_token_id,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'root_token_id', vault_root_token_id, group=vkm._VAULT_OPT_GROUP
+        )
     if vault_approle_role_id is not None:
-        conf.set_default('approle_role_id', vault_approle_role_id,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'approle_role_id',
+            vault_approle_role_id,
+            group=vkm._VAULT_OPT_GROUP,
+        )
     if vault_approle_secret_id is not None:
-        conf.set_default('approle_secret_id', vault_approle_secret_id,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'approle_secret_id',
+            vault_approle_secret_id,
+            group=vkm._VAULT_OPT_GROUP,
+        )
     if vault_kv_mountpoint is not None:
-        conf.set_default('kv_mountpoint', vault_kv_mountpoint,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'kv_mountpoint', vault_kv_mountpoint, group=vkm._VAULT_OPT_GROUP
+        )
     if vault_kv_path is not None:
-        conf.set_default('kv_path', vault_kv_path,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default('kv_path', vault_kv_path, group=vkm._VAULT_OPT_GROUP)
     if vault_url is not None:
-        conf.set_default('vault_url', vault_url,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default('vault_url', vault_url, group=vkm._VAULT_OPT_GROUP)
     if vault_ssl_ca_crt_file is not None:
-        conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'ssl_ca_crt_file',
+            vault_ssl_ca_crt_file,
+            group=vkm._VAULT_OPT_GROUP,
+        )
     if vault_use_ssl is not None:
-        warnings.warn('use_ssl option is deprecated',
-                      category=DeprecationWarning)
+        warnings.warn(
+            'use_ssl option is deprecated', category=DeprecationWarning
+        )
     if vault_namespace is not None:
-        conf.set_default('namespace', vault_namespace,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'namespace', vault_namespace, group=vkm._VAULT_OPT_GROUP
+        )
     if vault_kv_version is not None:
-        conf.set_default('kv_version', vault_kv_version,
-                         group=vkm._VAULT_OPT_GROUP)
+        conf.set_default(
+            'kv_version', vault_kv_version, group=vkm._VAULT_OPT_GROUP
+        )
 
 
 def enable_logging(conf=None, app_name='castellan'):
@@ -168,9 +207,8 @@ def list_opts():
     opts = [('key_manager', key_manager_opts)]
 
     ext_mgr = ExtensionManager(
-        "castellan.drivers",
-        invoke_on_load=True,
-        invoke_args=[cfg.CONF])
+        "castellan.drivers", invoke_on_load=True, invoke_args=[cfg.CONF]
+    )
 
     for driver in ext_mgr.names():
         opts.extend(ext_mgr[driver].obj.list_options_for_discovery())

@@ -16,7 +16,6 @@
 
 """Implementation of a fake key manager."""
 
-
 from castellan.tests.unit.key_manager import mock_key_manager
 
 

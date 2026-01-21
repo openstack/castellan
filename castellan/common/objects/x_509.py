@@ -38,7 +38,7 @@ class X509(certificate.Certificate):
 
     def __eq__(self, other):
         if isinstance(other, X509):
-            return (self._data == other._data)
+            return self._data == other._data
         else:
             return False
 

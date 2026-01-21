@@ -16,29 +16,35 @@
 """
 Test cases for the passphrase class.
 """
+
 from castellan.common import objects
 from castellan.common.objects import passphrase
 from castellan.tests import base
 
 
 class PassphraseTestCase(base.TestCase):
-
     def _create_passphrase(self):
-        return passphrase.Passphrase(self.passphrase_data,
-                                     self.name,
-                                     self.created,
-                                     consumers=self.consumers)
+        return passphrase.Passphrase(
+            self.passphrase_data,
+            self.name,
+            self.created,
+            consumers=self.consumers,
+        )
 
     def setUp(self):
-        self.passphrase_data = bytes(b"secret passphrase")
+        self.passphrase_data = b"secret passphrase"
         self.name = 'my phrase'
         self.created = 1448088699
-        self.consumers = [{'service': 'service_test',
-                           'resource_type': 'type_test',
-                           'resource_id': 'id_test'}]
+        self.consumers = [
+            {
+                'service': 'service_test',
+                'resource_type': 'type_test',
+                'resource_id': 'id_test',
+            }
+        ]
         self.passphrase = self._create_passphrase()
 
-        super(PassphraseTestCase, self).setUp()
+        super().setUp()
 
     def test_is_not_only_metadata(self):
         self.assertFalse(self.passphrase.is_metadata_only())
@@ -64,10 +70,9 @@ class PassphraseTestCase(base.TestCase):
 
     def test_get_created_none(self):
         created = None
-        phrase = passphrase.Passphrase(self.passphrase_data,
-                                       self.name,
-                                       created,
-                                       consumers=self.consumers)
+        phrase = passphrase.Passphrase(
+            self.passphrase_data, self.name, created, consumers=self.consumers
+        )
 
         self.assertEqual(created, phrase.created)
 

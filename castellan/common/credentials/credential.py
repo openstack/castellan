@@ -24,7 +24,7 @@ authenticating.
 import abc
 
 
-class Credential(object, metaclass=abc.ABCMeta):
+class Credential(metaclass=abc.ABCMeta):
     """Base class to represent all credentials."""
 
     def __init__(self):

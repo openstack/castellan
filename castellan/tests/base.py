@@ -1,4 +1,3 @@
-
 # Copyright 2010-2011 OpenStack Foundation
 # Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
 #
@@ -18,27 +17,24 @@ from oslotest import base
 
 
 class TestCase(base.BaseTestCase):
-
     """Test case base class for all unit tests."""
 
 
 class CertificateTestCase(TestCase):
-
     def _create_cert(self):
         raise NotImplementedError()
 
     def setUp(self):
-        super(CertificateTestCase, self).setUp()
+        super().setUp()
 
         self.cert = self._create_cert()
 
 
 class KeyTestCase(TestCase):
-
     def _create_key(self):
         raise NotImplementedError()
 
     def setUp(self):
-        super(KeyTestCase, self).setUp()
+        super().setUp()
 
         self.key = self._create_key()

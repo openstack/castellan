@@ -22,10 +22,8 @@ from castellan.tests import base
 
 
 class PasswordTestCase(base.TestCase):
-
     def _create_password_credential(self):
-        return password.Password(self.username,
-                                 self.password)
+        return password.Password(self.username, self.password)
 
     def setUp(self):
         self.username = "admin"
@@ -33,7 +31,7 @@ class PasswordTestCase(base.TestCase):
 
         self.password_credential = self._create_password_credential()
 
-        super(PasswordTestCase, self).setUp()
+        super().setUp()
 
     def test_get_username(self):
         self.assertEqual(self.username, self.password_credential.username)
@@ -48,8 +46,9 @@ class PasswordTestCase(base.TestCase):
         self.assertFalse(self.password_credential is None)
         self.assertFalse(None == self.password_credential)  # noqa: E711
 
-        other_password_credential = password.Password(self.username,
-                                                      self.password)
+        other_password_credential = password.Password(
+            self.username, self.password
+        )
         self.assertTrue(self.password_credential == other_password_credential)
         self.assertFalse(self.password_credential is other_password_credential)
 
@@ -59,12 +58,14 @@ class PasswordTestCase(base.TestCase):
 
     def test___ne___username(self):
         other_username = "service"
-        other_password_credential = password.Password(other_username,
-                                                      self.password)
+        other_password_credential = password.Password(
+            other_username, self.password
+        )
         self.assertTrue(self.password_credential != other_password_credential)
 
     def test___ne___password(self):
         other_password = "i143Cats"
-        other_password_credential = password.Password(self.username,
-                                                      other_password)
+        other_password_credential = password.Password(
+            self.username, other_password
+        )
         self.assertTrue(self.password_credential != other_password_credential)

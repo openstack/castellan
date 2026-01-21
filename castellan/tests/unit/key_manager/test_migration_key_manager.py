@@ -36,30 +36,30 @@ class ConfKeyManager(not_implemented_key_manager.NotImplementedKeyManager):
 
 
 class MigrationKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
-
     def _create_key_manager(self):
         self.fixed_key = '1' * 64
         try:
-            self.conf.register_opt(cfg.StrOpt('fixed_key'),
-                                   group='key_manager')
+            self.conf.register_opt(
+                cfg.StrOpt('fixed_key'), group='key_manager'
+            )
         except cfg.DuplicateOptError:
             pass
-        self.conf.set_override('fixed_key',
-                               self.fixed_key,
-                               group='key_manager')
+        self.conf.set_override(
+            'fixed_key', self.fixed_key, group='key_manager'
+        )
         return key_manager.API(self.conf)
 
     def setUp(self):
-        super(MigrationKeyManagerTestCase, self).setUp()
+        super().setUp()
 
         # Create fake context (actual contents doesn't matter).
         self.ctxt = mock.Mock()
 
         fixed_key_bytes = bytes(binascii.unhexlify(self.fixed_key))
         fixed_key_length = len(fixed_key_bytes) * 8
-        self.fixed_key_secret = key.SymmetricKey('AES',
-                                                 fixed_key_length,
-                                                 fixed_key_bytes)
+        self.fixed_key_secret = key.SymmetricKey(
+            'AES', fixed_key_length, fixed_key_bytes
+        )
         self.fixed_key_id = '00000000-0000-0000-0000-000000000000'
         self.other_key_id = "d152fa13-2b41-42ca-a934-6c21566c0f40"
 
@@ -69,10 +69,12 @@ class MigrationKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertEqual(self.fixed_key_secret, secret)
 
     def test_get_fixed_key_fail_bad_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get,
-                          context=None,
-                          managed_object_id=self.fixed_key_id)
+        self.assertRaises(
+            exception.Forbidden,
+            self.key_mgr.get,
+            context=None,
+            managed_object_id=self.fixed_key_id,
+        )
 
     def test_delete_fixed_key(self):
         self.key_mgr.delete(self.ctxt, self.fixed_key_id)
@@ -81,45 +83,57 @@ class MigrationKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertEqual(self.fixed_key_secret, secret)
 
     def test_delete_fixed_key_fail_bad_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete,
-                          context=None,
-                          managed_object_id=self.fixed_key_id)
+        self.assertRaises(
+            exception.Forbidden,
+            self.key_mgr.delete,
+            context=None,
+            managed_object_id=self.fixed_key_id,
+        )
 
     def test_get_other_key(self):
         # Request to get other_key_id should be passed on to the backend,
         # who will throw an error because we don't have a valid context.
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.get,
-                          context=self.ctxt,
-                          managed_object_id=self.other_key_id)
+        self.assertRaises(
+            exception.KeyManagerError,
+            self.key_mgr.get,
+            context=self.ctxt,
+            managed_object_id=self.other_key_id,
+        )
 
     def test_delete_other_key(self):
         # Request to delete other_key_id should be passed on to the backend,
         # who will throw an error because we don't have a valid context.
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete,
-                          context=self.ctxt,
-                          managed_object_id=self.other_key_id)
+        self.assertRaises(
+            exception.KeyManagerError,
+            self.key_mgr.delete,
+            context=self.ctxt,
+            managed_object_id=self.other_key_id,
+        )
 
     def test_no_fixed_key(self):
         conf = self.conf
         conf.set_override('fixed_key', None, group='key_manager')
         key_mgr = key_manager.API(conf)
         self.assertNotEqual('MigrationKeyManager', type(key_mgr).__name__)
-        self.assertRaises(exception.KeyManagerError,
-                          key_mgr.get,
-                          context=self.ctxt,
-                          managed_object_id=self.fixed_key_id)
+        self.assertRaises(
+            exception.KeyManagerError,
+            key_mgr.get,
+            context=self.ctxt,
+            managed_object_id=self.fixed_key_id,
+        )
 
     def test_using_conf_key_manager(self):
         conf = self.conf
-        ckm_backend = 'castellan.tests.unit.key_manager.' \
-                      'test_migration_key_manager.ConfKeyManager'
+        ckm_backend = (
+            'castellan.tests.unit.key_manager.'
+            'test_migration_key_manager.ConfKeyManager'
+        )
         conf.set_override('backend', ckm_backend, group='key_manager')
         key_mgr = key_manager.API(conf)
         self.assertNotEqual('MigrationKeyManager', type(key_mgr).__name__)
-        self.assertRaises(NotImplementedError,
-                          key_mgr.get,
-                          context=self.ctxt,
-                          managed_object_id=self.fixed_key_id)
+        self.assertRaises(
+            NotImplementedError,
+            key_mgr.get,
+            context=self.ctxt,
+            managed_object_id=self.fixed_key_id,
+        )

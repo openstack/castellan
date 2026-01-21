@@ -49,6 +49,7 @@ def construct_new_test_function(original_func, name, build_params):
         @functools.wraps(func)
         def wrapper(self):
             return func(self, *test_args, **test_kwargs)
+
         return wrapper
 
     return test_wrapper(new_func, build_args, build_kwargs)
@@ -61,7 +62,7 @@ def process_parameterized_function(name, func_obj, build_data):
 
     for subtest_name, params in build_data.items():
         # Build new test function
-        func_name = '{0}_{1}'.format(name, subtest_name)
+        func_name = f'{name}_{subtest_name}'
         new_func = construct_new_test_function(func_obj, func_name, params)
 
         # Mark the new function as needed to be added to the class
@@ -87,7 +88,7 @@ def parameterized_test_case(cls):
             to_remove, to_add = process_parameterized_function(
                 name=key,
                 func_obj=val,
-                build_data=val.__dict__.get('build_data')
+                build_data=val.__dict__.get('build_data'),
             )
             tests_to_remove.extend(to_remove)
             tests_to_add.extend(to_add)
@@ -102,9 +103,11 @@ def parameterized_test_case(cls):
 
 def parameterized_dataset(build_data):
     """Simple decorator to mark a test method for processing."""
+
     def decorator(func):
         func.__dict__['build_data'] = build_data
         return func
+
     return decorator
 
 
@@ -171,7 +174,8 @@ def get_certificate_der():
         b'\x60\x8e\x21\x16\xd1\x9f\x90\xec\xdd\xe8\x1e\xeb\xda\xc6\x35'
         b'\xc0\x62\x9d\x4c\xb1\xe4\xb9\x3e\x26\xe3\xff\x40\xfd\x23\xb3'
         b'\xbe\x71\xfe\x7a\x99\xc9\xa8\x84\xbd\x8f\x0f\xb5\x89\x18\xfc'
-        b'\xc5\xc0\xc0\xe8\xf3\x53')
+        b'\xc5\xc0\xc0\xe8\xf3\x53'
+    )
     return cert_der
 
 
@@ -267,7 +271,8 @@ def get_private_key_der():
         b'\x2a\x91\x52\xfa\x7c\x4f\x24\x0f\x18\xc9\x66\x11\xa4\xd8\x69'
         b'\x45\x61\x96\x41\xa9\x07\x79\xda\xf7\x06\xd3\x2d\x1a\xcd\x21'
         b'\xa4\xa3\x40\x40\x6e\xf6\x1c\xa5\xad\x49\xf2\x50\x31\x7b\xe7'
-        b'\xd9\x19\x62\x70')
+        b'\xd9\x19\x62\x70'
+    )
     return key_der
 
 
@@ -300,7 +305,8 @@ def get_public_key_der():
         b'\xa9\xb4\x3c\x65\xb1\xb2\xd0\x82\xa1\x95\x68\x67\x44\xd7\x5e'
         b'\xec\xb4\x2f\x79\x40\x7e\xd4\xbc\x84\xdb\xb9\x8c\xdd\x8d\x9c'
         b'\x01\x15\xcd\x52\x83\x3f\x06\x67\xfd\xa1\x2d\x2b\x07\xba\x32'
-        b'\x62\x21\x07\x2f\x02\x03\x01\x00\x01')
+        b'\x62\x21\x07\x2f\x02\x03\x01\x00\x01'
+    )
     return key_der
 
 
@@ -310,5 +316,6 @@ def get_symmetric_key():
     16 bytes that were randomly generated. Form a 128 bit key.
     """
     symmetric_key = (
-        b'\x92\xcf\x1e\xd9\x54\xea\x30\x70\xd8\xc2\x48\xae\xc1\xc8\x72\xa3')
+        b'\x92\xcf\x1e\xd9\x54\xea\x30\x70\xd8\xc2\x48\xae\xc1\xc8\x72\xa3'
+    )
     return symmetric_key

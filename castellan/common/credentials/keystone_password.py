@@ -17,17 +17,30 @@ Keystone Password Credential
 
 This module defines the Keystone Password credential.
 """
+
 from castellan.common.credentials import password
 
 
 class KeystonePassword(password.Password):
     """This class represents a keystone password credential."""
 
-    def __init__(self, password, auth_url=None, username=None, user_id=None,
-                 user_domain_id=None, user_domain_name=None, trust_id=None,
-                 domain_id=None, domain_name=None, project_id=None,
-                 project_name=None, project_domain_id=None,
-                 project_domain_name=None, reauthenticate=True):
+    def __init__(
+        self,
+        password,
+        auth_url=None,
+        username=None,
+        user_id=None,
+        user_domain_id=None,
+        user_domain_name=None,
+        trust_id=None,
+        domain_id=None,
+        domain_name=None,
+        project_id=None,
+        project_name=None,
+        project_domain_id=None,
+        project_domain_name=None,
+        reauthenticate=True,
+    ):
         """Create a new Keystone Password Credential.
 
         :param string auth_url: Use this endpoint to connect to Keystone.
@@ -60,8 +73,7 @@ class KeystonePassword(password.Password):
         self._project_domain_name = project_domain_name
         self._reauthenticate = reauthenticate
 
-        super(KeystonePassword, self).__init__(username,
-                                               password)
+        super().__init__(username, password)
 
     @property
     def auth_url(self):
@@ -126,19 +138,20 @@ class KeystonePassword(password.Password):
     def __eq__(self, other):
         if isinstance(other, KeystonePassword):
             return (
-                self._password == other._password and
-                self._username == other._username and
-                self._user_id == other._user_id and
-                self._user_domain_id == other._user_domain_id and
-                self._user_domain_name == other._user_domain_name and
-                self._trust_id == other._trust_id and
-                self._domain_id == other._domain_id and
-                self._domain_name == other._domain_name and
-                self._project_id == other._project_id and
-                self._project_name == other._project_name and
-                self._project_domain_id == other._project_domain_id and
-                self._project_domain_name == other._project_domain_name and
-                self._reauthenticate == other._reauthenticate)
+                self._password == other._password
+                and self._username == other._username
+                and self._user_id == other._user_id
+                and self._user_domain_id == other._user_domain_id
+                and self._user_domain_name == other._user_domain_name
+                and self._trust_id == other._trust_id
+                and self._domain_id == other._domain_id
+                and self._domain_name == other._domain_name
+                and self._project_id == other._project_id
+                and self._project_name == other._project_name
+                and self._project_domain_id == other._project_domain_id
+                and self._project_domain_name == other._project_domain_name
+                and self._reauthenticate == other._reauthenticate
+            )
         else:
             return False
 

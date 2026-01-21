@@ -43,7 +43,6 @@ CONF = config.get_config()
 
 @utils.parameterized_test_case
 class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
-
     def _create_key_manager(self):
         return barbican_key_manager.BarbicanKeyManager(cfg.CONF)
 
@@ -53,7 +52,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         return
 
     def setUp(self):
-        super(BarbicanKeyManagerTestCase, self).setUp()
+        super().setUp()
         try:
             self.ctxt = self.get_context()
             self.key_mgr._get_barbican_client(self.ctxt)
@@ -63,53 +62,72 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
             raise unittest.SkipTest(str(e))
 
     def tearDown(self):
-        super(BarbicanKeyManagerTestCase, self).tearDown()
+        super().tearDown()
 
     def test_create_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key, None, 'AES', 256)
+        self.assertRaises(
+            exception.Forbidden, self.key_mgr.create_key, None, 'AES', 256
+        )
 
     def test_create_key_pair_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key_pair, None, 'RSA', 2048)
+        self.assertRaises(
+            exception.Forbidden,
+            self.key_mgr.create_key_pair,
+            None,
+            'RSA',
+            2048,
+        )
 
     def test_delete_null_context(self):
         key_uuid = self._get_valid_object_uuid(
-            test_key_manager._get_test_symmetric_key())
+            test_key_manager._get_test_symmetric_key()
+        )
         self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete, None, key_uuid)
+        self.assertRaises(
+            exception.Forbidden, self.key_mgr.delete, None, key_uuid
+        )
 
     def test_delete_null_object(self):
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.delete, self.ctxt, None)
+        self.assertRaises(
+            exception.KeyManagerError, self.key_mgr.delete, self.ctxt, None
+        )
 
     def test_delete_unknown_object(self):
         unknown_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ManagedObjectNotFoundError,
-                          self.key_mgr.delete, self.ctxt, unknown_uuid)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.delete,
+            self.ctxt,
+            unknown_uuid,
+        )
 
     def test_get_null_context(self):
         key_uuid = self._get_valid_object_uuid(
-            test_key_manager._get_test_symmetric_key())
+            test_key_manager._get_test_symmetric_key()
+        )
         self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get, None, key_uuid)
+        self.assertRaises(
+            exception.Forbidden, self.key_mgr.get, None, key_uuid
+        )
 
     def test_get_null_object(self):
-        self.assertRaises(exception.KeyManagerError,
-                          self.key_mgr.get, self.ctxt, None)
+        self.assertRaises(
+            exception.KeyManagerError, self.key_mgr.get, self.ctxt, None
+        )
 
     def test_get_unknown_key(self):
         bad_key_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ManagedObjectNotFoundError,
-                          self.key_mgr.get, self.ctxt, bad_key_uuid)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.get,
+            self.ctxt,
+            bad_key_uuid,
+        )
 
     def test_store_null_context(self):
         key = test_key_manager._get_test_symmetric_key()
 
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store, None, key)
+        self.assertRaises(exception.Forbidden, self.key_mgr.store, None, key)
 
     def test_secret_create_check_empty_consumers_list(self):
         """Check that the consumers entity is a list and is empty."""
@@ -144,19 +162,24 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         consumer_data = {
             'service': 'dummy_service',
             'resource_type': 'dummy_resource_type',
-            'resource_id': resource_id
+            'resource_id': resource_id,
         }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer_data)
         stored_secret = self.key_mgr.get(self.ctxt, stored_id)
         self.assertIsNotNone(stored_secret)
         self.assertIsInstance(stored_secret.consumers, list)
         self.assertEqual(len(stored_secret.consumers), 1)
-        self.assertEqual(stored_secret.consumers[0]['service'],
-                         consumer_data['service'])
-        self.assertEqual(stored_secret.consumers[0]['resource_type'],
-                         consumer_data['resource_type'])
-        self.assertEqual(stored_secret.consumers[0]['resource_id'],
-                         consumer_data['resource_id'])
+        self.assertEqual(
+            stored_secret.consumers[0]['service'], consumer_data['service']
+        )
+        self.assertEqual(
+            stored_secret.consumers[0]['resource_type'],
+            consumer_data['resource_type'],
+        )
+        self.assertEqual(
+            stored_secret.consumers[0]['resource_id'],
+            consumer_data['resource_id'],
+        )
 
     def test_secret_create_remove_nonexistent_consumer(self):
         """Removing a nonexistent consumer should raise an exception."""
@@ -171,39 +194,70 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         consumer_data = {
             'service': 'dummy_service',
             'resource_type': 'dummy_resource_type',
-            'resource_id': resource_id
+            'resource_id': resource_id,
         }
-        self.assertRaises(exception.ManagedObjectNotFoundError,
-                          self.key_mgr.remove_consumer, self.ctxt,
-                          stored_id, consumer_data)
+        self.assertRaises(
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.remove_consumer,
+            self.ctxt,
+            stored_id,
+            consumer_data,
+        )
 
-    @utils.parameterized_dataset({
-        'remove_one': [[{'service': 'service_test1',
-                         'resource_type': 'type_test1',
-                         'resource_id': 'id_test1'},
-                        {'service': 'service_test2',
-                         'resource_type': 'type_test2',
-                         'resource_id': 'id_test2'}],
-                       [{'service': 'service_test1',
-                         'resource_type': 'type_test1',
-                         'resource_id': 'id_test1'}]],
-        'remove_all': [[{'service': 'service_test1',
-                         'resource_type': 'type_test1',
-                         'resource_id': 'id_test1'},
-                        {'service': 'service_test2',
-                         'resource_type': 'type_test2',
-                         'resource_id': 'id_test2'}],
-                       [{'service': 'service_test1',
-                         'resource_type': 'type_test1',
-                         'resource_id': 'id_test1'},
-                        {'service': 'service_test2',
-                         'resource_type': 'type_test2',
-                         'resource_id': 'id_test2'}]]
-    })
+    @utils.parameterized_dataset(
+        {
+            'remove_one': [
+                [
+                    {
+                        'service': 'service_test1',
+                        'resource_type': 'type_test1',
+                        'resource_id': 'id_test1',
+                    },
+                    {
+                        'service': 'service_test2',
+                        'resource_type': 'type_test2',
+                        'resource_id': 'id_test2',
+                    },
+                ],
+                [
+                    {
+                        'service': 'service_test1',
+                        'resource_type': 'type_test1',
+                        'resource_id': 'id_test1',
+                    }
+                ],
+            ],
+            'remove_all': [
+                [
+                    {
+                        'service': 'service_test1',
+                        'resource_type': 'type_test1',
+                        'resource_id': 'id_test1',
+                    },
+                    {
+                        'service': 'service_test2',
+                        'resource_type': 'type_test2',
+                        'resource_id': 'id_test2',
+                    },
+                ],
+                [
+                    {
+                        'service': 'service_test1',
+                        'resource_type': 'type_test1',
+                        'resource_id': 'id_test1',
+                    },
+                    {
+                        'service': 'service_test2',
+                        'resource_type': 'type_test2',
+                        'resource_id': 'id_test2',
+                    },
+                ],
+            ],
+        }
+    )
     def test_secret_create_and_adding_removing_consumers(
-            self,
-            add_consumers,
-            remove_consumers):
+        self, add_consumers, remove_consumers
+    ):
         """The following activities are carried:
 
         Create a secret, then register each consumer
@@ -227,22 +281,24 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         stored_secret = self.key_mgr.get(self.ctxt, stored_id)
 
         removed_ids = set([v['resource_id'] for v in remove_consumers])
-        remaining_consumers = [v for v in add_consumers
-                               if v['resource_id'] not in removed_ids]
+        remaining_consumers = [
+            v for v in add_consumers if v['resource_id'] not in removed_ids
+        ]
         self.assertCountEqual(remaining_consumers, stored_secret.consumers)
 
-    @utils.parameterized_dataset({
-        'no_args': [[{}]],
-        'one_arg_1': [[{'service': 'service1'}]],
-        'one_arg_2': [[{'resource_type': 'type1'}]],
-        'one_arg_3': [[{'resource_id': 'id1'}]],
-        'two_args_1': [[{'service': 'service1',
-                         'resource_type': 'type1'}]],
-        'two_args_2': [[{'service': 'service1',
-                         'resource_id': 'id1'}]],
-        'two_args_3': [[{'resource_type': 'type1',
-                         'resource_id': 'id'}]]
-    })
+    @utils.parameterized_dataset(
+        {
+            'no_args': [[{}]],
+            'one_arg_1': [[{'service': 'service1'}]],
+            'one_arg_2': [[{'resource_type': 'type1'}]],
+            'one_arg_3': [[{'resource_id': 'id1'}]],
+            'two_args_1': [
+                [{'service': 'service1', 'resource_type': 'type1'}]
+            ],
+            'two_args_2': [[{'service': 'service1', 'resource_id': 'id1'}]],
+            'two_args_3': [[{'resource_type': 'type1', 'resource_id': 'id'}]],
+        }
+    )
     def test_consumer_add_missing_positional_arguments(self, consumers):
         """Missing Positional Arguments - Addition
 
@@ -260,21 +316,25 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
             e = self.assertRaises(
                 TypeError,
                 self.key_mgr.add_consumer,
-                self.ctxt, stored_id, consumer)
+                self.ctxt,
+                stored_id,
+                consumer,
+            )
         self.assertIn('register_consumer() missing', str(e))
 
-    @utils.parameterized_dataset({
-        'no_args': [[{}]],
-        'one_arg_1': [[{'service': 'service1'}]],
-        'one_arg_2': [[{'resource_type': 'type1'}]],
-        'one_arg_3': [[{'resource_id': 'id1'}]],
-        'two_args_1': [[{'service': 'service1',
-                         'resource_type': 'type1'}]],
-        'two_args_2': [[{'service': 'service1',
-                         'resource_id': 'id1'}]],
-        'two_args_3': [[{'resource_type': 'type1',
-                         'resource_id': 'id'}]]
-    })
+    @utils.parameterized_dataset(
+        {
+            'no_args': [[{}]],
+            'one_arg_1': [[{'service': 'service1'}]],
+            'one_arg_2': [[{'resource_type': 'type1'}]],
+            'one_arg_3': [[{'resource_id': 'id1'}]],
+            'two_args_1': [
+                [{'service': 'service1', 'resource_type': 'type1'}]
+            ],
+            'two_args_2': [[{'service': 'service1', 'resource_id': 'id1'}]],
+            'two_args_3': [[{'resource_type': 'type1', 'resource_id': 'id'}]],
+        }
+    )
     def test_consumer_remove_missing_positional_arguments(self, consumers):
         """Missing Positional Arguments - Removal
 
@@ -291,14 +351,17 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         consumer_data = {
             'service': 'service1',
             'resource_type': 'type1',
-            'resource_id': 'id1'
+            'resource_id': 'id1',
         }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer_data)
         for consumer in consumers:
             e = self.assertRaises(
                 TypeError,
                 self.key_mgr.remove_consumer,
-                self.ctxt, stored_id, consumer)
+                self.ctxt,
+                stored_id,
+                consumer,
+            )
         self.assertIn('remove_consumer() missing', str(e))
 
     def test_consumer_add_two_remove_one_check_consumers_list(self):
@@ -315,12 +378,16 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.assertIsNotNone(stored_id)
 
         consumers = [
-            {'service': 'service1',
-             'resource_type': 'type1',
-             'resource_id': 'id1'},
-            {'service': 'service2',
-             'resource_type': 'type2',
-             'resource_id': 'id2'}
+            {
+                'service': 'service1',
+                'resource_type': 'type1',
+                'resource_id': 'id1',
+            },
+            {
+                'service': 'service2',
+                'resource_type': 'type2',
+                'resource_id': 'id2',
+            },
         ]
         for consumer in consumers:
             self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
@@ -344,15 +411,21 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.addCleanup(self.key_mgr.delete, self.ctxt, stored_id, True)
         self.assertIsNotNone(stored_id)
 
-        consumer = {'service': 'service1',
-                    'resource_type': 'type1',
-                    'resource_id': 'id1'}
+        consumer = {
+            'service': 'service1',
+            'resource_type': 'type1',
+            'resource_id': 'id1',
+        }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
 
-        e = self.assertRaises(ValueError, self.key_mgr.delete,
-                              self.ctxt, stored_id)
-        self.assertIn("Secret has consumers! Remove them first or use the "
-                      "force parameter to delete it.", str(e))
+        e = self.assertRaises(
+            ValueError, self.key_mgr.delete, self.ctxt, stored_id
+        )
+        self.assertIn(
+            "Secret has consumers! Remove them first or use the "
+            "force parameter to delete it.",
+            str(e),
+        )
 
     def test_consumer_add_secret_delete_force_parameter_false(self):
         """Consumer addition, secret deletion, 'force' parameter equals False
@@ -367,15 +440,21 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.addCleanup(self.key_mgr.delete, self.ctxt, stored_id, True)
         self.assertIsNotNone(stored_id)
 
-        consumer = {'service': 'service1',
-                    'resource_type': 'type1',
-                    'resource_id': 'id1'}
+        consumer = {
+            'service': 'service1',
+            'resource_type': 'type1',
+            'resource_id': 'id1',
+        }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
 
-        e = self.assertRaises(ValueError, self.key_mgr.delete,
-                              self.ctxt, stored_id, False)
-        self.assertIn("Secret has consumers! Remove them first or use the "
-                      "force parameter to delete it.", str(e))
+        e = self.assertRaises(
+            ValueError, self.key_mgr.delete, self.ctxt, stored_id, False
+        )
+        self.assertIn(
+            "Secret has consumers! Remove them first or use the "
+            "force parameter to delete it.",
+            str(e),
+        )
 
     def test_consumer_add_secret_delete_force_parameter_true(self):
         """Consumer addition, secret deletion, 'force' parameter equals True
@@ -389,17 +468,19 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         stored_id = self.key_mgr.store(self.ctxt, key)
         self.assertIsNotNone(stored_id)
 
-        consumer = {'service': 'service1',
-                    'resource_type': 'type1',
-                    'resource_id': 'id1'}
+        consumer = {
+            'service': 'service1',
+            'resource_type': 'type1',
+            'resource_id': 'id1',
+        }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
 
         self.key_mgr.delete(self.ctxt, stored_id, True)
 
 
-class BarbicanKeyManagerOsloContextTestCase(BarbicanKeyManagerTestCase,
-                                            base.BaseTestCase):
-
+class BarbicanKeyManagerOsloContextTestCase(
+    BarbicanKeyManagerTestCase, base.BaseTestCase
+):
     def get_context(self):
         username = CONF.identity.username
         password = CONF.identity.password
@@ -408,21 +489,25 @@ class BarbicanKeyManagerOsloContextTestCase(BarbicanKeyManagerTestCase,
         user_domain_name = CONF.identity.user_domain_name
         project_domain_name = CONF.identity.project_domain_name
 
-        auth = identity.V3Password(auth_url=auth_url,
-                                   username=username,
-                                   password=password,
-                                   project_name=project_name,
-                                   user_domain_name=user_domain_name,
-                                   project_domain_name=project_domain_name)
+        auth = identity.V3Password(
+            auth_url=auth_url,
+            username=username,
+            password=password,
+            project_name=project_name,
+            user_domain_name=user_domain_name,
+            project_domain_name=project_domain_name,
+        )
         sess = session.Session(auth=auth)
 
-        return context.RequestContext(auth_token=auth.get_token(sess),
-                                      project_id=auth.get_project_id(sess))
+        return context.RequestContext(
+            auth_token=auth.get_token(sess),
+            project_id=auth.get_project_id(sess),
+        )
 
 
-class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
-                                           base.BaseTestCase):
-
+class BarbicanKeyManagerKSPasswordTestCase(
+    BarbicanKeyManagerTestCase, base.BaseTestCase
+):
     def get_context(self):
         auth_url = CONF.identity.auth_url
         username = CONF.identity.username
@@ -432,17 +517,20 @@ class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
         project_domain_name = CONF.identity.project_domain_name
 
         ctxt = keystone_password.KeystonePassword(
-            auth_url=auth_url, username=username, password=password,
+            auth_url=auth_url,
+            username=username,
+            password=password,
             project_name=project_name,
             user_domain_name=user_domain_name,
-            project_domain_name=project_domain_name)
+            project_domain_name=project_domain_name,
+        )
 
         return ctxt
 
 
-class BarbicanKeyManagerKSTokenTestCase(BarbicanKeyManagerTestCase,
-                                        base.BaseTestCase):
-
+class BarbicanKeyManagerKSTokenTestCase(
+    BarbicanKeyManagerTestCase, base.BaseTestCase
+):
     def get_context(self):
         username = CONF.identity.username
         password = CONF.identity.password
@@ -451,15 +539,18 @@ class BarbicanKeyManagerKSTokenTestCase(BarbicanKeyManagerTestCase,
         user_domain_name = CONF.identity.user_domain_name
         project_domain_name = CONF.identity.project_domain_name
 
-        auth = identity.V3Password(auth_url=auth_url,
-                                   username=username,
-                                   password=password,
-                                   project_name=project_name,
-                                   user_domain_name=user_domain_name,
-                                   project_domain_name=project_domain_name)
+        auth = identity.V3Password(
+            auth_url=auth_url,
+            username=username,
+            password=password,
+            project_name=project_name,
+            user_domain_name=user_domain_name,
+            project_domain_name=project_domain_name,
+        )
         sess = session.Session()
 
         return keystone_token.KeystoneToken(
             token=auth.get_token(sess),
             auth_url=auth_url,
-            project_id=auth.get_project_id(sess))
+            project_id=auth.get_project_id(sess),
+        )

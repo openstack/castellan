@@ -31,8 +31,9 @@ class OpaqueData(managed_object.ManagedObject):
         Expected type for data is a bytestring.
         """
         self._data = data
-        super().__init__(name=name, created=created, id=id,
-                         consumers=consumers)
+        super().__init__(
+            name=name, created=created, id=id, consumers=consumers
+        )
 
     @classmethod
     def managed_type(cls):
@@ -47,7 +48,7 @@ class OpaqueData(managed_object.ManagedObject):
 
     def __eq__(self, other):
         if isinstance(other, OpaqueData):
-            return (self._data == other._data)
+            return self._data == other._data
         else:
             return False
 

@@ -16,6 +16,7 @@
 """
 Test cases for the X.509 certificate class.
 """
+
 from castellan.common import objects
 from castellan.common.objects import x_509
 from castellan.tests import base
@@ -23,22 +24,24 @@ from castellan.tests import utils
 
 
 class X509TestCase(base.CertificateTestCase):
-
     def _create_cert(self):
-        return x_509.X509(self.data,
-                          self.name,
-                          self.created,
-                          consumers=self.consumers)
+        return x_509.X509(
+            self.data, self.name, self.created, consumers=self.consumers
+        )
 
     def setUp(self):
         self.data = utils.get_certificate_der()
         self.name = 'my cert'
         self.created = 1448088699
-        self.consumers = [{'service': 'service_test',
-                           'resource_type': 'type_test',
-                           'resource_id': 'id_test'}]
+        self.consumers = [
+            {
+                'service': 'service_test',
+                'resource_type': 'type_test',
+                'resource_id': 'id_test',
+            }
+        ]
 
-        super(X509TestCase, self).setUp()
+        super().setUp()
 
     def test_is_not_only_metadata(self):
         self.assertFalse(self.cert.is_metadata_only())
@@ -64,10 +67,9 @@ class X509TestCase(base.CertificateTestCase):
 
     def test_get_created_none(self):
         created = None
-        cert = x_509.X509(self.data,
-                          self.name,
-                          created,
-                          consumers=self.consumers)
+        cert = x_509.X509(
+            self.data, self.name, created, consumers=self.consumers
+        )
 
         self.assertEqual(created, cert.created)
 
@@ -91,13 +93,16 @@ class X509TestCase(base.CertificateTestCase):
         self.assertTrue(self.cert != other_x509)
 
     def test___ne___consumers(self):
-        different_consumers = [{'service': 'other_service',
-                                'resource_type': 'other_type',
-                                'resource_id': 'other_id'}]
-        other_cert = x_509.X509(self.data,
-                                self.name,
-                                self.created,
-                                consumers=different_consumers)
+        different_consumers = [
+            {
+                'service': 'other_service',
+                'resource_type': 'other_type',
+                'resource_id': 'other_id',
+            }
+        ]
+        other_cert = x_509.X509(
+            self.data, self.name, self.created, consumers=different_consumers
+        )
         self.assertTrue(self.cert is not other_cert)
 
     def test_to_and_from_dict(self):

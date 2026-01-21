@@ -21,19 +21,24 @@ from castellan.key_manager import key_manager
 
 
 class NotImplementedKeyManager(key_manager.KeyManager):
-    """Key Manager Interface that raises NotImplementedError for all operations
-
-    """
+    """Key Manager that raises NotImplementedError for all operations."""
 
     def __init__(self, configuration=None):
         super().__init__(configuration)
 
-    def create_key(self, context, algorithm='AES', length=256,
-                   expiration=None, name=None):
+    def create_key(
+        self,
+        context,
+        algorithm='AES',
+        length=256,
+        expiration=None,
+        name=None,
+    ):
         raise NotImplementedError()
 
-    def create_key_pair(self, context, algorithm, length,
-                        expiration=None, name=None):
+    def create_key_pair(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         raise NotImplementedError()
 
     def store(self, context, managed_object, expiration=None):

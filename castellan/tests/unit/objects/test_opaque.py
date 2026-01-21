@@ -16,29 +16,32 @@
 """
 Test cases for the opaque data class.
 """
+
 from castellan.common import objects
 from castellan.common.objects import opaque_data
 from castellan.tests import base
 
 
 class OpaqueDataTestCase(base.TestCase):
-
     def _create_data(self):
-        return opaque_data.OpaqueData(self.data,
-                                      self.name,
-                                      self.created,
-                                      consumers=self.consumers)
+        return opaque_data.OpaqueData(
+            self.data, self.name, self.created, consumers=self.consumers
+        )
 
     def setUp(self):
-        self.data = bytes(b"secret opaque data")
+        self.data = b"secret opaque data"
         self.name = 'my opaque'
         self.created = 1448088699
-        self.consumers = [{'service': 'service_test',
-                           'resource_type': 'type_test',
-                           'resource_id': 'id_test'}]
+        self.consumers = [
+            {
+                'service': 'service_test',
+                'resource_type': 'type_test',
+                'resource_id': 'id_test',
+            }
+        ]
         self.opaque_data = self._create_data()
 
-        super(OpaqueDataTestCase, self).setUp()
+        super().setUp()
 
     def test_is_not_only_metadata(self):
         self.assertFalse(self.opaque_data.is_metadata_only())
@@ -64,10 +67,9 @@ class OpaqueDataTestCase(base.TestCase):
 
     def test_get_created_none(self):
         created = None
-        data = opaque_data.OpaqueData(self.data,
-                                      self.name,
-                                      created,
-                                      consumers=self.consumers)
+        data = opaque_data.OpaqueData(
+            self.data, self.name, created, consumers=self.consumers
+        )
 
         self.assertEqual(created, data.created)
 

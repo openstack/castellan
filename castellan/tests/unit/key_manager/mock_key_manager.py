@@ -61,21 +61,20 @@ class MockKeyManager(key_manager.KeyManager):
     def _generate_hex_key(self, length):
         # hex digit => 4 bits
         length = int(length / 4)
-        hex_encoded = self._generate_password(length=length,
-                                              symbolgroups='0123456789ABCDEF')
+        hex_encoded = self._generate_password(
+            length=length, symbolgroups='0123456789ABCDEF'
+        )
         return hex_encoded
 
     def _generate_key(self, *, algorithm, length, name):
         _hex = self._generate_hex_key(length)
         return sym_key.SymmetricKey(
-            algorithm,
-            length,
-            bytes(binascii.unhexlify(_hex)),
-            name
+            algorithm, length, bytes(binascii.unhexlify(_hex)), name
         )
 
-    def create_key(self, context, algorithm, length,
-                   expiration=None, name=None):
+    def create_key(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates a symmetric key.
 
         This implementation returns a UUID for the created key. The algorithm
@@ -96,35 +95,41 @@ class MockKeyManager(key_manager.KeyManager):
         crypto_private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=length,
-            backend=backends.default_backend())
+            backend=backends.default_backend(),
+        )
 
         private_der = crypto_private_key.private_bytes(
             encoding=serialization.Encoding.DER,
             format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption())
+            encryption_algorithm=serialization.NoEncryption(),
+        )
 
         crypto_public_key = crypto_private_key.public_key()
 
         public_der = crypto_public_key.public_bytes(
             encoding=serialization.Encoding.DER,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
 
         private_key = pri_key.PrivateKey(
             algorithm='RSA',
             bit_length=length,
             key=bytearray(private_der),
-            name=name)
+            name=name,
+        )
 
         public_key = pub_key.PublicKey(
             algorithm='RSA',
             bit_length=length,
             key=bytearray(public_der),
-            name=name)
+            name=name,
+        )
 
         return private_key, public_key
 
-    def create_key_pair(self, context, algorithm, length,
-                        expiration=None, name=None):
+    def create_key_pair(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates an asymmetric key pair.
 
         This implementation returns UUIDs for the created keys in the order:
@@ -135,18 +140,20 @@ class MockKeyManager(key_manager.KeyManager):
             raise exception.Forbidden()
 
         if algorithm.lower() != 'rsa':
-            msg = 'Invalid algorithm: {}, only RSA supported'.format(algorithm)
+            msg = f'Invalid algorithm: {algorithm}, only RSA supported'
             raise ValueError(msg)
 
         valid_lengths = [2048, 3072, 4096]
 
         if length not in valid_lengths:
-            msg = 'Invalid bit length: {}, only {} supported'.format(
-                length, valid_lengths)
+            msg = (
+                f'Invalid bit length: {length}, only {valid_lengths} supported'
+            )
             raise ValueError(msg)
 
-        private_key, public_key = self._generate_public_and_private_key(length,
-                                                                        name)
+        private_key, public_key = self._generate_public_and_private_key(
+            length, name
+        )
 
         private_key_uuid = self.store(context, private_key)
         public_key_uuid = self.store(context, public_key)
@@ -222,8 +229,10 @@ class MockKeyManager(key_manager.KeyManager):
         if managed_object_id not in self.keys:
             raise exception.ManagedObjectNotFoundError(managed_object_id)
         self.keys[managed_object_id].consumers = [
-            c for c in self.keys[managed_object_id].consumers
-            if c != consumer_data]
+            c
+            for c in self.keys[managed_object_id].consumers
+            if c != consumer_data
+        ]
 
     def _generate_password(self, length, symbolgroups):
         """Generate a random password from the supplied symbol groups.

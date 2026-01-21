@@ -22,7 +22,6 @@ from castellan.tests import base
 
 
 class KeystonePasswordTestCase(base.TestCase):
-
     def _create_ks_password_credential(self):
         return keystone_password.KeystonePassword(
             self.password,
@@ -37,7 +36,8 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
     def setUp(self):
         self.password = "Pa$$w0rd1"
@@ -56,65 +56,72 @@ class KeystonePasswordTestCase(base.TestCase):
 
         self.ks_password_credential = self._create_ks_password_credential()
 
-        super(KeystonePasswordTestCase, self).setUp()
+        super().setUp()
 
     def test_get_password(self):
-        self.assertEqual(self.password,
-                         self.ks_password_credential.password)
+        self.assertEqual(self.password, self.ks_password_credential.password)
 
     def test_get_username(self):
-        self.assertEqual(self.username,
-                         self.ks_password_credential.username)
+        self.assertEqual(self.username, self.ks_password_credential.username)
 
     def test_get_user_id(self):
-        self.assertEqual(self.user_id,
-                         self.ks_password_credential.user_id)
+        self.assertEqual(self.user_id, self.ks_password_credential.user_id)
 
     def test_get_user_domain_id(self):
-        self.assertEqual(self.user_domain_id,
-                         self.ks_password_credential.user_domain_id)
+        self.assertEqual(
+            self.user_domain_id, self.ks_password_credential.user_domain_id
+        )
 
     def test_get_user_domain_name(self):
-        self.assertEqual(self.user_domain_name,
-                         self.ks_password_credential.user_domain_name)
+        self.assertEqual(
+            self.user_domain_name, self.ks_password_credential.user_domain_name
+        )
 
     def test_get_trust_id(self):
-        self.assertEqual(self.trust_id,
-                         self.ks_password_credential.trust_id)
+        self.assertEqual(self.trust_id, self.ks_password_credential.trust_id)
 
     def test_get_domain_id(self):
-        self.assertEqual(self.domain_id,
-                         self.ks_password_credential.domain_id)
+        self.assertEqual(self.domain_id, self.ks_password_credential.domain_id)
 
     def test_get_domain_name(self):
-        self.assertEqual(self.domain_name,
-                         self.ks_password_credential.domain_name)
+        self.assertEqual(
+            self.domain_name, self.ks_password_credential.domain_name
+        )
 
     def test_get_project_id(self):
-        self.assertEqual(self.project_id,
-                         self.ks_password_credential.project_id)
+        self.assertEqual(
+            self.project_id, self.ks_password_credential.project_id
+        )
 
     def test_get_project_name(self):
-        self.assertEqual(self.project_name,
-                         self.ks_password_credential.project_name)
+        self.assertEqual(
+            self.project_name, self.ks_password_credential.project_name
+        )
 
     def test_get_project_domain_id(self):
-        self.assertEqual(self.project_domain_id,
-                         self.ks_password_credential.project_domain_id)
+        self.assertEqual(
+            self.project_domain_id,
+            self.ks_password_credential.project_domain_id,
+        )
 
     def test_get_project_domain_name(self):
-        self.assertEqual(self.project_domain_name,
-                         self.ks_password_credential.project_domain_name)
+        self.assertEqual(
+            self.project_domain_name,
+            self.ks_password_credential.project_domain_name,
+        )
 
     def test_get_reauthenticate(self):
-        self.assertEqual(self.reauthenticate,
-                         self.ks_password_credential.reauthenticate)
+        self.assertEqual(
+            self.reauthenticate, self.ks_password_credential.reauthenticate
+        )
 
     def test___eq__(self):
-        self.assertTrue(self.ks_password_credential ==
-                        self.ks_password_credential)
-        self.assertTrue(self.ks_password_credential is
-                        self.ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential == self.ks_password_credential
+        )
+        self.assertTrue(
+            self.ks_password_credential is self.ks_password_credential
+        )
 
         self.assertFalse(self.ks_password_credential is None)
         self.assertFalse(None == self.ks_password_credential)  # noqa: E711
@@ -132,11 +139,14 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
-        self.assertTrue(self.ks_password_credential ==
-                        other_ks_password_credential)
-        self.assertFalse(self.ks_password_credential is
-                         other_ks_password_credential)
+            reauthenticate=self.reauthenticate,
+        )
+        self.assertTrue(
+            self.ks_password_credential == other_ks_password_credential
+        )
+        self.assertFalse(
+            self.ks_password_credential is other_ks_password_credential
+        )
 
     def test___ne___none(self):
         self.assertTrue(self.ks_password_credential is not None)
@@ -158,10 +168,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___username(self):
         other_username = "service"
@@ -179,10 +191,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___user_id(self):
         other_user_id = "service"
@@ -200,10 +214,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___user_domain_id(self):
         other_user_domain_id = "domain0"
@@ -221,10 +237,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___user_domain_name(self):
         other_user_domain_name = "domain0"
@@ -242,10 +260,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___trust_id(self):
         other_trust_id = "00000000000000"
@@ -263,10 +283,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___domain_id(self):
         other_domain_id = "domain0"
@@ -284,10 +306,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___domain_name(self):
         other_domain_name = "domain0"
@@ -305,10 +329,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___project_id(self):
         other_project_id = "00000000000000"
@@ -326,10 +352,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___project_name(self):
         other_project_name = "proj0"
@@ -347,10 +375,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=other_project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___project_domain_id(self):
         other_project_domain_id = "domain0"
@@ -368,10 +398,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=other_project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___project_domain_name(self):
         other_project_domain_name = "domain0"
@@ -389,10 +421,12 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=other_project_domain_name,
-            reauthenticate=self.reauthenticate)
+            reauthenticate=self.reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )
 
     def test___ne___reauthenticate(self):
         other_reauthenticate = False
@@ -410,7 +444,9 @@ class KeystonePasswordTestCase(base.TestCase):
             project_name=self.project_name,
             project_domain_id=self.project_domain_id,
             project_domain_name=self.project_domain_name,
-            reauthenticate=other_reauthenticate)
+            reauthenticate=other_reauthenticate,
+        )
 
-        self.assertTrue(self.ks_password_credential !=
-                        other_ks_password_credential)
+        self.assertTrue(
+            self.ks_password_credential != other_ks_password_credential
+        )

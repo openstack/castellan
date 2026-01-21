@@ -19,7 +19,8 @@ from castellan.common.objects import symmetric_key
 from castellan.common.objects import x_509
 
 _managed_objects_by_type = {
-    cls.managed_type(): cls for cls in [
+    cls.managed_type(): cls
+    for cls in [
         opaque_data.OpaqueData,
         passphrase.Passphrase,
         private_key.PrivateKey,

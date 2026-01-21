@@ -46,9 +46,11 @@ class PublicKey(key.Key):
 
     def __eq__(self, other):
         if isinstance(other, PublicKey):
-            return (self._alg == other._alg and
-                    self._bit_length == other._bit_length and
-                    self._key == other._key)
+            return (
+                self._alg == other._alg
+                and self._bit_length == other._bit_length
+                and self._key == other._key
+            )
         else:
             return False
 

@@ -21,24 +21,33 @@ TEST_CONF = None
 
 identity_group = cfg.OptGroup(name='identity')
 identity_options = [
-    cfg.StrOpt('auth_url',
-               default='http://localhost/identity/v3',
-               help='Keystone endpoint'),
-    cfg.StrOpt('username',
-               default='admin',
-               help='Keystone username'),
-    cfg.StrOpt('password',
-               default='secretadmin',
-               help='Password used with Keystone username'),
-    cfg.StrOpt('project_name',
-               default='admin',
-               help='Name of project, used by the given username'),
-    cfg.StrOpt('user_domain_name',
-               default='Default',
-               help='Name of domain, used by the given username'),
-    cfg.StrOpt('project_domain_name',
-               default='Default',
-               help='Name of domain, used by the given project')]
+    cfg.StrOpt(
+        'auth_url',
+        default='http://localhost/identity/v3',
+        help='Keystone endpoint',
+    ),
+    cfg.StrOpt('username', default='admin', help='Keystone username'),
+    cfg.StrOpt(
+        'password',
+        default='secretadmin',
+        help='Password used with Keystone username',
+    ),
+    cfg.StrOpt(
+        'project_name',
+        default='admin',
+        help='Name of project, used by the given username',
+    ),
+    cfg.StrOpt(
+        'user_domain_name',
+        default='Default',
+        help='Name of domain, used by the given username',
+    ),
+    cfg.StrOpt(
+        'project_domain_name',
+        default='Default',
+        help='Name of domain, used by the given project',
+    ),
+]
 
 
 def setup_config(config_file=''):
@@ -60,7 +69,7 @@ def setup_config(config_file=''):
 
     TEST_CONF(
         (),  # Required to load an anonymous configuration
-        default_config_files=config_to_load
+        default_config_files=config_to_load,
     )
 
 

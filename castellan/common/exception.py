@@ -36,6 +36,7 @@ class CastellanException(Exception):
     a 'message' property. That message will get printf'd
     with the keyword arguments provided to the constructor.
     """
+
     message = _("An unknown exception occurred")
 
     def __init__(self, message_arg=None, *args, **kwargs):
@@ -49,7 +50,7 @@ class CastellanException(Exception):
             else:
                 # at least get the core message out if something happened
                 pass
-        super(CastellanException, self).__init__(self.message)
+        super().__init__(self.message)
 
 
 class Forbidden(CastellanException):
@@ -77,6 +78,8 @@ class AuthTypeInvalidError(CastellanException):
 
 
 class InsufficientCredentialDataError(CastellanException):
-    message = _("Insufficient credential data was provided, either "
-                "\"token\" must be set in the passed conf, or a context "
-                "with an \"auth_token\" property must be passed.")
+    message = _(
+        "Insufficient credential data was provided, either "
+        "\"token\" must be set in the passed conf, or a context "
+        "with an \"auth_token\" property must be passed."
+    )

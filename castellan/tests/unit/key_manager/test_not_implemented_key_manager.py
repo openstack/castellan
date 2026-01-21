@@ -22,34 +22,28 @@ from castellan.tests.unit.key_manager import test_key_manager
 
 
 class NotImplementedKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
-
     def _create_key_manager(self):
         return not_implemented_key_manager.NotImplementedKeyManager()
 
     def test_create_key(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.create_key, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.create_key, None)
 
     def test_create_key_pair(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.create_key_pair, None, None, None)
+        self.assertRaises(
+            NotImplementedError, self.key_mgr.create_key_pair, None, None, None
+        )
 
     def test_store(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.store, None, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.store, None, None)
 
     def test_copy(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.copy, None, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.copy, None, None)
 
     def test_get(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.get, None, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.get, None, None)
 
     def test_list(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.list, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.list, None)
 
     def test_delete(self):
-        self.assertRaises(NotImplementedError,
-                          self.key_mgr.delete, None, None)
+        self.assertRaises(NotImplementedError, self.key_mgr.delete, None, None)

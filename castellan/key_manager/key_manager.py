@@ -27,7 +27,7 @@ from castellan.common.objects import symmetric_key as sym_key
 from castellan.common.objects import x_509
 
 
-class KeyManager(object, metaclass=abc.ABCMeta):
+class KeyManager(metaclass=abc.ABCMeta):
     """Base Key Manager Interface
 
     A Key Manager is responsible for managing encryption keys for volumes. A
@@ -40,7 +40,8 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         pri_key.PrivateKey: "private",
         pub_key.PublicKey: "public",
         sym_key.SymmetricKey: "symmetric",
-        x_509.X509: "certificate"}
+        x_509.X509: "certificate",
+    }
 
     @abc.abstractmethod
     def __init__(self, configuration):
@@ -52,8 +53,9 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def create_key(self, context, algorithm, length,
-                   expiration=None, name=None):
+    def create_key(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates a symmetric key.
 
         This method creates a symmetric key and returns the key's UUID. If the
@@ -63,8 +65,9 @@ class KeyManager(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def create_key_pair(self, context, algorithm, length,
-                        expiration=None, name=None):
+    def create_key_pair(
+        self, context, algorithm, length, expiration=None, name=None
+    ):
         """Creates an asymmetric key pair.
 
         This method creates an asymmetric key pair and returns the pair of key

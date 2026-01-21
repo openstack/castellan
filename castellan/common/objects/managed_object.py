@@ -26,7 +26,7 @@ import binascii
 from castellan.common import exception
 
 
-class ManagedObject(object, metaclass=abc.ABCMeta):
+class ManagedObject(metaclass=abc.ABCMeta):
     """Base class to represent all managed objects."""
 
     def __init__(self, name=None, created=None, id=None, consumers=[]):
@@ -43,8 +43,9 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         if not created or isinstance(created, int):
             self._created = created
         else:
-            raise ValueError('created must be of long type, actual type %s' %
-                             type(created))
+            raise ValueError(
+                f'created must be of long type, actual type {type(created)}'
+            )
 
         self._id = id
         self._consumers = consumers
@@ -121,8 +122,9 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
         pass
 
     @classmethod
-    def from_dict(cls, dict_fields, id=None, metadata_only=False,
-                  consumers=[]):
+    def from_dict(
+        cls, dict_fields, id=None, metadata_only=False, consumers=[]
+    ):
         """Returns an instance of this class based on a dict object.
 
         :param dict_fields: The dictionary containing all necessary params
@@ -146,7 +148,7 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
                 name=dict_fields["name"],
                 created=dict_fields["created"],
                 id=id,
-                consumers=consumers
+                consumers=consumers,
             )
         except KeyError as e:
             raise exception.InvalidManagedObjectDictError(field=str(e))
@@ -172,5 +174,5 @@ class ManagedObject(object, metaclass=abc.ABCMeta):
             "name": self.name,
             "created": self.created,
             "value": value,
-            "consumers": self.consumers
+            "consumers": self.consumers,
         }

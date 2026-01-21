@@ -42,6 +42,7 @@ The Configuration Source Class
 .. autoclass:: CastellanConfigurationSource
 
 """
+
 from castellan.common.exception import AuthTypeInvalidError
 from castellan.common.exception import KeyManagerError
 from castellan.common.exception import ManagedObjectNotFoundError
@@ -93,14 +94,14 @@ class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
         return CastellanConfigurationSource(
             group_name,
             conf[group_name].config_file,
-            conf[group_name].mapping_file)
+            conf[group_name].mapping_file,
+        )
 
 
 class CastellanConfigurationSource(sources.ConfigurationSource):
-    """A configuration source for configuration values served through castellan.  # noqa
+    """A configuration source for values served through castellan.
 
     :param config_file: The path to a castellan configuration file.
-
     :param mapping_file: The path to a configuration/castellan_id mapping file.
     """
 
@@ -117,11 +118,14 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
         except AuthTypeInvalidError:
             self._context = None
 
-            LOG.warning("Invalid 'auth_type' in '%s', auth_type: %s. "
-                        "Context set to 'None'. Supported 'auth_type' values: "
-                        "'token', 'password', 'keystone_token', "
-                        "'keystone_password'.",
-                        config_file, conf.key_manager.auth_type)
+            LOG.warning(
+                "Invalid 'auth_type' in '%s', auth_type: %s. "
+                "Context set to 'None'. Supported 'auth_type' values: "
+                "'token', 'password', 'keystone_token', "
+                "'keystone_password'.",
+                config_file,
+                conf.key_manager.auth_type,
+            )
 
         cfg.ConfigParser(mapping_file, self._mapping).parse()
 
@@ -131,25 +135,40 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
 
             castellan_id = self._mapping[group_name][option_name][0]
 
-            return (self._mngr.get(self._context, castellan_id)
-                    .get_encoded().decode(),
-                    cfg.LocationInfo(cfg.Locations.user, castellan_id))
+            return (
+                self._mngr.get(self._context, castellan_id)
+                .get_encoded()
+                .decode(),
+                cfg.LocationInfo(cfg.Locations.user, castellan_id),
+            )
 
         except KeyError:
             # no mapping 'option = castellan_id'
-            LOG.debug("option '[%s] %s' not present in '[%s] mapping_file'",
-                      group_name, option_name, self._name)
+            LOG.debug(
+                "option '[%s] %s' not present in '[%s] mapping_file'",
+                group_name,
+                option_name,
+                self._name,
+            )
 
         except KeyManagerError:
             # error retrieving the secret from the key manager
-            LOG.exception("Failed to retrieve secret for option '[%s] %s' in "
-                          "'[%s] mapping_file'",
-                          group_name, option_name, self._name)
+            LOG.exception(
+                "Failed to retrieve secret for option '[%s] %s' in "
+                "'[%s] mapping_file'",
+                group_name,
+                option_name,
+                self._name,
+            )
 
         except ManagedObjectNotFoundError:
             # good mapping, but unknown castellan_id by secret manager
-            LOG.error("invalid castellan_id for option '[%s] %s' in '[%s] "
-                      "mapping_file'",
-                      group_name, option_name, self._name)
+            LOG.error(
+                "invalid castellan_id for option '[%s] %s' in '[%s] "
+                "mapping_file'",
+                group_name,
+                option_name,
+                self._name,
+            )
 
         return (sources._NoValue, None)

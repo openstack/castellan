@@ -18,6 +18,7 @@ Test cases for a key manager.
 
 These test cases should pass against any key manager.
 """
+
 from oslo_utils import uuidutils
 
 from castellan.common import exception
@@ -70,13 +71,12 @@ def _get_test_passphrase():
 
 
 @utils.parameterized_test_case
-class KeyManagerTestCase(object):
-
+class KeyManagerTestCase:
     def _create_key_manager(self):
         raise NotImplementedError()
 
     def setUp(self):
-        super(KeyManagerTestCase, self).setUp()
+        super().setUp()
         self.key_mgr = self._create_key_manager()
         self.ctxt = None
 
@@ -86,17 +86,16 @@ class KeyManagerTestCase(object):
         return object_uuid
 
     def test_create_key(self):
-        key_uuid = self.key_mgr.create_key(self.ctxt,
-                                           algorithm='AES',
-                                           length=256)
+        key_uuid = self.key_mgr.create_key(
+            self.ctxt, algorithm='AES', length=256
+        )
         self.addCleanup(self.key_mgr.delete, self.ctxt, key_uuid)
         self.assertIsNotNone(key_uuid)
 
     def test_create_key_pair(self):
         private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
-            self.ctxt,
-            algorithm='RSA',
-            length=2048)
+            self.ctxt, algorithm='RSA', length=2048
+        )
 
         self.addCleanup(self.key_mgr.delete, self.ctxt, private_key_uuid)
         self.addCleanup(self.key_mgr.delete, self.ctxt, public_key_uuid)
@@ -105,14 +104,16 @@ class KeyManagerTestCase(object):
         self.assertIsNotNone(public_key_uuid)
         self.assertNotEqual(private_key_uuid, public_key_uuid)
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_delete(self, managed_object):
         object_uuid = self._get_valid_object_uuid(managed_object)
         self.key_mgr.delete(self.ctxt, object_uuid)
@@ -123,69 +124,79 @@ class KeyManagerTestCase(object):
         else:
             self.fail('No exception when deleting non-existent key')
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_get(self, managed_object):
         uuid = self._get_valid_object_uuid(managed_object)
         self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
 
         retrieved_object = self.key_mgr.get(self.ctxt, uuid)
-        self.assertEqual(managed_object.get_encoded(),
-                         retrieved_object.get_encoded())
+        self.assertEqual(
+            managed_object.get_encoded(), retrieved_object.get_encoded()
+        )
         self.assertFalse(managed_object.is_metadata_only())
         self.assertFalse(retrieved_object.is_metadata_only())
         self.assertIsNotNone(retrieved_object.id)
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_get_metadata(self, managed_object):
         uuid = self._get_valid_object_uuid(managed_object)
         self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
 
-        retrieved_object = self.key_mgr.get(self.ctxt,
-                                            uuid,
-                                            metadata_only=True)
+        retrieved_object = self.key_mgr.get(
+            self.ctxt, uuid, metadata_only=True
+        )
         self.assertFalse(managed_object.is_metadata_only())
         self.assertTrue(retrieved_object.is_metadata_only())
         self.assertIsNotNone(retrieved_object.id)
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_store(self, managed_object):
         uuid = self.key_mgr.store(self.ctxt, managed_object)
         self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
 
         retrieved_object = self.key_mgr.get(self.ctxt, uuid)
-        self.assertEqual(managed_object.get_encoded(),
-                         retrieved_object.get_encoded())
+        self.assertEqual(
+            managed_object.get_encoded(), retrieved_object.get_encoded()
+        )
         self.assertIsNotNone(retrieved_object.id)
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_list(self, managed_object):
         uuid = self.key_mgr.store(self.ctxt, managed_object)
         self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
@@ -199,14 +210,16 @@ class KeyManagerTestCase(object):
             self.assertFalse(retrieved_object.is_metadata_only())
             self.assertIsNotNone(retrieved_object.id)
 
-    @utils.parameterized_dataset({
-        'symmetric_key': [_get_test_symmetric_key()],
-        'public_key': [_get_test_public_key()],
-        'private_key': [_get_test_private_key()],
-        'certificate': [_get_test_certificate()],
-        'passphrase': [_get_test_passphrase()],
-        'opaque_data': [_get_test_opaque_data()],
-    })
+    @utils.parameterized_dataset(
+        {
+            'symmetric_key': [_get_test_symmetric_key()],
+            'public_key': [_get_test_public_key()],
+            'private_key': [_get_test_private_key()],
+            'certificate': [_get_test_certificate()],
+            'passphrase': [_get_test_passphrase()],
+            'opaque_data': [_get_test_opaque_data()],
+        }
+    )
     def test_list_metadata_only(self, managed_object):
         uuid = self.key_mgr.store(self.ctxt, managed_object)
         self.addCleanup(self.key_mgr.delete, self.ctxt, uuid)
@@ -222,13 +235,15 @@ class KeyManagerTestCase(object):
             self.assertTrue(retrieved_object.is_metadata_only())
             self.assertIsNotNone(retrieved_object.id)
 
-    @utils.parameterized_dataset({
-        'query_by_object_type': {
-            'object_1': _get_test_symmetric_key(),
-            'object_2': _get_test_public_key(),
-            'query_dict': dict(object_type=symmetric_key.SymmetricKey)
-        },
-    })
+    @utils.parameterized_dataset(
+        {
+            'query_by_object_type': {
+                'object_1': _get_test_symmetric_key(),
+                'object_2': _get_test_public_key(),
+                'query_dict': dict(object_type=symmetric_key.SymmetricKey),
+            },
+        }
+    )
     def test_list_with_filter(self, object_1, object_2, query_dict):
         uuid1 = self.key_mgr.store(self.ctxt, object_1)
         uuid2 = self.key_mgr.store(self.ctxt, object_2)

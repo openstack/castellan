@@ -16,6 +16,7 @@
 """
 Test cases for Managed Objects.
 """
+
 from castellan.common import exception
 from castellan.common import objects
 from castellan.tests import base

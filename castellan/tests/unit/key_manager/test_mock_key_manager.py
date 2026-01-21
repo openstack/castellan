@@ -33,24 +33,24 @@ def get_cryptography_private_key(private_key):
     crypto_private_key = serialization.load_der_private_key(
         bytes(private_key.get_encoded()),
         password=None,
-        backend=backends.default_backend())
+        backend=backends.default_backend(),
+    )
     return crypto_private_key
 
 
 def get_cryptography_public_key(public_key):
     crypto_public_key = serialization.load_der_public_key(
-        bytes(public_key.get_encoded()),
-        backend=backends.default_backend())
+        bytes(public_key.get_encoded()), backend=backends.default_backend()
+    )
     return crypto_public_key
 
 
 class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
-
     def _create_key_manager(self):
         return mock_key_mgr.MockKeyManager()
 
     def setUp(self):
-        super(MockKeyManagerTestCase, self).setUp()
+        super().setUp()
 
         self.context = context.RequestContext('fake', 'fake')
 
@@ -84,7 +84,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         for length in [2048, 3072, 4096]:
             name = str(length) + ' key'
             private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
-                self.context, 'RSA', length, name=name)
+                self.context, 'RSA', length, name=name
+            )
 
             private_key = self.key_mgr.get(self.context, private_key_uuid)
             self.assertIsNotNone(private_key.id)
@@ -102,7 +103,8 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
 
     def test_create_key_pair_encryption(self):
         private_key_uuid, public_key_uuid = self.key_mgr.create_key_pair(
-            self.context, 'RSA', 2048)
+            self.context, 'RSA', 2048
+        )
 
         private_key = self.key_mgr.get(self.context, private_key_uuid)
         public_key = self.key_mgr.get(self.context, public_key_uuid)
@@ -116,29 +118,38 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 algorithm=hashes.SHA1(),
-                label=None))
+                label=None,
+            ),
+        )
         plaintext = crypto_private_key.decrypt(
             ciphertext,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA1()),
                 algorithm=hashes.SHA1(),
-                label=None))
+                label=None,
+            ),
+        )
 
         self.assertEqual(message, plaintext)
 
     def test_create_key_pair_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key_pair, None, 'RSA', 2048)
+        self.assertRaises(
+            exception.Forbidden,
+            self.key_mgr.create_key_pair,
+            None,
+            'RSA',
+            2048,
+        )
 
     def test_create_key_pair_invalid_algorithm(self):
-        self.assertRaises(ValueError,
-                          self.key_mgr.create_key_pair,
-                          self.context, 'DSA', 2048)
+        self.assertRaises(
+            ValueError, self.key_mgr.create_key_pair, self.context, 'DSA', 2048
+        )
 
     def test_create_key_pair_invalid_length(self):
-        self.assertRaises(ValueError,
-                          self.key_mgr.create_key_pair,
-                          self.context, 'RSA', 10)
+        self.assertRaises(
+            ValueError, self.key_mgr.create_key_pair, self.context, 'RSA', 10
+        )
 
     def test_store_and_get_key(self):
         secret_key = bytes(b'0' * 64)
@@ -155,9 +166,7 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         _key = sym_key.SymmetricKey('AES', 64 * 8, secret_key)
         key_id = self.key_mgr.store(self.context, _key)
 
-        actual_key = self.key_mgr.get(self.context,
-                                      key_id,
-                                      metadata_only=True)
+        actual_key = self.key_mgr.get(self.context, key_id, metadata_only=True)
         self.assertIsNone(actual_key.get_encoded())
         self.assertTrue(actual_key.is_metadata_only())
 
@@ -168,49 +177,53 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         _key = sym_key.SymmetricKey('AES', 64 * 8, secret_key)
         key_id = self.key_mgr.store(self.context, _key)
 
-        actual_key = self.key_mgr.get(self.context,
-                                      key_id,
-                                      metadata_only=True)
+        actual_key = self.key_mgr.get(self.context, key_id, metadata_only=True)
         self.assertIsNone(actual_key.get_encoded())
         self.assertTrue(actual_key.is_metadata_only())
 
-        actual_key = self.key_mgr.get(self.context,
-                                      key_id,
-                                      metadata_only=False)
+        actual_key = self.key_mgr.get(
+            self.context, key_id, metadata_only=False
+        )
         self.assertIsNotNone(actual_key.get_encoded())
         self.assertFalse(actual_key.is_metadata_only())
 
         self.assertIsNotNone(actual_key.id)
 
     def test_store_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.store, None, None)
+        self.assertRaises(exception.Forbidden, self.key_mgr.store, None, None)
 
     def test_get_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.get, None, None)
+        self.assertRaises(exception.Forbidden, self.key_mgr.get, None, None)
 
     def test_get_unknown_key(self):
         self.assertRaises(
-            exception.ManagedObjectNotFoundError, self.key_mgr.get,
-            self.context, None)
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.get,
+            self.context,
+            None,
+        )
 
     def test_delete_key(self):
         key_id = self.key_mgr.create_key(self.context, 'AES', 256)
         self.key_mgr.delete(self.context, key_id)
 
         self.assertRaises(
-            exception.ManagedObjectNotFoundError, self.key_mgr.get,
-            self.context, key_id)
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.get,
+            self.context,
+            key_id,
+        )
 
     def test_delete_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.delete, None, None)
+        self.assertRaises(exception.Forbidden, self.key_mgr.delete, None, None)
 
     def test_delete_unknown_key(self):
         self.assertRaises(
-            exception.ManagedObjectNotFoundError, self.key_mgr.delete,
-            self.context, None)
+            exception.ManagedObjectNotFoundError,
+            self.key_mgr.delete,
+            self.context,
+            None,
+        )
 
     def test_list_null_context(self):
         self.assertRaises(exception.Forbidden, self.key_mgr.list, None)

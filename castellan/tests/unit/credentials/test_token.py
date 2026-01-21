@@ -22,14 +22,13 @@ from castellan.tests import base
 
 
 class TokenTestCase(base.TestCase):
-
     def _create_token_credential(self):
         return token.Token(self.token)
 
     def setUp(self):
         self.token = "8a4aa147d58141c39a7a22905b90ba4e"
         self.token_credential = self._create_token_credential()
-        super(TokenTestCase, self).setUp()
+        super().setUp()
 
     def test_get_token(self):
         self.assertEqual(self.token, self.token_credential.token)

@@ -16,6 +16,7 @@
 """
 Test cases for the private key class.
 """
+
 from castellan.common import objects
 from castellan.common.objects import private_key
 from castellan.tests import base
@@ -23,14 +24,15 @@ from castellan.tests import utils
 
 
 class PrivateKeyTestCase(base.KeyTestCase):
-
     def _create_key(self):
-        return private_key.PrivateKey(self.algorithm,
-                                      self.bit_length,
-                                      self.encoded,
-                                      self.name,
-                                      self.created,
-                                      consumers=self.consumers)
+        return private_key.PrivateKey(
+            self.algorithm,
+            self.bit_length,
+            self.encoded,
+            self.name,
+            self.created,
+            consumers=self.consumers,
+        )
 
     def setUp(self):
         self.algorithm = 'RSA'
@@ -38,21 +40,23 @@ class PrivateKeyTestCase(base.KeyTestCase):
         self.encoded = bytes(utils.get_private_key_der())
         self.name = 'my key'
         self.created = 1448088699
-        self.consumers = [{'service': 'service_test',
-                           'resource_type': 'type_test',
-                           'resource_id': 'id_test'}]
+        self.consumers = [
+            {
+                'service': 'service_test',
+                'resource_type': 'type_test',
+                'resource_id': 'id_test',
+            }
+        ]
 
-        super(PrivateKeyTestCase, self).setUp()
+        super().setUp()
 
     def test_is_not_only_metadata(self):
         self.assertFalse(self.key.is_metadata_only())
 
     def test_is_only_metadata(self):
-        k = private_key.PrivateKey(self.algorithm,
-                                   self.bit_length,
-                                   None,
-                                   self.name,
-                                   self.created)
+        k = private_key.PrivateKey(
+            self.algorithm, self.bit_length, None, self.name, self.created
+        )
         self.assertTrue(k.is_metadata_only())
 
     def test_get_algorithm(self):
@@ -78,12 +82,14 @@ class PrivateKeyTestCase(base.KeyTestCase):
 
     def test_get_created_none(self):
         created = None
-        key = private_key.PrivateKey(self.algorithm,
-                                     self.bit_length,
-                                     self.encoded,
-                                     self.name,
-                                     created,
-                                     consumers=self.consumers)
+        key = private_key.PrivateKey(
+            self.algorithm,
+            self.bit_length,
+            self.encoded,
+            self.name,
+            created,
+            consumers=self.consumers,
+        )
 
         self.assertEqual(created, key.created)
 
@@ -94,10 +100,12 @@ class PrivateKeyTestCase(base.KeyTestCase):
         self.assertFalse(self.key is None)
         self.assertFalse(None == self.key)  # noqa: E711
 
-        other_key = private_key.PrivateKey(self.algorithm,
-                                           self.bit_length,
-                                           self.encoded,
-                                           consumers=self.consumers)
+        other_key = private_key.PrivateKey(
+            self.algorithm,
+            self.bit_length,
+            self.encoded,
+            consumers=self.consumers,
+        )
         self.assertTrue(self.key == other_key)
         self.assertFalse(self.key is other_key)
 
@@ -106,39 +114,51 @@ class PrivateKeyTestCase(base.KeyTestCase):
         self.assertTrue(None != self.key)  # noqa: E711
 
     def test___ne___algorithm(self):
-        other_key = private_key.PrivateKey('DSA',
-                                           self.bit_length,
-                                           self.encoded,
-                                           self.name,
-                                           consumers=self.consumers)
+        other_key = private_key.PrivateKey(
+            'DSA',
+            self.bit_length,
+            self.encoded,
+            self.name,
+            consumers=self.consumers,
+        )
         self.assertTrue(self.key != other_key)
 
     def test___ne___bit_length(self):
-        other_key = private_key.PrivateKey(self.algorithm,
-                                           4096,
-                                           self.encoded,
-                                           self.name,
-                                           consumers=self.consumers)
+        other_key = private_key.PrivateKey(
+            self.algorithm,
+            4096,
+            self.encoded,
+            self.name,
+            consumers=self.consumers,
+        )
         self.assertTrue(self.key != other_key)
 
     def test___ne___encoded(self):
         different_encoded = bytes(utils.get_private_key_der()) + b'\x00'
-        other_key = private_key.PrivateKey(self.algorithm,
-                                           self.bit_length,
-                                           different_encoded,
-                                           self.name,
-                                           consumers=self.consumers)
+        other_key = private_key.PrivateKey(
+            self.algorithm,
+            self.bit_length,
+            different_encoded,
+            self.name,
+            consumers=self.consumers,
+        )
         self.assertTrue(self.key != other_key)
 
     def test___ne___consumers(self):
-        different_consumers = [{'service': 'other_service',
-                                'resource_type': 'other_type',
-                                'resource_id': 'other_id'}]
-        other_key = private_key.PrivateKey(self.algorithm,
-                                           self.bit_length,
-                                           self.encoded,
-                                           self.name,
-                                           consumers=different_consumers)
+        different_consumers = [
+            {
+                'service': 'other_service',
+                'resource_type': 'other_type',
+                'resource_id': 'other_id',
+            }
+        ]
+        other_key = private_key.PrivateKey(
+            self.algorithm,
+            self.bit_length,
+            self.encoded,
+            self.name,
+            consumers=different_consumers,
+        )
 
         self.assertTrue(self.key is not other_key)
 

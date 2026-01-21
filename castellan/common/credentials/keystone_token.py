@@ -17,16 +17,26 @@ Keystone Token Credential
 
 This module defines the Keystone Token credential.
 """
+
 from castellan.common.credentials import token
 
 
 class KeystoneToken(token.Token):
     """This class represents a keystone token credential."""
 
-    def __init__(self, token, auth_url=None, trust_id=None, domain_id=None,
-                 domain_name=None, project_id=None, project_name=None,
-                 project_domain_id=None, project_domain_name=None,
-                 reauthenticate=True):
+    def __init__(
+        self,
+        token,
+        auth_url=None,
+        trust_id=None,
+        domain_id=None,
+        domain_name=None,
+        project_id=None,
+        project_name=None,
+        project_domain_id=None,
+        project_domain_name=None,
+        reauthenticate=True,
+    ):
         """Create a new Keystone Token Credential.
 
         :param string token: Token for authentication. The type of token
@@ -53,7 +63,7 @@ class KeystoneToken(token.Token):
         self._project_domain_name = project_domain_name
         self._reauthenticate = reauthenticate
 
-        super(KeystoneToken, self).__init__(token)
+        super().__init__(token)
 
     @property
     def auth_url(self):
@@ -103,15 +113,16 @@ class KeystoneToken(token.Token):
     def __eq__(self, other):
         if isinstance(other, KeystoneToken):
             return (
-                self._token == other._token and
-                self._trust_id == other._trust_id and
-                self._domain_id == other._domain_id and
-                self._domain_name == other._domain_name and
-                self._project_id == other._project_id and
-                self._project_name == other._project_name and
-                self._project_domain_id == other._project_domain_id and
-                self._project_domain_name == other._project_domain_name and
-                self._reauthenticate == other._reauthenticate)
+                self._token == other._token
+                and self._trust_id == other._trust_id
+                and self._domain_id == other._domain_id
+                and self._domain_name == other._domain_name
+                and self._project_id == other._project_id
+                and self._project_name == other._project_name
+                and self._project_domain_id == other._project_domain_id
+                and self._project_domain_name == other._project_domain_name
+                and self._reauthenticate == other._reauthenticate
+            )
         else:
             return False
 

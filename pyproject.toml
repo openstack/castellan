@@ -46,10 +46,20 @@ packages = [
     "castellan"
 ]
 
-[tool.bandit]
-exclude_dirs = ["tests"]
-# B105-B107: hardcoded password checks - likely to generate false
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.format]
+quote-style = "preserve"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["E4", "E5", "E7", "E9", "F", "G", "LOG", "S", "UP"]
+# S105-S107: hardcoded password checks - likely to generate false
 #            positives in a gate environment
-# B607: start process with a partial path - this should be a project
+# S607: start process with a partial path - this should be a project
 #       level decision
-skips = ['B105', 'B106', 'B107', 'B607']
+ignore = ["S105", "S106", "S107", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+"castellan/tests/*" = ["S"]
