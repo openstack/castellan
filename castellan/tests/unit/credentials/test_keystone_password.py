@@ -40,18 +40,18 @@ class KeystonePasswordTestCase(base.TestCase):
             reauthenticate=self.reauthenticate)
 
     def setUp(self):
-        self.password = "Pa$$w0rd1",
-        self.username = "admin",
-        self.user_id = "1adb2391c009443aa5224b316d4a06ae",
-        self.user_domain_id = "default",
-        self.user_domain_name = "default",
-        self.trust_id = "14b38a8296f144148138466ce9280940",
-        self.domain_id = "default",
-        self.domain_name = "default",
-        self.project_id = "1099302ec608486f9879ba2466c60720",
-        self.project_name = "demo",
-        self.project_domain_id = "default",
-        self.project_domain_name = "default",
+        self.password = "Pa$$w0rd1"
+        self.username = "admin"
+        self.user_id = "1adb2391c009443aa5224b316d4a06ae"
+        self.user_domain_id = "default"
+        self.user_domain_name = "default"
+        self.trust_id = "14b38a8296f144148138466ce9280940"
+        self.domain_id = "default"
+        self.domain_name = "default"
+        self.project_id = "1099302ec608486f9879ba2466c60720"
+        self.project_name = "demo"
+        self.project_domain_id = "default"
+        self.project_domain_name = "default"
         self.reauthenticate = True
 
         self.ks_password_credential = self._create_ks_password_credential()

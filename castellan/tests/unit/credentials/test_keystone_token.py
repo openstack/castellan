@@ -36,14 +36,14 @@ class KeystoneTokenTestCase(base.TestCase):
             reauthenticate=self.reauthenticate)
 
     def setUp(self):
-        self.token = "8a4aa147d58141c39a7a22905b90ba4e",
-        self.trust_id = "14b38a8296f144148138466ce9280940",
-        self.domain_id = "default",
-        self.domain_name = "default",
-        self.project_id = "1099302ec608486f9879ba2466c60720",
-        self.project_name = "demo",
-        self.project_domain_id = "default",
-        self.project_domain_name = "default",
+        self.token = "8a4aa147d58141c39a7a22905b90ba4e"
+        self.trust_id = "14b38a8296f144148138466ce9280940"
+        self.domain_id = "default"
+        self.domain_name = "default"
+        self.project_id = "1099302ec608486f9879ba2466c60720"
+        self.project_name = "demo"
+        self.project_domain_id = "default"
+        self.project_domain_name = "default"
         self.reauthenticate = True
 
         self.ks_token_credential = self._create_ks_token_credential()
