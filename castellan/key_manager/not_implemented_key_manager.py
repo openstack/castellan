@@ -26,26 +26,28 @@ class NotImplementedKeyManager(key_manager.KeyManager):
     """
 
     def __init__(self, configuration=None):
-        super(NotImplementedKeyManager, self).__init__(configuration)
+        super().__init__(configuration)
 
     def create_key(self, context, algorithm='AES', length=256,
-                   expiration=None, name=None, **kwargs):
+                   expiration=None, name=None):
         raise NotImplementedError()
 
     def create_key_pair(self, context, algorithm, length,
                         expiration=None, name=None):
         raise NotImplementedError()
 
-    def store(self, context, managed_object, expiration=None, **kwargs):
+    def store(self, context, managed_object, expiration=None):
         raise NotImplementedError()
 
+    # TODO(stephenfin): This is not defined on the base class nor on other
+    # in-tree key managers. Can we remove it?
     def copy(self, context, managed_object_id, **kwargs):
         raise NotImplementedError()
 
-    def get(self, context, managed_object_id, **kwargs):
+    def get(self, context, managed_object_id, metadata_only=False):
         raise NotImplementedError()
 
-    def list(self, context, object_type=None):
+    def list(self, context, object_type=None, metadata_only=False):
         raise NotImplementedError()
 
     def delete(self, context, managed_object_id, force=False):

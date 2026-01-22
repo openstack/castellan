@@ -60,35 +60,30 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
         self.key_mgr.keys = {}
 
     def test_create_key(self):
-        key_id_1 = self.key_mgr.create_key(self.context)
-        key_id_2 = self.key_mgr.create_key(self.context)
+        key_id_1 = self.key_mgr.create_key(self.context, 'AES', 256)
+        key_id_2 = self.key_mgr.create_key(self.context, 'AES', 256)
         # ensure that the UUIDs are unique
         self.assertNotEqual(key_id_1, key_id_2)
 
     def test_create_key_with_length(self):
         for length in [64, 128, 256]:
-            key_id = self.key_mgr.create_key(self.context, length=length)
+            key_id = self.key_mgr.create_key(self.context, 'AES', length)
             key = self.key_mgr.get(self.context, key_id)
             self.assertEqual(length / 8, len(key.get_encoded()))
             self.assertIsNotNone(key.id)
 
     def test_create_key_with_name(self):
         name = 'my key'
-        key_id = self.key_mgr.create_key(self.context, name=name)
+        key_id = self.key_mgr.create_key(self.context, 'AES', 256, name=name)
         key = self.key_mgr.get(self.context, key_id)
         self.assertEqual(name, key.name)
-        self.assertIsNotNone(key.id)
-
-    def test_create_key_with_algorithm(self):
-        algorithm = 'DES'
-        key_id = self.key_mgr.create_key(self.context, algorithm=algorithm)
-        key = self.key_mgr.get(self.context, key_id)
-        self.assertEqual(algorithm, key.algorithm)
+        self.assertEqual('AES', key.algorithm)
         self.assertIsNotNone(key.id)
 
     def test_create_key_null_context(self):
-        self.assertRaises(exception.Forbidden,
-                          self.key_mgr.create_key, None)
+        self.assertRaises(
+            exception.Forbidden, self.key_mgr.create_key, None, 'AES', 256
+        )
 
     def test_create_key_pair(self):
         for length in [2048, 3072, 4096]:
@@ -206,7 +201,7 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
             self.context, None)
 
     def test_delete_key(self):
-        key_id = self.key_mgr.create_key(self.context)
+        key_id = self.key_mgr.create_key(self.context, 'AES', 256)
         self.key_mgr.delete(self.context, key_id)
 
         self.assertRaises(

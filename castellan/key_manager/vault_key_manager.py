@@ -283,7 +283,8 @@ class VaultKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def create_key(self, context, algorithm, length, name=None, **kwargs):
+    def create_key(self, context, algorithm, length,
+                   expiration=None, name=None):
         """Creates a symmetric key."""
 
         if length % 8:
@@ -300,7 +301,7 @@ class VaultKeyManager(key_manager.KeyManager):
 
         return self._store_key_value(key_id, key)
 
-    def store(self, context, key_value, **kwargs):
+    def store(self, context, key_value, expiration=None):
         """Stores (i.e., registers) a key with the key manager."""
 
         key_id = uuid.uuid4().hex

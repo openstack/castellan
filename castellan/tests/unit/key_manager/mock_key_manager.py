@@ -58,25 +58,24 @@ class MockKeyManager(key_manager.KeyManager):
         self.conf = configuration
         self.keys = {}
 
-    def _generate_hex_key(self, key_length):
+    def _generate_hex_key(self, length):
         # hex digit => 4 bits
-        length = int(key_length / 4)
+        length = int(length / 4)
         hex_encoded = self._generate_password(length=length,
                                               symbolgroups='0123456789ABCDEF')
         return hex_encoded
 
-    def _generate_key(self, **kwargs):
-        name = kwargs.get('name', None)
-        algorithm = kwargs.get('algorithm', 'AES')
-        key_length = kwargs.get('length', 256)
-        _hex = self._generate_hex_key(key_length)
+    def _generate_key(self, *, algorithm, length, name):
+        _hex = self._generate_hex_key(length)
         return sym_key.SymmetricKey(
             algorithm,
-            key_length,
+            length,
             bytes(binascii.unhexlify(_hex)),
-            name)
+            name
+        )
 
-    def create_key(self, context, **kwargs):
+    def create_key(self, context, algorithm, length,
+                   expiration=None, name=None):
         """Creates a symmetric key.
 
         This implementation returns a UUID for the created key. The algorithm
@@ -86,7 +85,11 @@ class MockKeyManager(key_manager.KeyManager):
         if context is None:
             raise exception.Forbidden()
 
-        key = self._generate_key(**kwargs)
+        key = self._generate_key(
+            algorithm=algorithm,
+            length=length,
+            name=name,
+        )
         return self.store(context, key)
 
     def _generate_public_and_private_key(self, length, name):
@@ -157,7 +160,7 @@ class MockKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def store(self, context, managed_object, **kwargs):
+    def store(self, context, managed_object, expiration=None):
         """Stores (i.e., registers) a key with the key manager."""
         if context is None:
             raise exception.Forbidden()
@@ -168,7 +171,7 @@ class MockKeyManager(key_manager.KeyManager):
 
         return key_id
 
-    def get(self, context, managed_object_id, metadata_only=False, **kwargs):
+    def get(self, context, managed_object_id, metadata_only=False):
         """Retrieves the key identified by the specified id.
 
         This implementation returns the key that is associated with the
@@ -192,7 +195,7 @@ class MockKeyManager(key_manager.KeyManager):
                 obj._passphrase = None
         return obj
 
-    def delete(self, context, managed_object_id, **kwargs):
+    def delete(self, context, managed_object_id, force=False):
         """Deletes the object identified by the specified id.
 
         A Forbidden exception is raised if the context is None and a
