@@ -397,7 +397,7 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.key_mgr.delete(self.ctxt, stored_id, True)
 
 
-class BarbicanKeyManagerOSLOContextTestCase(BarbicanKeyManagerTestCase,
+class BarbicanKeyManagerOsloContextTestCase(BarbicanKeyManagerTestCase,
                                             base.BaseTestCase):
 
     def get_context(self):
@@ -417,7 +417,7 @@ class BarbicanKeyManagerOSLOContextTestCase(BarbicanKeyManagerTestCase,
         sess = session.Session(auth=auth)
 
         return context.RequestContext(auth_token=auth.get_token(sess),
-                                      tenant=auth.get_project_id(sess))
+                                      project_id=auth.get_project_id(sess))
 
 
 class BarbicanKeyManagerKSPasswordTestCase(BarbicanKeyManagerTestCase,
