@@ -94,10 +94,14 @@ def parameterized_test_case(cls):
             tests_to_add.extend(to_add)
 
     # Add all new test functions
-    [setattr(cls, name, func) for name, func in tests_to_add]
+    for name, func in tests_to_add:
+        setattr(cls, name, func)
 
     # Remove all old test function templates (if they still exist)
-    [delattr(cls, key) for key in tests_to_remove if hasattr(cls, key)]
+    for name in tests_to_remove:
+        if hasattr(cls, name):
+            delattr(cls, name)
+
     return cls
 
 

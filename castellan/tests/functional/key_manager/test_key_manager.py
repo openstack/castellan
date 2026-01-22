@@ -19,7 +19,10 @@ Test cases for a key manager.
 These test cases should pass against any key manager.
 """
 
+from typing import TYPE_CHECKING
+
 from oslo_utils import uuidutils
+from oslotest import base
 
 from castellan.common import exception
 from castellan.common.objects import opaque_data
@@ -29,6 +32,15 @@ from castellan.common.objects import public_key
 from castellan.common.objects import symmetric_key
 from castellan.common.objects import x_509
 from castellan.tests import utils
+
+if TYPE_CHECKING:
+    # To avoid unittest picking up the base class as an actual test, we don't
+    # inherit from unittest.TestCase and instead only inherit in concrete test
+    # classes. Tell mypy otherwise though to allow it to resolve methods on
+    # same.
+    class Base(base.BaseTestCase): ...
+else:
+    Base = object
 
 
 def _get_test_symmetric_key():
@@ -71,7 +83,7 @@ def _get_test_passphrase():
 
 
 @utils.parameterized_test_case
-class KeyManagerTestCase:
+class KeyManagerTestCase(Base):
     def _create_key_manager(self):
         raise NotImplementedError()
 

@@ -16,6 +16,10 @@
 Test Common utilities for Castellan.
 """
 
+from castellan.common.credentials import keystone_password
+from castellan.common.credentials import keystone_token
+from castellan.common.credentials import password
+from castellan.common.credentials import token
 from castellan.common import exception
 from castellan.common import utils
 from castellan.tests import base
@@ -44,6 +48,7 @@ class TestUtils(base.TestCase):
         token_context_class = token_context.__class__.__name__
 
         self.assertEqual('Token', token_context_class)
+        assert isinstance(token_context, token.Token)
         self.assertEqual(token_value, token_context.token)
 
     def test_token_credential_with_context(self):
@@ -56,6 +61,7 @@ class TestUtils(base.TestCase):
         token_context_class = token_context.__class__.__name__
 
         self.assertEqual('Token', token_context_class)
+        assert isinstance(token_context, token.Token)
         self.assertEqual(token_value, token_context.token)
 
     def test_token_credential_config_override_context(self):
@@ -72,6 +78,7 @@ class TestUtils(base.TestCase):
         token_context_class = token_context.__class__.__name__
 
         self.assertEqual('Token', token_context_class)
+        assert isinstance(token_context, token.Token)
         self.assertEqual(conf_token_value, token_context.token)
 
     def test_token_credential_exception(self):
@@ -94,6 +101,7 @@ class TestUtils(base.TestCase):
         password_context_class = password_context.__class__.__name__
 
         self.assertEqual('Password', password_context_class)
+        assert isinstance(password_context, password.Password)
         self.assertEqual(password_value, password_context.password)
 
     def test_keystone_token_credential(self):
@@ -107,6 +115,7 @@ class TestUtils(base.TestCase):
         ks_token_context_class = ks_token_context.__class__.__name__
 
         self.assertEqual('KeystoneToken', ks_token_context_class)
+        assert isinstance(ks_token_context, keystone_token.KeystoneToken)
         self.assertEqual(token_value, ks_token_context.token)
 
     def test_keystone_token_credential_with_context(self):
@@ -121,6 +130,7 @@ class TestUtils(base.TestCase):
         ks_token_context_class = ks_token_context.__class__.__name__
 
         self.assertEqual('KeystoneToken', ks_token_context_class)
+        assert isinstance(ks_token_context, keystone_token.KeystoneToken)
         self.assertEqual(token_value, ks_token_context.token)
 
     def test_keystone_token_credential_config_override_context(self):
@@ -139,6 +149,7 @@ class TestUtils(base.TestCase):
         ks_token_context_class = ks_token_context.__class__.__name__
 
         self.assertEqual('KeystoneToken', ks_token_context_class)
+        assert isinstance(ks_token_context, keystone_token.KeystoneToken)
         self.assertEqual(conf_token_value, ks_token_context.token)
 
     def test_keystone_token_credential_exception(self):
@@ -165,6 +176,9 @@ class TestUtils(base.TestCase):
         ks_password_context_class = ks_password_context.__class__.__name__
 
         self.assertEqual('KeystonePassword', ks_password_context_class)
+        assert isinstance(
+            ks_password_context, keystone_password.KeystonePassword
+        )
         self.assertEqual(password_value, ks_password_context.password)
 
     def test_oslo_context_to_keystone_token(self):
@@ -179,6 +193,7 @@ class TestUtils(base.TestCase):
         ks_token_context_class = ks_token_context.__class__.__name__
 
         self.assertEqual('KeystoneToken', ks_token_context_class)
+        assert isinstance(ks_token_context, keystone_token.KeystoneToken)
         self.assertEqual(auth_token_value, ks_token_context.token)
         self.assertEqual(project_id_value, ks_token_context.project_id)
 
