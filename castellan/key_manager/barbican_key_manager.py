@@ -126,7 +126,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :return: a Barbican Client object
         :raises Forbidden: if the context is None
         :raises KeyManagerError: if context is missing tenant or tenant is
-                                 None or error occurs while creating client
+            None or error occurs while creating client
         """
 
         # Confirm context is provided, if not raise forbidden
@@ -247,7 +247,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Creates a symmetric key.
 
         :param context: contains information of the user and the environment
-                        for the request (castellan/context.py)
+            for the request
         :param algorithm: the algorithm associated with the secret
         :param length: the bit length of the secret
         :param name: the name of the key
@@ -279,7 +279,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Creates an asymmetric key pair.
 
         :param context: contains information of the user and the environment
-                        for the request (castellan/context.py)
+            for the request
         :param algorithm: the algorithm associated with the secret
         :param length: the bit length of the secret
         :param name: the name of the key
@@ -371,7 +371,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Stores (i.e., registers) an object with the key manager.
 
         :param context: contains information of the user and the environment
-            for the request (castellan/context.py)
+            for the request
         :param managed_object: a secret object with unencrypted payload.
             Known as "secret" to the barbicanclient api
         :param expiration: the expiration time of the secret in ISO 8601
@@ -493,7 +493,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         :param secret: the barbican secret object
         :metadata_only: boolean indicating if the secret bytes should be
-                        included in the managed object
+            included in the managed object
         :returns: the castellan object
         """
         secret_type = op_data.OpaqueData
@@ -539,7 +539,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Returns the metadata of the secret.
 
         :param context: contains information of the user and the environment
-                        for the request (castellan/context.py)
+            for the request
         :param object_id: UUID of the secret
         :return: the secret's metadata
         :raises HTTPAuthError: if object retrieval fails with 401
@@ -570,7 +570,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Retrieves the specified managed object.
 
         :param context: contains information of the user and the environment
-                        for the request (castellan/context.py)
+            for the request
         :param managed_object_id: the UUID of the object to retrieve
         :param metadata_only: whether secret data should be included
         :return: ManagedObject representation of the managed object
@@ -594,12 +594,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Deletes the specified managed object.
 
         :param context: contains information of the user and the environment
-                     for the request (castellan/context.py)
+            for the request
         :param managed_object_id: the UUID of the object to delete
         :param force: specifies if the secret must be deleted even when they
-                     have consumers.
+            have consumers.
         :raises ValueError: if the secret has consumers but no force parameter
-                     is provided or if force equals False.
+            is provided or if force equals False.
         :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
@@ -623,7 +623,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Add a consumer to the specified managed object
 
         :param context: contains information of the user and the environment
-                     for the request (castellan/context.py)
+            for the request
         :param managed_object_id: the UUID of the object to update
         :param consumer_data: dict containing consumer data
         :raises KeyManagerError: if object deletion fails
@@ -672,7 +672,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         If no search criteria is given, all objects are returned.
 
         :param context: contains information of the user and the environment
-                     for the request (castellan/context.py)
+            for the request
         :param object_type: the type of object to retrieve
         :param metadata_only: whether secret data should be included
         :raises KeyManagerError: if listing secrets fails
