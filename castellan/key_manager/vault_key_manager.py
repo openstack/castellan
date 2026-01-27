@@ -54,20 +54,17 @@ _vault_opts = [
                help='AppRole secret_id for authentication with vault'),
     cfg.StrOpt('kv_mountpoint',
                default=_DEFAULT_MOUNTPOINT,
-               help='Mountpoint of KV store in Vault to use, for example: '
-                    '{}'.format(_DEFAULT_MOUNTPOINT)),
+               help='Mountpoint of KV store in Vault to use'),
     cfg.StrOpt('kv_path',
                help='Path relative to root of KV store in Vault to use.'
                ),
     cfg.IntOpt('kv_version',
                default=_DEFAULT_VERSION,
                choices=(1, 2),
-               help='Version of KV store in Vault to use, for example: '
-                    '{}'.format(_DEFAULT_VERSION)),
+               help='Version of KV store in Vault to use.'),
     cfg.StrOpt('vault_url',
                default=_DEFAULT_VAULT_URL,
-               help='Use this endpoint to connect to Vault, for example: '
-                    '"%s"' % _DEFAULT_VAULT_URL),
+               help='Use this endpoint to connect to Vault'),
     cfg.StrOpt('ssl_ca_crt_file',
                help='Absolute path to ca cert file'),
     cfg.BoolOpt('use_ssl',
