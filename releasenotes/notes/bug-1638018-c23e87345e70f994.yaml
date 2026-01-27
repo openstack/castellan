@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Barbican Key Manager in castellan will now attempt to delete intermediate
+    orders and containers created while creating keys or key pairs.
+    Failure to delete those intermediate entities will not fail the key or key
+    pair creation and will only be logged as warning.
