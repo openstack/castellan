@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The ``[vault] use_ssl`` option has been deprecated. The option has had
+    no effect.

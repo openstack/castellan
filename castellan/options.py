@@ -12,10 +12,11 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from stevedore import ExtensionManager
+import warnings
 
 from oslo_config import cfg
 from oslo_log import log
+from stevedore import ExtensionManager
 
 from castellan import key_manager
 from castellan.key_manager import barbican_key_manager as bkm
@@ -126,8 +127,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
         conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
                          group=vkm._VAULT_OPT_GROUP)
     if vault_use_ssl is not None:
-        conf.set_default('use_ssl', vault_use_ssl,
-                         group=vkm._VAULT_OPT_GROUP)
+        warnings.warning('use_ssl option is deprecated',
+                         category=DeprecationWarning)
     if vault_namespace is not None:
         conf.set_default('namespace', vault_namespace,
                          group=vkm._VAULT_OPT_GROUP)
