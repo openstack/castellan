@@ -69,6 +69,8 @@ _vault_opts = [
                help='Absolute path to ca cert file'),
     cfg.BoolOpt('use_ssl',
                 default=False,
+                deprecated_for_removal=True,
+                deprecated_reason='This option has no effect.',
                 help=_('SSL Enabled/Disabled')),
     cfg.StrOpt("namespace",
                help=_("Vault Namespace to use for all requests to Vault. "
