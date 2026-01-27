@@ -61,6 +61,7 @@ _vault_opts = [
                ),
     cfg.IntOpt('kv_version',
                default=_DEFAULT_VERSION,
+               choices=(1, 2),
                help='Version of KV store in Vault to use, for example: '
                     '{}'.format(_DEFAULT_VERSION)),
     cfg.StrOpt('vault_url',
