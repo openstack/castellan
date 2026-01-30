@@ -127,8 +127,8 @@ def set_defaults(conf, backend=None, barbican_endpoint=None,
         conf.set_default('ssl_ca_crt_file', vault_ssl_ca_crt_file,
                          group=vkm._VAULT_OPT_GROUP)
     if vault_use_ssl is not None:
-        warnings.warning('use_ssl option is deprecated',
-                         category=DeprecationWarning)
+        warnings.warn('use_ssl option is deprecated',
+                      category=DeprecationWarning)
     if vault_namespace is not None:
         conf.set_default('namespace', vault_namespace,
                          group=vkm._VAULT_OPT_GROUP)
