@@ -18,7 +18,7 @@ Key manager implementation for Barbican
 """
 import calendar
 import time
-import urllib
+import urllib.parse
 
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import serialization

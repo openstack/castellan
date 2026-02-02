@@ -17,7 +17,7 @@
 Castellan exception subclasses
 """
 
-import urllib
+import urllib.parse
 
 from castellan.i18n import _
 
