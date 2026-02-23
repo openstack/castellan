@@ -20,6 +20,8 @@ import calendar
 import time
 import urllib.parse
 
+from barbicanclient import client as barbican_client_import
+from barbicanclient import exceptions as barbican_exceptions
 from cryptography.hazmat import backends
 from cryptography.hazmat.primitives import serialization
 from cryptography import x509 as cryptography_x509
@@ -28,18 +30,18 @@ from keystoneauth1 import loading
 from keystoneauth1 import service_token
 from keystoneauth1 import session
 from oslo_config import cfg
+from oslo_context import context as oslo_context
 from oslo_log import log as logging
 from oslo_utils import excutils
+from oslo_utils import timeutils
 
+from castellan.common.credentials import keystone_password
+from castellan.common.credentials import keystone_token
 from castellan.common import exception
 from castellan.common.objects import key as key_base_class
 from castellan.common.objects import opaque_data as op_data
 from castellan.i18n import _
 from castellan.key_manager import key_manager
-
-from barbicanclient import client as barbican_client_import
-from barbicanclient import exceptions as barbican_exceptions
-from oslo_utils import timeutils
 
 
 _barbican_opts = [
@@ -154,7 +156,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             raise exception.KeyManagerError(reason=e)
 
     def _get_keystone_auth(self, context):
-        if context.__class__.__name__ == 'KeystonePassword':
+        if isinstance(context, keystone_password.KeystonePassword):
             auth = identity.Password(
                 auth_url=context.auth_url,
                 username=context.username,
@@ -170,7 +172,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 project_domain_id=context.project_domain_id,
                 project_domain_name=context.project_domain_name,
                 reauthenticate=context.reauthenticate)
-        elif context.__class__.__name__ == 'KeystoneToken':
+        elif isinstance(context, keystone_token.KeystoneToken):
             auth = identity.Token(
                 auth_url=context.auth_url,
                 token=context.token,
@@ -184,7 +186,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 reauthenticate=context.reauthenticate)
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
-        elif context.__class__.__name__ == 'RequestContext':
+        elif isinstance(context, oslo_context.RequestContext):
             if getattr(context, 'get_auth_plugin', None):
                 auth = context.get_auth_plugin()
             else:
