@@ -196,7 +196,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
                     project_id=context.project_id,
                     project_name=context.project_name,
                     project_domain_id=context.project_domain_id,
-                    project_domain_name=context.project_domain_name)
+                    project_domain_name=context.project_domain_name,
+                    domain_id=context.domain_id,
+                    domain_name=context.domain_name,
+                    system_scope=context.system_scope)
         else:
             msg = _("context must be of type KeystonePassword, "
                     "KeystoneToken, or RequestContext.")

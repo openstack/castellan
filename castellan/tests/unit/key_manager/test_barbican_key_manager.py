@@ -48,6 +48,9 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         self.ctxt.project_id = str(uuid.uuid4()).replace('-', '')
         self.ctxt.project_domain_name = "foo"
         self.ctxt.project_domain_id = str(uuid.uuid4()).replace('-', '')
+        self.ctxt.domain_id = None
+        self.ctxt.domain_name = None
+        self.ctxt.system_scope = None
 
         # Create a key_id, secret_ref, pre_hex, and hex to use
         self.key_id = "d152fa13-2b41-42ca-a934-6c21566c0f40"
