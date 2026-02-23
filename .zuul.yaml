@@ -1,12 +1,12 @@
 - job:
     name: castellan-functional-vault
-    parent: openstack-tox-py310
+    parent: openstack-tox
     description: |
       Run tox functional-vault target
     required-projects:
       - name: openstack/castellan
     vars:
-      tox_envlist: functional-vault-py310
+      tox_envlist: functional-vault
 
 - job:
     name: castellan-functional-devstack
