@@ -18,7 +18,6 @@ Key manager implementation for Barbican
 """
 import calendar
 import time
-import urllib.parse
 
 from barbicanclient import client as barbican_client_import
 from barbicanclient import exceptions as barbican_exceptions
@@ -124,7 +123,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """Creates a client to connect to the Barbican service.
 
         :param context: the user context for authentication
-        :return: tuple of a Barbican Client object and its endpoint
+        :return: a Barbican Client object
         :raises Forbidden: if the context is None
         :raises KeyManagerError: if context is missing tenant or tenant is
                                  None or error occurs while creating client
@@ -141,13 +140,10 @@ class BarbicanKeyManager(key_manager.KeyManager):
             sess = session.Session(auth=auth, verify=self._verify)
 
             endpoint = self._get_barbican_endpoint(auth, sess)
-            return (
-                barbican_client_import.Client(
-                    version=self.conf.barbican.barbican_api_version,
-                    session=sess,
-                    endpoint=endpoint),
-                self._create_base_url(auth, sess, endpoint)
-            )
+            return barbican_client_import.Client(
+                version=self.conf.barbican.barbican_api_version,
+                session=sess,
+                endpoint=endpoint)
 
         # TODO(pbourke): more fine grained exception handling - we are eating
         # tracebacks here
@@ -232,34 +228,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 interface=self.conf.barbican.barbican_endpoint_type,
                 region_name=self.conf.barbican.barbican_region_name)
 
-    def _create_base_url(self, auth, sess, endpoint):
-        api_version = None
-        if self.conf.barbican.barbican_api_version:
-            api_version = self.conf.barbican.barbican_api_version
-        elif getattr(auth, 'service_catalog', None):
-            endpoint_data = auth.service_catalog.endpoint_data_for(
-                service_type='key-manager',
-                interface=self.conf.barbican.barbican_endpoint_type,
-                region_name=self.conf.barbican.barbican_region_name)
-            api_version = endpoint_data.api_version
-        elif getattr(auth, 'get_discovery', None):
-            discovery = auth.get_discovery(sess, url=endpoint)
-            raw_data = discovery.raw_version_data()
-            if len(raw_data) == 0:
-                msg = _(
-                    "Could not find discovery information for %s") % endpoint
-                LOG.error(msg)
-                raise exception.KeyManagerError(reason=msg)
-            latest_version = raw_data[-1]
-            api_version = latest_version.get('id')
-
-        if endpoint[-1] != '/':
-            endpoint += '/'
-
-        base_url = urllib.parse.urljoin(endpoint, api_version)
-
-        return base_url
-
     def _delete_order(self, client, order_ref):
         try:
             client.orders.delete(order_ref)
@@ -287,7 +255,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :return: the UUID of the new key
         :raises KeyManagerError: if key creation fails
         """
-        barbican_client, _ = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
 
         try:
             key_order = barbican_client.orders.create_key(
@@ -320,7 +288,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises NotImplementedError: until implemented
         :raises KeyManagerError: if key pair creation fails
         """
-        barbican_client, _ = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
 
         try:
             key_pair_order = barbican_client.orders.create_asymmetric(
@@ -411,7 +379,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :returns: the UUID of the stored object
         :raises KeyManagerError: if object store fails
         """
-        barbican_client, _ = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
 
         try:
             secret = self._get_barbican_object(barbican_client,
@@ -424,20 +392,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 barbican_exceptions.HTTPServerError) as e:
             LOG.error("Error storing object: %s", e)
             raise exception.KeyManagerError(reason=e)
-
-    def _create_secret_ref(self, base_url, object_id):
-        """Creates the URL required for accessing a secret.
-
-        :param endpoint: Base endpoint URL
-        :param object_id: the UUID of the key to copy
-        :return: the URL of the requested secret
-        """
-        if not object_id:
-            msg = _("Key ID is None")
-            raise exception.KeyManagerError(reason=msg)
-        if base_url[-1] != '/':
-            base_url += '/'
-        return urllib.parse.urljoin(base_url, "secrets/" + object_id)
 
     def _get_active_order(self, barbican_client, order_ref):
         """Returns the order when it is active.
@@ -592,12 +546,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises HTTPClientError: if object retrieval fails with 4xx
         :raises HTTPServerError: if object retrieval fails with 5xx
         """
+        if not object_id:
+            raise exception.KeyManagerError('key identifier not provided')
 
-        barbican_client, base_url = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
 
         try:
-            secret_ref = self._create_secret_ref(base_url, object_id)
-            return barbican_client.secrets.get(secret_ref)
+            return barbican_client.secrets.get(object_id)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
@@ -648,10 +603,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
-        barbican_client, base_url = self._get_barbican_client(context)
+        if not managed_object_id:
+            raise exception.KeyManagerError('key identifier not provided')
+
+        barbican_client = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(base_url, managed_object_id)
-            barbican_client.secrets.delete(secret_ref, force)
+            barbican_client.secrets.delete(managed_object_id, force)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
@@ -673,11 +630,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
 
-        barbican_client, base_url = self._get_barbican_client(context)
+        if not managed_object_id:
+            raise exception.KeyManagerError('key identifier not provided')
+
+        barbican_client = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(base_url, managed_object_id)
             barbican_client.secrets.register_consumer(
-                secret_ref, **consumer_data)
+                managed_object_id, **consumer_data)
 
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
@@ -690,12 +649,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 raise exception.KeyManagerError(reason=e)
 
     def remove_consumer(self, context, managed_object_id, consumer_data):
+        if not managed_object_id:
+            raise exception.KeyManagerError('key identifier not provided')
 
-        barbican_client, base_url = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
         try:
-            secret_ref = self._create_secret_ref(base_url, managed_object_id)
             barbican_client.secrets.remove_consumer(
-                secret_ref, **consumer_data)
+                managed_object_id, **consumer_data)
         except (barbican_exceptions.HTTPAuthError,
                 barbican_exceptions.HTTPClientError,
                 barbican_exceptions.HTTPServerError) as e:
@@ -718,7 +678,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :raises KeyManagerError: if listing secrets fails
         """
         objects = []
-        barbican_client, _ = self._get_barbican_client(context)
+        barbican_client = self._get_barbican_client(context)
 
         if object_type and object_type not in self._secret_type_dict:
             msg = _("Invalid secret type: %s") % object_type
