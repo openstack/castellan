@@ -15,7 +15,9 @@ Functional test cases for the Castellan Oslo Config Driver.
 
 Note: This requires local running instance of Vault.
 """
+
 import tempfile
+from unittest import mock
 
 from oslo_config import cfg
 from oslo_config import fixture
@@ -55,9 +57,9 @@ class CastellanSourceTestCase(base.BaseTestCase):
             mapping_file='mapping.conf',
         )
 
-        with base.mock.patch.object(
-                _config_driver,
-                'CastellanConfigurationSource') as source_class:
+        with mock.patch.object(
+            _config_driver, 'CastellanConfigurationSource'
+        ) as source_class:
             self.driver.open_source_from_opt_group(
                 self.conf, 'castellan_source')
 

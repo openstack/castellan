@@ -54,11 +54,6 @@ class MockKeyManagerTestCase(test_key_mgr.KeyManagerTestCase):
 
         self.context = context.RequestContext('fake', 'fake')
 
-    def cleanUp(self):
-        super(MockKeyManagerTestCase, self).cleanUp()
-
-        self.key_mgr.keys = {}
-
     def test_create_key(self):
         key_id_1 = self.key_mgr.create_key(self.context, 'AES', 256)
         key_id_2 = self.key_mgr.create_key(self.context, 'AES', 256)
