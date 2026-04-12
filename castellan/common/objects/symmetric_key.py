@@ -25,19 +25,6 @@ from castellan.common.objects import key
 class SymmetricKey(key.Key):
     """This class represents symmetric keys."""
 
-    def __init__(self, algorithm, bit_length, key,
-                 name=None, created=None, id=None, consumers=[]):
-        """Create a new SymmetricKey object.
-
-        The arguments specify the algorithm and bit length for the symmetric
-        encryption and the bytes for the key in a bytestring.
-        """
-        self._alg = algorithm
-        self._bit_length = bit_length
-        self._key = key
-        super().__init__(name=name, created=created, id=id,
-                         consumers=consumers)
-
     @classmethod
     def managed_type(cls):
         return "symmetric"

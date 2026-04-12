@@ -24,3 +24,13 @@ from castellan.common.objects import managed_object
 
 class Certificate(managed_object.ManagedObject):
     """Base class to represent all certificates."""
+
+    def __init__(self, data, name=None, created=None, id=None, consumers=[]):
+        """Create a new certificate object.
+
+        The data should be in a bytestring.
+        """
+        self._data = data
+        super().__init__(
+            name=name, created=created, id=id, consumers=consumers
+        )

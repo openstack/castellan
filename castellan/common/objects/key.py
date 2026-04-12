@@ -31,6 +31,15 @@ from castellan.common.objects import managed_object
 class Key(managed_object.ManagedObject):
     """Base class to represent all keys."""
 
+    def __init__(self, algorithm, bit_length, key,
+                 name=None, created=None, id=None, consumers=None):
+        self._alg = algorithm
+        self._bit_length = bit_length
+        self._key = key
+        super().__init__(
+            name=name, created=created, id=id, consumers=consumers
+        )
+
     @property
     @abc.abstractmethod
     def algorithm(self):

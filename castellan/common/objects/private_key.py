@@ -25,19 +25,6 @@ from castellan.common.objects import key
 class PrivateKey(key.Key):
     """This class represents private keys."""
 
-    def __init__(self, algorithm, bit_length, key,
-                 name=None, created=None, id=None, consumers=[]):
-        """Create a new PrivateKey object.
-
-        The arguments specify the algorithm and bit length for the asymmetric
-        encryption and the bytes for the key in a bytestring.
-        """
-        self._alg = algorithm
-        self._bit_length = bit_length
-        self._key = key
-        super().__init__(name=name, created=created, id=id,
-                         consumers=consumers)
-
     @classmethod
     def managed_type(cls):
         return "private"
