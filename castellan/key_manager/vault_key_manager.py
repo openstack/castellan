@@ -376,28 +376,38 @@ class VaultKeyManager(key_manager.KeyManager):
     def store(
         self,
         context: Context | None,
-        key_value: managed_object.ManagedObject,
+        managed_obj: managed_object.ManagedObject,
         expiration: str | None = None,
     ) -> str:
-        """Stores (i.e., registers) a key with the key manager."""
+        """Stores (i.e., registers) an object with the key manager.
 
+        :param context: contains information of the user and the environment
+            for the request
+        :param managed_obj: a secret object with unencrypted payload.
+        :param expiration: (currently ignored)
+        :returns: the UUID of the stored object
+        :raises KeyManagerError: if object store fails
+        """
         key_id = uuid.uuid4().hex
-        return self._store_key_value(key_id, key_value)
+        return self._store_key_value(key_id, managed_obj)
 
     def get(
-        self, context: Context | None, key_id: str, metadata_only: bool = False
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        metadata_only: bool = False,
     ) -> managed_object.ManagedObject:
         """Retrieves the key identified by the specified id."""
 
-        if not key_id:
+        if not managed_object_id:
             raise exception.KeyManagerError('key identifier not provided')
 
         resp = self._do_http_request(
-            self._session.get, self._get_resource_url(key_id)
+            self._session.get, self._get_resource_url(managed_object_id)
         )
 
         if resp.status_code == requests.codes['not_found']:
-            raise exception.ManagedObjectNotFoundError(uuid=key_id)
+            raise exception.ManagedObjectNotFoundError(uuid=managed_object_id)
 
         record = resp.json()['data']
         if self._kv_version > 1:
@@ -423,18 +433,21 @@ class VaultKeyManager(key_manager.KeyManager):
                 key,  # type: ignore[arg-type]
                 record['name'],
                 record['created'],
-                key_id,
+                managed_object_id,
             )
         else:
             return clazz(
                 key,  # type: ignore[arg-type]
                 record['name'],
                 record['created'],
-                key_id,  # type: ignore[arg-type]
+                managed_object_id,  # type: ignore[arg-type]
             )
 
     def delete(
-        self, context: Context | None, key_id: str, force: bool = False
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        force: bool = False,
     ) -> None:
         """Represents deleting the key.
 
@@ -442,15 +455,15 @@ class VaultKeyManager(key_manager.KeyManager):
         consistency with the Barbican implementation.
         """
 
-        if not key_id:
+        if not managed_object_id:
             raise exception.KeyManagerError('key identifier not provided')
 
         resp = self._do_http_request(
-            self._session.delete, self._get_resource_url(key_id)
+            self._session.delete, self._get_resource_url(managed_object_id)
         )
 
         if resp.status_code == requests.codes['not_found']:
-            raise exception.ManagedObjectNotFoundError(uuid=key_id)
+            raise exception.ManagedObjectNotFoundError(uuid=managed_object_id)
 
     def add_consumer(
         self,

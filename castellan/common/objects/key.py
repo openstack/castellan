@@ -82,11 +82,12 @@ class Key(managed_object.ManagedObject):
         return dict_fields
 
     @classmethod
-    def from_dict(  # type: ignore[override]
+    def from_dict(
         cls,
         dict_fields: dict[str, Any],
         id: str | None = None,
         metadata_only: bool = False,
+        consumers: list[dict[str, str]] | None = None,
     ) -> Key:
         try:
             value = None
@@ -106,7 +107,7 @@ class Key(managed_object.ManagedObject):
                 name=dict_fields["name"],
                 created=dict_fields["created"],
                 id=id,
-                consumers=dict_fields["consumers"],
+                consumers=dict_fields["consumers"] or consumers,
             )
         except KeyError as e:
             raise exception.InvalidManagedObjectDictError(field=str(e))
