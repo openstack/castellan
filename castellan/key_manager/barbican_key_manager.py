@@ -17,8 +17,12 @@
 Key manager implementation for Barbican
 """
 
+from __future__ import annotations
+
+import builtins
 import calendar
 import time
+from typing import Any, TypeAlias, cast
 
 from barbicanclient import client as barbican_client_import
 from barbicanclient import exceptions as barbican_exceptions
@@ -27,6 +31,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography import x509 as cryptography_x509
 from keystoneauth1 import identity
 from keystoneauth1 import loading
+from keystoneauth1 import plugin
 from keystoneauth1 import service_token
 from keystoneauth1 import session
 from oslo_config import cfg
@@ -39,10 +44,11 @@ from castellan.common.credentials import keystone_password
 from castellan.common.credentials import keystone_token
 from castellan.common import exception
 from castellan.common.objects import key as key_base_class
+from castellan.common.objects import managed_object
 from castellan.common.objects import opaque_data as op_data
 from castellan.i18n import _
 from castellan.key_manager import key_manager
-
+from castellan.key_manager.key_manager import Context
 
 _barbican_opts = [
     cfg.URIOpt(
@@ -116,17 +122,27 @@ middleware.
     ),
 ]
 
-
 _BARBICAN_OPT_GROUP = 'barbican'
 _BARBICAN_SERVICE_USER_OPT_GROUP = 'barbican_service_user'
 
 LOG = logging.getLogger(__name__)
 
 
+Auth: TypeAlias = (
+    identity.Token
+    | identity.Password
+    | service_token.ServiceTokenAuthWrapper
+    | plugin.BaseAuthPlugin
+)
+
+
 class BarbicanKeyManager(key_manager.KeyManager):
     """Key Manager Interface that wraps the Barbican client API."""
 
-    def __init__(self, configuration):
+    conf: cfg.ConfigOpts
+    _verify: str | bool
+
+    def __init__(self, configuration: cfg.ConfigOpts) -> None:
         self.conf = configuration
         self.conf.register_opts(_barbican_opts, group=_BARBICAN_OPT_GROUP)
         loading.register_session_conf_options(self.conf, _BARBICAN_OPT_GROUP)
@@ -141,7 +157,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
         verify_ssl_path = self.conf.barbican.verify_ssl_path
         self._verify = verify_ssl and (verify_ssl_path or verify_ssl)
 
-    def _get_barbican_client(self, context):
+    def _get_barbican_client(
+        self, context: Context | None
+    ) -> barbican_client_import.Client:
         """Creates a client to connect to the Barbican service.
 
         :param context: the user context for authentication
@@ -174,8 +192,16 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error("Error creating Barbican client: %s", e)
             raise exception.KeyManagerError(reason=e)
 
-    def _get_keystone_auth(self, context):
+    def _get_keystone_auth(self, context: Context) -> Auth:
+        auth: Auth
+
         if isinstance(context, keystone_password.KeystonePassword):
+            if not context.auth_url:
+                # this should never happen at runtime
+                msg = _('missing auth_url')
+                LOG.error(msg)
+                raise exception.Forbidden(reason=msg)
+
             auth = identity.Password(
                 auth_url=context.auth_url,
                 username=context.username,
@@ -193,6 +219,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 reauthenticate=context.reauthenticate,
             )
         elif isinstance(context, keystone_token.KeystoneToken):
+            if not context.auth_url:
+                # this should never happen at runtime
+                msg = _('missing auth_url')
+                LOG.error(msg)
+                raise exception.Forbidden(reason=msg)
+
             auth = identity.Token(
                 auth_url=context.auth_url,
                 token=context.token,
@@ -208,9 +240,16 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # this will be kept for oslo.context compatibility until
         # projects begin to use utils.credential_factory
         elif isinstance(context, oslo_context.RequestContext):
-            if getattr(context, 'get_auth_plugin', None):
+            # this is set by some projects' RequestContext subclasses
+            if hasattr(context, 'get_auth_plugin'):
                 auth = context.get_auth_plugin()
             else:
+                if not context.auth_token:
+                    # this should never happen at runtime
+                    msg = _('missing auth_token')
+                    LOG.error(msg)
+                    raise exception.Forbidden(reason=msg)
+
                 auth = identity.Token(
                     auth_url=self.conf.barbican.auth_endpoint,
                     token=context.auth_token,
@@ -234,31 +273,42 @@ class BarbicanKeyManager(key_manager.KeyManager):
             service_auth = loading.load_auth_from_conf_options(
                 self.conf, group=_BARBICAN_SERVICE_USER_OPT_GROUP
             )
+            if service_auth is None:
+                msg = _("missing configuration for service user")
+                LOG.error(msg)
+                raise exception.Forbidden(reason=msg)
+
             auth = service_token.ServiceTokenAuthWrapper(
-                user_auth=auth, service_auth=service_auth
+                user_auth=auth,
+                service_auth=service_auth,
             )
 
         return auth
 
-    def _get_barbican_endpoint(self, auth, sess):
+    def _get_barbican_endpoint(
+        self, auth: Auth, sess: session.Session
+    ) -> str | None:
         if self.conf.barbican.barbican_endpoint:
-            return self.conf.barbican.barbican_endpoint
-        elif getattr(auth, 'service_catalog', None):
+            return cast(str, self.conf.barbican.barbican_endpoint)
+
+        if hasattr(auth, 'service_catalog'):
             endpoint_data = auth.service_catalog.endpoint_data_for(
                 service_type='key-manager',
                 interface=self.conf.barbican.barbican_endpoint_type,
                 region_name=self.conf.barbican.barbican_region_name,
             )
-            return endpoint_data.url
-        else:
-            return auth.get_endpoint(
-                sess,
-                service_type='key-manager',
-                interface=self.conf.barbican.barbican_endpoint_type,
-                region_name=self.conf.barbican.barbican_region_name,
-            )
+            return endpoint_data.url  # type: ignore[no-any-return]
 
-    def _delete_order(self, client, order_ref):
+        return auth.get_endpoint(
+            sess,
+            service_type='key-manager',
+            interface=self.conf.barbican.barbican_endpoint_type,
+            region_name=self.conf.barbican.barbican_region_name,
+        )
+
+    def _delete_order(
+        self, client: barbican_client_import.Client, order_ref: str
+    ) -> None:
         try:
             client.orders.delete(order_ref)
         except Exception as e:
@@ -266,7 +316,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 "Failed to delete temporary order %s: %s", order_ref, e
             )
 
-    def _delete_container(self, client, container_ref):
+    def _delete_container(
+        self, client: barbican_client_import.Client, container_ref: str
+    ) -> None:
         try:
             client.containers.delete(container_ref)
         except Exception as e:
@@ -275,8 +327,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
             )
 
     def create_key(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> str:
         """Creates a symmetric key.
 
         :param context: contains information of the user and the environment
@@ -311,8 +368,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
             raise exception.KeyManagerError(reason=e)
 
     def create_key_pair(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> tuple[str, str]:
         """Creates an asymmetric key pair.
 
         :param context: contains information of the user and the environment
@@ -356,23 +418,19 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error("Error creating key pair: %s", e)
             raise exception.KeyManagerError(reason=e)
 
-    def _get_barbican_object(self, barbican_client, managed_object):
+    def _get_barbican_object(
+        self,
+        barbican_client: barbican_client_import.Client,
+        managed_obj: managed_object.ManagedObject,
+    ) -> Any:
         """Converts the Castellan managed_object to a Barbican secret."""
-        name = getattr(managed_object, 'name', None)
+        name = getattr(managed_obj, 'name', None)
+        algorithm = getattr(managed_obj, 'algorithm', None)
+        bit_length = getattr(managed_obj, 'bit_length', None)
 
-        try:
-            algorithm = managed_object.algorithm
-            bit_length = managed_object.bit_length
-        except AttributeError:
-            algorithm = None
-            bit_length = None
-
-        secret_type = self._secret_type_dict.get(
-            type(managed_object), 'opaque'
-        )
-        payload = self._get_normalized_payload(
-            managed_object.get_encoded(), secret_type
-        )
+        secret_type = self._secret_type_dict.get(type(managed_obj), 'opaque')
+        encoded = managed_obj.get_encoded()
+        payload = self._get_normalized_payload(encoded, secret_type)
         secret = barbican_client.secrets.create(
             payload=payload,
             algorithm=algorithm,
@@ -382,28 +440,33 @@ class BarbicanKeyManager(key_manager.KeyManager):
         )
         return secret
 
-    def _get_normalized_payload(self, encoded_bytes, secret_type):
+    def _get_normalized_payload(
+        self, encoded_bytes: bytes | None, secret_type: str
+    ) -> bytes | None:
         """Normalizes the bytes of the object.
 
         Barbican expects certificates, public keys, and private keys in PEM
         format, but Castellan expects these objects to be DER encoded bytes
         instead.
         """
+        if encoded_bytes is None:
+            return None
+
         if secret_type == 'public':
-            key = serialization.load_der_public_key(
+            pub_key = serialization.load_der_public_key(
                 encoded_bytes, backend=backends.default_backend()
             )
-            return key.public_bytes(
+            return pub_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
         elif secret_type == 'private':
-            key = serialization.load_der_private_key(
+            priv_key = serialization.load_der_private_key(
                 encoded_bytes,
                 backend=backends.default_backend(),
                 password=None,
             )
-            return key.private_bytes(
+            return priv_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.PKCS8,
                 encryption_algorithm=serialization.NoEncryption(),
@@ -416,12 +479,17 @@ class BarbicanKeyManager(key_manager.KeyManager):
         else:
             return encoded_bytes
 
-    def store(self, context, managed_object, expiration=None):
+    def store(
+        self,
+        context: Context | None,
+        managed_obj: managed_object.ManagedObject,
+        expiration: str | None = None,
+    ) -> str:
         """Stores (i.e., registers) an object with the key manager.
 
         :param context: contains information of the user and the environment
             for the request
-        :param managed_object: a secret object with unencrypted payload.
+        :param managed_obj: a secret object with unencrypted payload.
             Known as "secret" to the barbicanclient api
         :param expiration: the expiration time of the secret in ISO 8601
             format
@@ -431,7 +499,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         barbican_client = self._get_barbican_client(context)
 
         try:
-            secret = self._get_barbican_object(barbican_client, managed_object)
+            secret = self._get_barbican_object(barbican_client, managed_obj)
             secret.expiration = expiration
             secret_ref = secret.store()
             return self._retrieve_secret_uuid(secret_ref)
@@ -443,7 +511,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error("Error storing object: %s", e)
             raise exception.KeyManagerError(reason=e)
 
-    def _get_active_order(self, barbican_client, order_ref):
+    def _get_active_order(
+        self, barbican_client: barbican_client_import.Client, order_ref: str
+    ) -> Any:
         """Returns the order when it is active.
 
         Barbican key creation is done asynchronously, so this loop continues
@@ -451,8 +521,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         """
         active_status = 'ACTIVE'
         error_status = 'ERROR'
-        number_of_retries = self.conf.barbican.number_of_retries
-        retry_delay = self.conf.barbican.retry_delay
+        number_of_retries: int = self.conf.barbican.number_of_retries
+        retry_delay: int = self.conf.barbican.retry_delay
         order = barbican_client.orders.get(order_ref)
         time.sleep(0.25)
         for n in range(number_of_retries):
@@ -497,7 +567,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         LOG.error(msg)
         raise exception.KeyManagerError(reason=msg)
 
-    def _retrieve_secret_uuid(self, secret_ref):
+    def _retrieve_secret_uuid(self, secret_ref: str) -> str:
         """Retrieves the UUID of the secret from the secret_ref.
 
         :param secret_ref: the href of the secret
@@ -510,7 +580,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         # after the last '/', which is the UUID.
         return secret_ref.rpartition('/')[2]
 
-    def _get_secret_data(self, secret):
+    def _get_secret_data(self, secret: Any) -> bytes:
         """Retrieves the secret data.
 
         Converts the Barbican secret to bytes suitable for a Castellan object.
@@ -521,20 +591,20 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :returns: the secret data
         """
         if secret.secret_type == 'public':
-            key = serialization.load_pem_public_key(
+            pub_key = serialization.load_pem_public_key(
                 secret.payload, backend=backends.default_backend()
             )
-            return key.public_bytes(
+            return pub_key.public_bytes(
                 encoding=serialization.Encoding.DER,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
         elif secret.secret_type == 'private':
-            key = serialization.load_pem_private_key(
+            priv_key = serialization.load_pem_private_key(
                 secret.payload,
                 backend=backends.default_backend(),
                 password=None,
             )
-            return key.private_bytes(
+            return priv_key.private_bytes(
                 encoding=serialization.Encoding.DER,
                 format=serialization.PrivateFormat.PKCS8,
                 encryption_algorithm=serialization.NoEncryption(),
@@ -545,9 +615,11 @@ class BarbicanKeyManager(key_manager.KeyManager):
             )
             return cert.public_bytes(encoding=serialization.Encoding.DER)
         else:
-            return secret.payload
+            return cast(bytes, secret.payload)
 
-    def _get_castellan_object(self, secret, metadata_only=False):
+    def _get_castellan_object(
+        self, secret: Any, metadata_only: bool = False
+    ) -> managed_object.ManagedObject:
         """Creates a Castellan managed object given the Barbican secret.
 
         The python barbicanclient lazy-loads the secret data, i.e. the secret
@@ -560,22 +632,25 @@ class BarbicanKeyManager(key_manager.KeyManager):
             included in the managed object
         :returns: the castellan object
         """
-        secret_type = op_data.OpaqueData
+        secret_type: type[managed_object.ManagedObject] = op_data.OpaqueData
         for castellan_type, barbican_type in self._secret_type_dict.items():
             if barbican_type == secret.secret_type:
                 secret_type = castellan_type
 
+        secret_data: bytes | None
         if metadata_only:
             secret_data = None
         else:
             secret_data = self._get_secret_data(secret)
 
+        object_id: str | None
         if secret.secret_ref:
             object_id = self._retrieve_secret_uuid(secret.secret_ref)
         else:
             object_id = None
 
         # convert created ISO8601 in Barbican to POSIX
+        created: int | None
         if secret.created:
             time_stamp = timeutils.parse_isotime(
                 str(secret.created)
@@ -596,15 +671,15 @@ class BarbicanKeyManager(key_manager.KeyManager):
             )
         else:
             # Opaque Data or Passphrase
-            return secret_type(
-                secret_data,
+            return secret_type(  # type: ignore[misc]
+                secret_data,  # type: ignore[arg-type]
                 name=secret.name,
                 created=created,
                 id=object_id,
                 consumers=secret.consumers,
             )
 
-    def _get_secret(self, context, object_id):
+    def _get_secret(self, context: Context | None, object_id: str) -> Any:
         """Returns the metadata of the secret.
 
         :param context: contains information of the user and the environment
@@ -630,7 +705,9 @@ class BarbicanKeyManager(key_manager.KeyManager):
             with excutils.save_and_reraise_exception():
                 LOG.error("Error getting secret metadata: %s", e)
 
-    def _is_secret_not_found_error(self, error):
+    def _is_secret_not_found_error(
+        self, error: barbican_exceptions.HTTPClientError
+    ) -> bool:
         if (
             isinstance(error, barbican_exceptions.HTTPClientError)
             and error.status_code == 404
@@ -639,7 +716,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
         else:
             return False
 
-    def get(self, context, managed_object_id, metadata_only=False):
+    def get(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        metadata_only: bool = False,
+    ) -> managed_object.ManagedObject:
         """Retrieves the specified managed object.
 
         :param context: contains information of the user and the environment
@@ -666,7 +748,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 raise exception.KeyManagerError(reason=e)
 
-    def delete(self, context, managed_object_id, force=False):
+    def delete(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        force: bool = False,
+    ) -> None:
         """Deletes the specified managed object.
 
         :param context: contains information of the user and the environment
@@ -698,7 +785,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 raise exception.KeyManagerError(reason=e)
 
-    def add_consumer(self, context, managed_object_id, consumer_data):
+    def add_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         """Add a consumer to the specified managed object
 
         :param context: contains information of the user and the environment
@@ -731,10 +823,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 raise exception.KeyManagerError(reason=e)
 
-    def remove_consumer(self, context, managed_object_id, consumer_data):
-        if not managed_object_id:
-            raise exception.KeyManagerError('key identifier not provided')
-
+    def remove_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         barbican_client = self._get_barbican_client(context)
         try:
             barbican_client.secrets.remove_consumer(
@@ -753,7 +847,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
             else:
                 raise exception.KeyManagerError(reason=e)
 
-    def list(self, context, object_type=None, metadata_only=False):
+    def list(
+        self,
+        context: Context | None,
+        object_type: type[managed_object.ManagedObject] | None = None,
+        metadata_only: bool = False,
+    ) -> list[managed_object.ManagedObject]:
         """Retrieves a list of managed objects that match the criteria.
 
         If no search criteria is given, all objects are returned.
@@ -764,7 +863,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param metadata_only: whether secret data should be included
         :raises KeyManagerError: if listing secrets fails
         """
-        objects = []
+        objects: list[managed_object.ManagedObject] = []
         barbican_client = self._get_barbican_client(context)
 
         if object_type and object_type not in self._secret_type_dict:
@@ -772,7 +871,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
             LOG.error(msg)
             raise exception.KeyManagerError(reason=msg)
 
-        secret_type = self._secret_type_dict.get(object_type)
+        secret_type = self._secret_type_dict.get(object_type)  # type: ignore[arg-type]
 
         try:
             secrets = barbican_client.secrets.list(secret_type=secret_type)
@@ -801,10 +900,12 @@ class BarbicanKeyManager(key_manager.KeyManager):
 
         return objects
 
-    def list_options_for_discovery(self):
-        barbican_opts = _barbican_opts
+    def list_options_for_discovery(
+        self,
+    ) -> builtins.list[tuple[str | None, builtins.list[cfg.Opt]]]:
+        barbican_opts: list[cfg.Opt] = list(_barbican_opts)
         barbican_opts += loading.get_session_conf_options()
-        barbican_service_user_opts = loading.get_session_conf_options()
+        barbican_service_user_opts = list(loading.get_session_conf_options())
         barbican_service_user_opts += loading.get_auth_common_conf_options()
 
         return [

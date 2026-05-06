@@ -17,49 +17,95 @@
 Key manager implementation that raises NotImplementedError
 """
 
+from typing import Any
+
+from oslo_config import cfg
+
+from castellan.common.objects import managed_object
 from castellan.key_manager import key_manager
+from castellan.key_manager.key_manager import Context
 
 
 class NotImplementedKeyManager(key_manager.KeyManager):
     """Key Manager that raises NotImplementedError for all operations."""
 
-    def __init__(self, configuration=None):
-        super().__init__(configuration)
+    def __init__(self, configuration: cfg.ConfigOpts | None = None) -> None:
+        pass
 
     def create_key(
         self,
-        context,
-        algorithm='AES',
-        length=256,
-        expiration=None,
-        name=None,
-    ):
+        context: Context | None,
+        algorithm: str = 'AES',
+        length: int = 256,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> str:
         raise NotImplementedError()
 
     def create_key_pair(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str = 'AES',
+        length: int = 256,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> tuple[str, str]:
         raise NotImplementedError()
 
-    def store(self, context, managed_object, expiration=None):
+    def store(
+        self,
+        context: Context | None,
+        managed_object: managed_object.ManagedObject,
+        expiration: str | None = None,
+    ) -> str:
         raise NotImplementedError()
 
     # TODO(stephenfin): This is not defined on the base class nor on other
     # in-tree key managers. Can we remove it?
-    def copy(self, context, managed_object_id, **kwargs):
+    def copy(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        **kwargs: Any,
+    ) -> Any:
         raise NotImplementedError()
 
-    def get(self, context, managed_object_id, metadata_only=False):
+    def get(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        metadata_only: bool = False,
+    ) -> managed_object.ManagedObject:
         raise NotImplementedError()
 
-    def list(self, context, object_type=None, metadata_only=False):
+    def list(
+        self,
+        context: Context | None,
+        object_type: type[managed_object.ManagedObject] | None = None,
+        metadata_only: bool = False,
+    ) -> list[managed_object.ManagedObject]:
         raise NotImplementedError()
 
-    def delete(self, context, managed_object_id, force=False):
+    def delete(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        force: bool = False,
+    ) -> None:
         raise NotImplementedError()
 
-    def add_consumer(self, context, managed_object_id, consumer_data):
+    def add_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         raise NotImplementedError()
 
-    def remove_consumer(self, context, managed_object_id, consumer_data):
+    def remove_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         raise NotImplementedError()

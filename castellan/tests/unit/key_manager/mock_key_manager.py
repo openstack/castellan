@@ -114,14 +114,14 @@ class MockKeyManager(key_manager.KeyManager):
         private_key = pri_key.PrivateKey(
             algorithm='RSA',
             bit_length=length,
-            key=bytearray(private_der),
+            key=bytes(private_der),
             name=name,
         )
 
         public_key = pub_key.PublicKey(
             algorithm='RSA',
             bit_length=length,
-            key=bytearray(public_der),
+            key=bytes(public_der),
             name=name,
         )
 

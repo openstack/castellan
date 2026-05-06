@@ -167,7 +167,12 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         auth = self.key_mgr._get_keystone_auth(self.ctxt)
         self.assertIsInstance(auth, identity.Token)
 
-    def test__get_keystone_auth_service_user(self):
+    @mock.patch(
+        'castellan.key_manager.barbican_key_manager.loading'
+        '.load_auth_from_conf_options'
+    )
+    def test__get_keystone_auth_service_user(self, mock_load_auth):
+        mock_load_auth.return_value = mock.Mock()
         self.key_mgr.conf.barbican.send_service_user_token = True
         auth = self.key_mgr._get_keystone_auth(self.ctxt)
         self.assertIsInstance(auth, service_token.ServiceTokenAuthWrapper)

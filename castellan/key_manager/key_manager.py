@@ -17,14 +17,26 @@
 Key manager API
 """
 
-import abc
+from __future__ import annotations
 
+from typing import TypeAlias
+
+import abc
+import builtins
+
+from oslo_config import cfg
+from oslo_context import context as ctx
+
+from castellan.common.credentials import credential
+from castellan.common.objects import managed_object
 from castellan.common.objects import opaque_data as op_data
 from castellan.common.objects import passphrase
 from castellan.common.objects import private_key as pri_key
 from castellan.common.objects import public_key as pub_key
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.common.objects import x_509
+
+Context: TypeAlias = credential.Credential | ctx.RequestContext
 
 
 class KeyManager(metaclass=abc.ABCMeta):
@@ -34,7 +46,7 @@ class KeyManager(metaclass=abc.ABCMeta):
     Key Manager is responsible for creating, reading, and deleting keys.
     """
 
-    _secret_type_dict = {
+    _secret_type_dict: dict[type[managed_object.ManagedObject], str] = {
         op_data.OpaqueData: "opaque",
         passphrase.Passphrase: "passphrase",
         pri_key.PrivateKey: "private",
@@ -44,7 +56,7 @@ class KeyManager(metaclass=abc.ABCMeta):
     }
 
     @abc.abstractmethod
-    def __init__(self, configuration):
+    def __init__(self, configuration: cfg.ConfigOpts | None) -> None:
         """Instantiate a KeyManager object.
 
         Creates a KeyManager object with implementation specific details
@@ -54,8 +66,13 @@ class KeyManager(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def create_key(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> str:
         """Creates a symmetric key.
 
         This method creates a symmetric key and returns the key's UUID. If the
@@ -66,8 +83,13 @@ class KeyManager(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def create_key_pair(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> tuple[str, str]:
         """Creates an asymmetric key pair.
 
         This method creates an asymmetric key pair and returns the pair of key
@@ -78,7 +100,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def store(self, context, managed_object, expiration=None):
+    def store(
+        self,
+        context: Context | None,
+        managed_object: managed_object.ManagedObject,
+        expiration: str | None = None,
+    ) -> str:
         """Stores a managed object with the key manager.
 
         This method stores the specified managed object and returns its UUID
@@ -89,7 +116,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get(self, context, managed_object_id, metadata_only=False):
+    def get(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        metadata_only: bool = False,
+    ) -> managed_object.ManagedObject:
         """Retrieves the specified managed object.
 
         Implementations should verify that the caller has permissions to
@@ -109,7 +141,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def delete(self, context, managed_object_id, force=False):
+    def delete(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        force: bool = False,
+    ) -> None:
         """Deletes the specified managed object.
 
         Implementations should verify that the caller has permission to delete
@@ -130,7 +167,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def add_consumer(self, context, managed_object_id, consumer_data):
+    def add_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         """Add a consumer to a managed object.
 
         Implementations should verify that the caller has permission to
@@ -147,7 +189,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def remove_consumer(self, context, managed_object_id, consumer_data):
+    def remove_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> None:
         """Remove a consumer from a managed object.
 
         Implementations should verify that the caller has permission to
@@ -163,7 +210,12 @@ class KeyManager(metaclass=abc.ABCMeta):
         """
         pass
 
-    def list(self, context, object_type=None, metadata_only=False):
+    def list(
+        self,
+        context: Context | None,
+        object_type: type[managed_object.ManagedObject] | None = None,
+        metadata_only: bool = False,
+    ) -> list[managed_object.ManagedObject]:
         """Lists the managed objects given the criteria.
 
         Implementations should verify that the caller has permission to list
@@ -177,7 +229,9 @@ class KeyManager(metaclass=abc.ABCMeta):
         """
         return []
 
-    def list_options_for_discovery(self):
+    def list_options_for_discovery(
+        self,
+    ) -> builtins.list[tuple[str | None, builtins.list[cfg.Opt]]]:
         """Lists the KeyManager's configure options.
 
         KeyManagers should advertise all supported options through this

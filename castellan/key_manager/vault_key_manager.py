@@ -14,29 +14,37 @@
 Key manager implementation for Vault
 """
 
+from __future__ import annotations
+
 import binascii
+import builtins
+from collections.abc import Callable
+import datetime
+import os
+import time
+from typing import Any
+from typing import NoReturn
+import uuid
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.primitives.serialization import NoEncryption
 from cryptography.hazmat.primitives.serialization import PrivateFormat
 from cryptography.hazmat.primitives.serialization import PublicFormat
-
-import os
-import time
-import uuid
-
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 import requests
 
 from castellan.common import exception
+from castellan.common.objects import managed_object
 from castellan.common.objects import private_key as pri_key
 from castellan.common.objects import public_key as pub_key
 from castellan.common.objects import symmetric_key as sym_key
 from castellan.i18n import _
 from castellan.key_manager import key_manager
+from castellan.key_manager.key_manager import Context
 
 _DEFAULT_VAULT_URL = "http://127.0.0.1:8200"
 _DEFAULT_MOUNTPOINT = "secret"
@@ -113,7 +121,23 @@ LOG = logging.getLogger(__name__)
 class VaultKeyManager(key_manager.KeyManager):
     """Key Manager Interface that wraps the Vault REST API."""
 
-    def __init__(self, configuration):
+    _conf: cfg.ConfigOpts
+    _session: requests.Session
+    _root_token_id: str | None
+    _approle_role_id: str | None
+    _approle_secret_id: str | None
+    _cached_approle_token_id: str | None
+    _approle_token_ttl: int | None
+    _approle_token_issue: datetime.datetime | None
+    _kv_mountpoint: str
+    _kv_path: str | None
+    _kv_version: int
+    _vault_url: str
+    _namespace: str | None
+    _timeout: float
+    _verify_server: str | bool
+
+    def __init__(self, configuration: cfg.ConfigOpts) -> None:
         self._conf = configuration
         self._conf.register_opts(_vault_opts, group=_VAULT_OPT_GROUP)
         self._session = requests.Session()
@@ -134,12 +158,12 @@ class VaultKeyManager(key_manager.KeyManager):
         else:
             self._verify_server = False
 
-    def _get_url(self):
+    def _get_url(self) -> str:
         if not self._vault_url.endswith('/'):
             self._vault_url += '/'
         return self._vault_url
 
-    def _get_resource_url(self, key_id=None):
+    def _get_resource_url(self, key_id: str | None = None) -> str:
         return '{}v1/{}/{}{}{}'.format(
             self._get_url(),
             self._kv_mountpoint,
@@ -154,21 +178,23 @@ class VaultKeyManager(key_manager.KeyManager):
         )
 
     @property
-    def _approle_token_id(self):
-        if all(
-            (self._approle_token_issue, self._approle_token_ttl)
-        ) and timeutils.is_older_than(
-            self._approle_token_issue, self._approle_token_ttl
+    def _approle_token_id(self) -> str | None:
+        if (
+            self._approle_token_issue is not None
+            and self._approle_token_ttl is not None
+            and timeutils.is_older_than(
+                self._approle_token_issue, self._approle_token_ttl
+            )
         ):
             self._cached_approle_token_id = None
         return self._cached_approle_token_id
 
-    def _set_namespace(self, headers):
+    def _set_namespace(self, headers: dict[str, str]) -> dict[str, str]:
         if self._namespace:
             headers["X-Vault-Namespace"] = self._namespace
         return headers
 
-    def _build_auth_headers(self):
+    def _build_auth_headers(self) -> dict[str, str]:
         if self._root_token_id:
             return self._set_namespace({'X-Vault-Token': self._root_token_id})
 
@@ -178,7 +204,7 @@ class VaultKeyManager(key_manager.KeyManager):
             )
 
         if self._approle_role_id:
-            params = {'role_id': self._approle_role_id}
+            params: dict[str, str] = {'role_id': self._approle_role_id}
             if self._approle_secret_id:
                 params['secret_id'] = self._approle_secret_id
             approle_login_url = f'{self._get_url()}v1/auth/approle/login'
@@ -209,12 +235,17 @@ class VaultKeyManager(key_manager.KeyManager):
             self._approle_token_issue = token_issue_utc
             self._approle_token_ttl = resp_data['auth']['lease_duration']
             return self._set_namespace(
-                {'X-Vault-Token': self._approle_token_id}
+                {'X-Vault-Token': self._cached_approle_token_id}
             )
 
         return {}
 
-    def _do_http_request(self, method, resource, json=None):
+    def _do_http_request(
+        self,
+        method: Callable[..., requests.Response],
+        resource: str,
+        json: dict[str, Any] | None = None,
+    ) -> requests.Response:
         headers = self._build_auth_headers()
 
         try:
@@ -236,8 +267,13 @@ class VaultKeyManager(key_manager.KeyManager):
         return resp
 
     def create_key_pair(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> tuple[str, str]:
         """Creates an asymmetric key pair."""
 
         if algorithm.lower() != 'rsa':
@@ -274,7 +310,9 @@ class VaultKeyManager(key_manager.KeyManager):
 
         return private_id, public_id
 
-    def _store_key_value(self, key_id, value):
+    def _store_key_value(
+        self, key_id: str, value: managed_object.ManagedObject
+    ) -> str:
 
         type_value = self._secret_type_dict.get(type(value))
         if type_value is None:
@@ -282,9 +320,13 @@ class VaultKeyManager(key_manager.KeyManager):
                 f"Unknown type for value : {value!r}"
             )
 
-        record = {
+        encoded = value.get_encoded()
+        if encoded is None:
+            raise exception.KeyManagerError("Cannot store object without data")
+
+        record: dict[str, Any] = {
             'type': type_value,
-            'value': binascii.hexlify(value.get_encoded()).decode('utf-8'),
+            'value': binascii.hexlify(encoded).decode('utf-8'),
             'algorithm': (
                 value.algorithm if hasattr(value, 'algorithm') else None
             ),
@@ -304,8 +346,13 @@ class VaultKeyManager(key_manager.KeyManager):
         return key_id
 
     def create_key(
-        self, context, algorithm, length, expiration=None, name=None
-    ):
+        self,
+        context: Context | None,
+        algorithm: str,
+        length: int,
+        expiration: str | None = None,
+        name: str | None = None,
+    ) -> str:
         """Creates a symmetric key."""
 
         if length % 8:
@@ -319,18 +366,27 @@ class VaultKeyManager(key_manager.KeyManager):
             length or 256,
             key_value,
             key_id,
-            name or int(time.time()),
+            # FIXME(stephenfin): This should be an int yet we pass name (a str)
+            # if set?
+            name or int(time.time()),  # type: ignore[arg-type]
         )
 
         return self._store_key_value(key_id, key)
 
-    def store(self, context, key_value, expiration=None):
+    def store(
+        self,
+        context: Context | None,
+        key_value: managed_object.ManagedObject,
+        expiration: str | None = None,
+    ) -> str:
         """Stores (i.e., registers) a key with the key manager."""
 
         key_id = uuid.uuid4().hex
         return self._store_key_value(key_id, key_value)
 
-    def get(self, context, key_id, metadata_only=False):
+    def get(
+        self, context: Context | None, key_id: str, metadata_only: bool = False
+    ) -> managed_object.ManagedObject:
         """Retrieves the key identified by the specified id."""
 
         if not key_id:
@@ -349,7 +405,7 @@ class VaultKeyManager(key_manager.KeyManager):
 
         key = None if metadata_only else binascii.unhexlify(record['value'])
 
-        clazz = None
+        clazz: type[managed_object.ManagedObject] | None = None
         for type_clazz, type_name in self._secret_type_dict.items():
             if type_name == record['type']:
                 clazz = type_clazz
@@ -359,19 +415,27 @@ class VaultKeyManager(key_manager.KeyManager):
                 "Unknown type : {!r}".format(record['type'])
             )
 
+        # TODO(stephenfin): Use isinstance checks instead of hasattr checks
         if hasattr(clazz, 'algorithm') and hasattr(clazz, 'bit_length'):
-            return clazz(
+            return clazz(  # type: ignore[call-arg]
                 record['algorithm'],
                 record['bit_length'],
-                key,
+                key,  # type: ignore[arg-type]
                 record['name'],
                 record['created'],
                 key_id,
             )
         else:
-            return clazz(key, record['name'], record['created'], key_id)
+            return clazz(
+                key,  # type: ignore[arg-type]
+                record['name'],
+                record['created'],
+                key_id,  # type: ignore[arg-type]
+            )
 
-    def delete(self, context, key_id, force=False):
+    def delete(
+        self, context: Context | None, key_id: str, force: bool = False
+    ) -> None:
         """Represents deleting the key.
 
         The 'force' parameter is not used whatsoever and only kept to allow
@@ -388,17 +452,32 @@ class VaultKeyManager(key_manager.KeyManager):
         if resp.status_code == requests.codes['not_found']:
             raise exception.ManagedObjectNotFoundError(uuid=key_id)
 
-    def add_consumer(self, context, managed_object_id, consumer_data):
+    def add_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> NoReturn:
         raise NotImplementedError(
             "VaultKeyManager does not implement adding consumers"
         )
 
-    def remove_consumer(self, context, managed_object_id, consumer_data):
+    def remove_consumer(
+        self,
+        context: Context | None,
+        managed_object_id: str,
+        consumer_data: dict[str, str],
+    ) -> NoReturn:
         raise NotImplementedError(
             "VaultKeyManager does not implement deleting consumers"
         )
 
-    def list(self, context, object_type=None, metadata_only=False):
+    def list(
+        self,
+        context: Context | None,
+        object_type: type[managed_object.ManagedObject] | None = None,
+        metadata_only: bool = False,
+    ) -> list[managed_object.ManagedObject]:
         """Lists the managed objects given the criteria."""
 
         if object_type and object_type not in self._secret_type_dict:
@@ -409,12 +488,13 @@ class VaultKeyManager(key_manager.KeyManager):
             self._session.get, self._get_resource_url()
         )
 
+        keys: list[str]
         if resp.status_code == requests.codes['not_found']:
             keys = []
         else:
             keys = resp.json()['data']['keys']
 
-        objects = []
+        objects: list[managed_object.ManagedObject] = []
         for obj_id in keys:
             try:
                 obj = self.get(context, obj_id, metadata_only=metadata_only)
@@ -429,5 +509,7 @@ class VaultKeyManager(key_manager.KeyManager):
                 pass
         return objects
 
-    def list_options_for_discovery(self):
+    def list_options_for_discovery(
+        self,
+    ) -> builtins.list[tuple[str | None, builtins.list[cfg.Opt]]]:
         return [(_VAULT_OPT_GROUP, _vault_opts)]

@@ -550,7 +550,7 @@ class BarbicanKeyManagerKSTokenTestCase(
         sess = session.Session()
 
         return keystone_token.KeystoneToken(
-            token=auth.get_token(sess),
+            token=auth.get_token(sess) or '',
             auth_url=auth_url,
             project_id=auth.get_project_id(sess),
         )
