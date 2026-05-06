@@ -27,5 +27,5 @@ import abc
 class Credential(metaclass=abc.ABCMeta):
     """Base class to represent all credentials."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass

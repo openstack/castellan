@@ -26,17 +26,17 @@ class KeystoneToken(token.Token):
 
     def __init__(
         self,
-        token,
-        auth_url=None,
-        trust_id=None,
-        domain_id=None,
-        domain_name=None,
-        project_id=None,
-        project_name=None,
-        project_domain_id=None,
-        project_domain_name=None,
-        reauthenticate=True,
-    ):
+        token: str,
+        auth_url: str | None = None,
+        trust_id: str | None = None,
+        domain_id: str | None = None,
+        domain_name: str | None = None,
+        project_id: str | None = None,
+        project_name: str | None = None,
+        project_domain_id: str | None = None,
+        project_domain_name: str | None = None,
+        reauthenticate: bool = True,
+    ) -> None:
         """Create a new Keystone Token Credential.
 
         :param string token: Token for authentication. The type of token
@@ -66,51 +66,51 @@ class KeystoneToken(token.Token):
         super().__init__(token)
 
     @property
-    def auth_url(self):
+    def auth_url(self) -> str | None:
         """This method returns an auth_url."""
         return self._auth_url
 
     @property
-    def trust_id(self):
+    def trust_id(self) -> str | None:
         """This method returns a trust_id."""
         return self._trust_id
 
     @property
-    def domain_id(self):
+    def domain_id(self) -> str | None:
         """This method returns a domain_id."""
         return self._domain_id
 
     @property
-    def domain_name(self):
+    def domain_name(self) -> str | None:
         """This method returns a domain_name."""
         return self._domain_name
 
     @property
-    def project_id(self):
+    def project_id(self) -> str | None:
         """This method returns a project_id."""
         return self._project_id
 
     @property
-    def project_name(self):
+    def project_name(self) -> str | None:
         """This method returns a project_name."""
         return self._project_name
 
     @property
-    def project_domain_id(self):
+    def project_domain_id(self) -> str | None:
         """This method returns a project_domain_id."""
         return self._project_domain_id
 
     @property
-    def project_domain_name(self):
+    def project_domain_name(self) -> str | None:
         """This method returns a project_domain_name."""
         return self._project_domain_name
 
     @property
-    def reauthenticate(self):
+    def reauthenticate(self) -> bool:
         """This method returns reauthenticate."""
         return self._reauthenticate
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, KeystoneToken):
             return (
                 self._token == other._token
@@ -126,6 +126,6 @@ class KeystoneToken(token.Token):
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result

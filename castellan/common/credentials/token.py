@@ -24,7 +24,7 @@ from castellan.common.credentials import credential
 class Token(credential.Credential):
     """This class represents a token credential."""
 
-    def __init__(self, token):
+    def __init__(self, token: str) -> None:
         """Create a new Token credential.
 
         :param string token: Token for authentication.
@@ -33,16 +33,16 @@ class Token(credential.Credential):
         self._token = token
 
     @property
-    def token(self):
+    def token(self) -> str:
         """This method returns a token."""
         return self._token
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Token):
             return self._token == other._token
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result

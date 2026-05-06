@@ -26,21 +26,21 @@ class KeystonePassword(password.Password):
 
     def __init__(
         self,
-        password,
-        auth_url=None,
-        username=None,
-        user_id=None,
-        user_domain_id=None,
-        user_domain_name=None,
-        trust_id=None,
-        domain_id=None,
-        domain_name=None,
-        project_id=None,
-        project_name=None,
-        project_domain_id=None,
-        project_domain_name=None,
-        reauthenticate=True,
-    ):
+        password: str,
+        auth_url: str | None = None,
+        username: str | None = None,
+        user_id: str | None = None,
+        user_domain_id: str | None = None,
+        user_domain_name: str | None = None,
+        trust_id: str | None = None,
+        domain_id: str | None = None,
+        domain_name: str | None = None,
+        project_id: str | None = None,
+        project_name: str | None = None,
+        project_domain_id: str | None = None,
+        project_domain_name: str | None = None,
+        reauthenticate: bool = True,
+    ) -> None:
         """Create a new Keystone Password Credential.
 
         :param string auth_url: Use this endpoint to connect to Keystone.
@@ -76,66 +76,66 @@ class KeystonePassword(password.Password):
         super().__init__(username, password)
 
     @property
-    def auth_url(self):
+    def auth_url(self) -> str | None:
         """This method returns an auth_url."""
         return self._auth_url
 
     @property
-    def user_id(self):
+    def user_id(self) -> str | None:
         """This method returns a user_id."""
         return self._user_id
 
     @property
-    def user_domain_id(self):
+    def user_domain_id(self) -> str | None:
         """This method returns a user_domain_id."""
         return self._user_domain_id
 
     @property
-    def user_domain_name(self):
+    def user_domain_name(self) -> str | None:
         """This method returns a user_domain_name."""
         return self._user_domain_name
 
     @property
-    def trust_id(self):
+    def trust_id(self) -> str | None:
         """This method returns a trust_id."""
         return self._trust_id
 
     @property
-    def domain_id(self):
+    def domain_id(self) -> str | None:
         """This method returns a domain_id."""
         return self._domain_id
 
     @property
-    def domain_name(self):
+    def domain_name(self) -> str | None:
         """This method returns a domain_name."""
         return self._domain_name
 
     @property
-    def project_id(self):
+    def project_id(self) -> str | None:
         """This method returns a project_id."""
         return self._project_id
 
     @property
-    def project_name(self):
+    def project_name(self) -> str | None:
         """This method returns a project_name."""
         return self._project_name
 
     @property
-    def project_domain_id(self):
+    def project_domain_id(self) -> str | None:
         """This method returns a project_domain_id."""
         return self._project_domain_id
 
     @property
-    def project_domain_name(self):
+    def project_domain_name(self) -> str | None:
         """This method returns a project_domain_name."""
         return self._project_domain_name
 
     @property
-    def reauthenticate(self):
+    def reauthenticate(self) -> bool:
         """This method returns reauthenticate."""
         return self._reauthenticate
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, KeystonePassword):
             return (
                 self._password == other._password
@@ -155,6 +155,6 @@ class KeystonePassword(password.Password):
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result

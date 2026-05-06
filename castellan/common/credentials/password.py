@@ -24,7 +24,7 @@ from castellan.common.credentials import credential
 class Password(credential.Credential):
     """This class represents a password credential."""
 
-    def __init__(self, username, password):
+    def __init__(self, username: str | None, password: str) -> None:
         """Create a new Password credential.
 
         :param string password: Password for authentication.
@@ -35,16 +35,16 @@ class Password(credential.Credential):
         self._password = password
 
     @property
-    def username(self):
+    def username(self) -> str | None:
         """This method returns a username."""
         return self._username
 
     @property
-    def password(self):
+    def password(self) -> str:
         """This method returns a password."""
         return self._password
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Password):
             return (
                 self._username == other._username
@@ -53,6 +53,6 @@ class Password(credential.Credential):
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result
