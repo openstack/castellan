@@ -26,8 +26,13 @@ class Passphrase(managed_object.ManagedObject):
     """This class represents a passphrase."""
 
     def __init__(
-        self, passphrase, name=None, created=None, id=None, consumers=[]
-    ):
+        self,
+        passphrase: bytes | None,
+        name: str | None = None,
+        created: int | None = None,
+        id: str | None = None,
+        consumers: list[dict[str, str]] | None = None,
+    ) -> None:
         """Create a new Passphrase object.
 
         The expected type for the passphrase is a bytestring.
@@ -38,22 +43,22 @@ class Passphrase(managed_object.ManagedObject):
         )
 
     @classmethod
-    def managed_type(cls):
+    def managed_type(cls) -> str:
         return "passphrase"
 
     @property
-    def format(self):
+    def format(self) -> str:
         return "RAW"
 
-    def get_encoded(self):
+    def get_encoded(self) -> bytes | None:
         return self._passphrase
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Passphrase):
             return self._passphrase == other._passphrase
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result

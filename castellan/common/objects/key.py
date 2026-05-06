@@ -21,10 +21,13 @@ represent all encryption keys. The basis for this class was copied
 from Java.
 """
 
+from __future__ import annotations
+
 import abc
 import binascii
+from typing import Any
 
-from castellan.common.objects import exception
+from castellan.common import exception
 from castellan.common.objects import managed_object
 
 
@@ -33,14 +36,14 @@ class Key(managed_object.ManagedObject):
 
     def __init__(
         self,
-        algorithm,
-        bit_length,
-        key,
-        name=None,
-        created=None,
-        id=None,
-        consumers=None,
-    ):
+        algorithm: str,
+        bit_length: int,
+        key: bytes | None,
+        name: str | None = None,
+        created: int | None = None,
+        id: str | None = None,
+        consumers: list[dict[str, str]] | None = None,
+    ) -> None:
         self._alg = algorithm
         self._bit_length = bit_length
         self._key = key
@@ -50,7 +53,7 @@ class Key(managed_object.ManagedObject):
 
     @property
     @abc.abstractmethod
-    def algorithm(self):
+    def algorithm(self) -> str:
         """Returns the key's algorithm.
 
         Returns the key's algorithm. For example, "DSA" indicates that this key
@@ -60,7 +63,7 @@ class Key(managed_object.ManagedObject):
 
     @property
     @abc.abstractmethod
-    def bit_length(self):
+    def bit_length(self) -> int:
         """Returns the key's bit length.
 
         Returns the key's bit length. For example, for AES symmetric keys,
@@ -69,8 +72,8 @@ class Key(managed_object.ManagedObject):
         """
         pass
 
-    def to_dict(self):
-        dict_fields = super().to_dict()
+    def to_dict(self, metadata_only: bool = False) -> dict[str, Any]:
+        dict_fields = super().to_dict(metadata_only)
 
         dict_fields["algorithm"] = self.algorithm
         dict_fields["bit_length"] = self.bit_length
@@ -79,7 +82,12 @@ class Key(managed_object.ManagedObject):
         return dict_fields
 
     @classmethod
-    def from_dict(cls, dict_fields, id=None, metadata_only=False):
+    def from_dict(  # type: ignore[override]
+        cls,
+        dict_fields: dict[str, Any],
+        id: str | None = None,
+        metadata_only: bool = False,
+    ) -> Key:
         try:
             value = None
 
@@ -89,6 +97,8 @@ class Key(managed_object.ManagedObject):
             if not metadata_only and dict_fields["value"] is not None:
                 value = binascii.unhexlify(dict_fields["value"])
 
+            # NOTE: The from_dict is designed to be called on subclasses
+            # which have different __init__ signatures
             return cls(
                 algorithm=dict_fields["algorithm"],
                 bit_length=dict_fields["bit_length"],

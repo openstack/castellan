@@ -26,22 +26,22 @@ class X509(certificate.Certificate):
     """This class represents X.509 certificates."""
 
     @classmethod
-    def managed_type(cls):
+    def managed_type(cls) -> str:
         return "certificate"
 
     @property
-    def format(self):
+    def format(self) -> str:
         return "X.509"
 
-    def get_encoded(self):
+    def get_encoded(self) -> bytes | None:
         return self._data
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, X509):
             return self._data == other._data
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result

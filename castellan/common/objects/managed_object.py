@@ -20,8 +20,11 @@ This module defines the ManagedObject class. The ManagedObject class
 is the base class to represent all objects managed by the key manager.
 """
 
+from __future__ import annotations
+
 import abc
 import binascii
+from typing import Any
 
 from castellan.common import exception
 
@@ -29,7 +32,13 @@ from castellan.common import exception
 class ManagedObject(metaclass=abc.ABCMeta):
     """Base class to represent all managed objects."""
 
-    def __init__(self, name=None, created=None, id=None, consumers=[]):
+    def __init__(
+        self,
+        name: str | None = None,
+        created: int | None = None,
+        id: str | None = None,
+        consumers: list[dict[str, str]] | None = None,
+    ) -> None:
         """Managed Object
 
         :param name: the name of the managed object.
@@ -37,6 +46,9 @@ class ManagedObject(metaclass=abc.ABCMeta):
         :param id: the ID of the object, generated after storing the object.
         :param consumers: the list of object's consumers.
         """
+        if consumers is None:
+            consumers = []
+
         self._name = name
 
         # If None or POSIX times
@@ -51,7 +63,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
         self._consumers = consumers
 
     @property
-    def id(self):
+    def id(self) -> str | None:
         """Returns the ID of the managed object.
 
         Returns the ID of the managed object or None if this object does not
@@ -60,7 +72,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
         return self._id
 
     @property
-    def name(self):
+    def name(self) -> str | None:
         """Returns the name.
 
         Returns the object's name or None if this object does not have one.
@@ -68,7 +80,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
         return self._name
 
     @property
-    def created(self):
+    def created(self) -> int | None:
         """Returns the POSIX time(long) of the object that was created.
 
         Returns the POSIX time(long) of the object that was created or None if
@@ -77,7 +89,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
         return self._created
 
     @property
-    def consumers(self):
+    def consumers(self) -> list[dict[str, str]]:
         """Returns the list of consumers for this object.
 
         Returns the object's consumers or [] if the object does not have any.
@@ -86,7 +98,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def format(self):
+    def format(self) -> str | None:
         """Returns the encoding format.
 
         Returns the object's encoding format or None if this object is not
@@ -95,12 +107,12 @@ class ManagedObject(metaclass=abc.ABCMeta):
         pass
 
     @property
-    def value(self):
+    def value(self) -> bytes | None:
         """Returns the managed object value."""
         return self.get_encoded()
 
     @abc.abstractmethod
-    def get_encoded(self):
+    def get_encoded(self) -> bytes | None:
         """Returns the encoded object.
 
         Returns a bytestring object in a format represented in the encoding
@@ -108,13 +120,13 @@ class ManagedObject(metaclass=abc.ABCMeta):
         """
         pass
 
-    def is_metadata_only(self):
+    def is_metadata_only(self) -> bool:
         """Returns if the associated object is only metadata or not."""
         return self.get_encoded() is None
 
     @classmethod
     @abc.abstractmethod
-    def managed_type(cls):
+    def managed_type(cls) -> str:
         """Returns the managed object type identifier.
 
         Returns the object's type identifier for serialization purpose.
@@ -123,8 +135,12 @@ class ManagedObject(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_dict(
-        cls, dict_fields, id=None, metadata_only=False, consumers=[]
-    ):
+        cls,
+        dict_fields: dict[str, Any],
+        id: str | None = None,
+        metadata_only: bool = False,
+        consumers: list[dict[str, str]] | None = None,
+    ) -> ManagedObject:
         """Returns an instance of this class based on a dict object.
 
         :param dict_fields: The dictionary containing all necessary params
@@ -134,6 +150,9 @@ class ManagedObject(metaclass=abc.ABCMeta):
                               only, without the secret itself.
         :param consumers: A list with object's consumers.
         """
+        if consumers is None:
+            consumers = []
+
         try:
             value = None
 
@@ -143,17 +162,21 @@ class ManagedObject(metaclass=abc.ABCMeta):
             if not metadata_only and dict_fields["value"] is not None:
                 value = binascii.unhexlify(dict_fields["value"])
 
-            return cls(
-                value,
+            # NOTE: The base class from_dict is designed to be called on
+            # subclasses which have different __init__ signatures
+            # FIXME(stephenfin): name appears to be duplicated here (it's the
+            # first parameter?)
+            return cls(  # type: ignore[misc]
+                value,  # type: ignore[arg-type]
                 name=dict_fields["name"],
                 created=dict_fields["created"],
                 id=id,
                 consumers=consumers,
             )
         except KeyError as e:
-            raise exception.InvalidManagedObjectDictError(field=str(e))
+            raise exception.InvalidManagedObjectDictError(field=str(e))  # noqa
 
-    def to_dict(self, metadata_only=False):
+    def to_dict(self, metadata_only: bool = False) -> dict[str, Any]:
         """Returns a dict that can be used with the from_dict() method.
 
         :param metadata_only: A switch to create an dictionary with metadata

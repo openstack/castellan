@@ -26,25 +26,25 @@ class PublicKey(key.Key):
     """This class represents public keys."""
 
     @classmethod
-    def managed_type(cls):
+    def managed_type(cls) -> str:
         return "public"
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str:
         return self._alg
 
     @property
-    def format(self):
+    def format(self) -> str:
         return "SubjectPublicKeyInfo"
 
-    def get_encoded(self):
+    def get_encoded(self) -> bytes | None:
         return self._key
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> int:
         return self._bit_length
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, PublicKey):
             return (
                 self._alg == other._alg
@@ -54,6 +54,6 @@ class PublicKey(key.Key):
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         return not result
