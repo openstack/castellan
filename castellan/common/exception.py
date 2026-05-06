@@ -17,6 +17,7 @@
 Castellan exception subclasses
 """
 
+from typing import Any
 import urllib.parse
 
 from castellan.i18n import _
@@ -25,7 +26,7 @@ _FATAL_EXCEPTION_FORMAT_ERRORS = False
 
 
 class RedirectException(Exception):
-    def __init__(self, url):
+    def __init__(self, url: str) -> None:
         self.url = urllib.parse.urlparse(url)
 
 
@@ -39,7 +40,9 @@ class CastellanException(Exception):
 
     message = _("An unknown exception occurred")
 
-    def __init__(self, message_arg=None, *args, **kwargs):
+    def __init__(
+        self, message_arg: str | None = None, *args: Any, **kwargs: Any
+    ) -> None:
         if not message_arg:
             message_arg = self.message
         try:

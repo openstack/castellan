@@ -71,8 +71,7 @@ show_error_context = true
 disable_error_code = ["import-untyped"]
 exclude = "(?x)(doc | releasenotes)"
 modules = [
-    "castellan.common.credentials",
-    "castellan.common.objects",
+    "castellan.common",
 ]
 
 [[tool.mypy.overrides]]

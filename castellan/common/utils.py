@@ -16,14 +16,17 @@
 Common utilities for Castellan.
 """
 
+from typing import Any
+
+from oslo_config import cfg
+from oslo_log import log as logging
+
+from castellan.common.credentials import credential
 from castellan.common.credentials import keystone_password
 from castellan.common.credentials import keystone_token
 from castellan.common.credentials import password
 from castellan.common.credentials import token
 from castellan.common import exception
-
-from oslo_config import cfg
-from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)
@@ -120,7 +123,9 @@ credential_opts = [
 OPT_GROUP = 'key_manager'
 
 
-def credential_factory(conf=None, context=None):
+def credential_factory(
+    conf: cfg.ConfigOpts | None = None, context: Any = None
+) -> credential.Credential:
     """This function provides a factory for credentials.
 
     It is used to create an appropriare credential object
@@ -203,6 +208,7 @@ def credential_factory(conf=None, context=None):
             )
 
     # for compatibility between _TokenData and RequestContext
+    project_id: str | None = None
     if hasattr(context, 'tenant') and context.tenant:
         project_id = context.tenant
     elif hasattr(context, 'project_id') and context.project_id:
