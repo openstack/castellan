@@ -43,20 +43,26 @@ The Configuration Source Class
 
 """
 
-from castellan.common.exception import AuthTypeInvalidError
-from castellan.common.exception import KeyManagerError
-from castellan.common.exception import ManagedObjectNotFoundError
-from castellan.common import utils
-from castellan import key_manager
+from typing import Any
 
 from oslo_config import cfg
 from oslo_config import sources
 from oslo_log import log
 
+from castellan.common.credentials import credential
+from castellan.common.exception import AuthTypeInvalidError
+from castellan.common.exception import KeyManagerError
+from castellan.common.exception import ManagedObjectNotFoundError
+from castellan.common import utils
+from castellan import key_manager
+from castellan.key_manager import key_manager as km
+
 LOG = log.getLogger(__name__)
 
 
-class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
+class CastellanConfigurationSourceDriver(
+    sources.ConfigurationSourceDriver  # type: ignore[misc]
+):
     """A backend driver for configuration values served through castellan.
 
     Required options:
@@ -85,10 +91,12 @@ class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
         ),
     ]
 
-    def list_options_for_discovery(self):
+    def list_options_for_discovery(self) -> list[cfg.Opt]:
         return self._castellan_driver_opts
 
-    def open_source_from_opt_group(self, conf, group_name):
+    def open_source_from_opt_group(
+        self, conf: cfg.ConfigOpts, group_name: str
+    ) -> "CastellanConfigurationSource":
         conf.register_opts(self._castellan_driver_opts, group_name)
 
         return CastellanConfigurationSource(
@@ -98,14 +106,22 @@ class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
         )
 
 
-class CastellanConfigurationSource(sources.ConfigurationSource):
+class CastellanConfigurationSource(
+    sources.ConfigurationSource  # type: ignore[misc]
+):
     """A configuration source for values served through castellan.
 
     :param config_file: The path to a castellan configuration file.
     :param mapping_file: The path to a configuration/castellan_id mapping file.
     """
 
-    def __init__(self, group_name, config_file, mapping_file):
+    _mngr: km.KeyManager
+    _mapping: dict[str, dict[str, list[str]]]
+    _context: credential.Credential | None
+
+    def __init__(
+        self, group_name: str, config_file: str, mapping_file: str
+    ) -> None:
         conf = cfg.ConfigOpts()
         conf(args=[], default_config_files=[config_file])
 
@@ -129,16 +145,20 @@ class CastellanConfigurationSource(sources.ConfigurationSource):
 
         cfg.ConfigParser(mapping_file, self._mapping).parse()
 
-    def get(self, group_name, option_name, opt):
+    def get(
+        self, group_name: str, option_name: str, opt: cfg.Opt
+    ) -> tuple[Any, cfg.LocationInfo | None]:
         try:
             group_name = group_name or "DEFAULT"
 
             castellan_id = self._mapping[group_name][option_name][0]
 
+            encoded = self._mngr.get(self._context, castellan_id).get_encoded()
+            if encoded is None:
+                return (sources._NoValue, None)
+
             return (
-                self._mngr.get(self._context, castellan_id)
-                .get_encoded()
-                .decode(),
+                encoded.decode(),
                 cfg.LocationInfo(cfg.Locations.user, castellan_id),
             )
 

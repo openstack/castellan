@@ -12,44 +12,45 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import warnings
 
 from oslo_config import cfg
 from oslo_log import log
 from stevedore import ExtensionManager
 
+from castellan.common import utils
 from castellan import key_manager
 from castellan.key_manager import barbican_key_manager as bkm
+from castellan.key_manager import key_manager as base_key_manager
 from castellan.key_manager import vault_key_manager as vkm
-
-from castellan.common import utils
 
 _DEFAULT_LOG_LEVELS = ['castellan=WARN']
 
 
 def set_defaults(
-    conf,
-    backend=None,
-    barbican_endpoint=None,
-    barbican_api_version=None,
-    auth_endpoint=None,
-    retry_delay=None,
-    number_of_retries=None,
-    verify_ssl=None,
-    verify_ssl_path=None,
-    api_class=None,
-    vault_root_token_id=None,
-    vault_approle_role_id=None,
-    vault_approle_secret_id=None,
-    vault_kv_mountpoint=None,
-    vault_kv_path=None,
-    vault_url=None,
-    vault_ssl_ca_crt_file=None,
-    vault_use_ssl=None,
-    vault_namespace=None,
-    barbican_endpoint_type=None,
-    vault_kv_version=None,
-):
+    conf: cfg.ConfigOpts,
+    backend: str | None = None,
+    barbican_endpoint: str | None = None,
+    barbican_api_version: str | None = None,
+    auth_endpoint: str | None = None,
+    retry_delay: int | None = None,
+    number_of_retries: int | None = None,
+    verify_ssl: bool | None = None,
+    verify_ssl_path: str | None = None,
+    api_class: str | None = None,
+    vault_root_token_id: str | None = None,
+    vault_approle_role_id: str | None = None,
+    vault_approle_secret_id: str | None = None,
+    vault_kv_mountpoint: str | None = None,
+    vault_kv_path: str | None = None,
+    vault_url: str | None = None,
+    vault_ssl_ca_crt_file: str | None = None,
+    vault_use_ssl: bool | None = None,
+    vault_namespace: str | None = None,
+    barbican_endpoint_type: str | None = None,
+    vault_kv_version: int | None = None,
+) -> None:
     """Set defaults for configuration values.
 
     Overrides the default options values.
@@ -78,13 +79,16 @@ def set_defaults(
     """
     conf.register_opts(key_manager.key_manager_opts, group='key_manager')
 
+    ext_mgr: ExtensionManager[base_key_manager.KeyManager]
     ext_mgr = ExtensionManager(
-        "castellan.drivers", invoke_on_load=True, invoke_args=[cfg.CONF]
+        "castellan.drivers", invoke_on_load=True, invoke_args=(cfg.CONF,)
     )
 
     for km in ext_mgr.names():
-        for group, opts in ext_mgr[km].obj.list_options_for_discovery():
-            conf.register_opts(opts, group=group)
+        obj = ext_mgr[km].obj
+        if obj is not None:
+            for group, opts in obj.list_options_for_discovery():
+                conf.register_opts(opts, group=group)
 
     # Use the new backend option if set or fall back to the older api_class
     default_backend = backend or api_class
@@ -176,7 +180,9 @@ def set_defaults(
         )
 
 
-def enable_logging(conf=None, app_name='castellan'):
+def enable_logging(
+    conf: cfg.ConfigOpts | None = None, app_name: str = 'castellan'
+) -> None:
     conf = conf or cfg.CONF
 
     log.register_options(conf)
@@ -185,7 +191,7 @@ def enable_logging(conf=None, app_name='castellan'):
     log.setup(conf, app_name)
 
 
-def list_opts():
+def list_opts() -> list[tuple[str | None, list[cfg.Opt]]]:
     """Returns a list of oslo.config options available in the library.
 
     The returned list includes all oslo.config options which may be registered
@@ -201,16 +207,21 @@ def list_opts():
 
     :returns: a list of (group_name, opts) tuples
     """
-    key_manager_opts = []
+    key_manager_opts: list[cfg.Opt] = []
     key_manager_opts.extend(key_manager.key_manager_opts)
     key_manager_opts.extend(utils.credential_opts)
-    opts = [('key_manager', key_manager_opts)]
+    opts: list[tuple[str | None, list[cfg.Opt]]] = [
+        ('key_manager', key_manager_opts)
+    ]
 
+    ext_mgr: ExtensionManager[base_key_manager.KeyManager]
     ext_mgr = ExtensionManager(
-        "castellan.drivers", invoke_on_load=True, invoke_args=[cfg.CONF]
+        "castellan.drivers", invoke_on_load=True, invoke_args=(cfg.CONF,)
     )
 
-    for driver in ext_mgr.names():
-        opts.extend(ext_mgr[driver].obj.list_options_for_discovery())
+    for driver_name in ext_mgr.names():
+        obj = ext_mgr[driver_name].obj
+        if obj is not None:
+            opts.extend(obj.list_options_for_discovery())
 
     return opts

@@ -70,10 +70,6 @@ show_column_numbers = true
 show_error_context = true
 disable_error_code = ["import-untyped"]
 exclude = "(?x)(doc | releasenotes)"
-modules = [
-    "castellan.common",
-    "castellan.key_manager",
-]
 
 [[tool.mypy.overrides]]
 module = ["castellan.tests.*"]
