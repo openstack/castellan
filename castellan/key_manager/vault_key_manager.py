@@ -53,6 +53,14 @@ _DEFAULT_VERSION = 2
 _vault_opts = [
     cfg.StrOpt('root_token_id', secret=True, help='root token for vault'),
     cfg.StrOpt(
+        'auth_method',
+        default='approle',
+        choices=('approle', 'jwt', 'kubernetes'),
+        help='Auth method to use when connecting to Vault. '
+        '"approle" uses approle_role_id and approle_secret_id. '
+        '"jwt" and "kubernetes" use token_role and token_file.',
+    ),
+    cfg.StrOpt(
         'approle_role_id',
         secret=True,
         help='AppRole role_id for authentication with vault',
@@ -61,6 +69,26 @@ _vault_opts = [
         'approle_secret_id',
         secret=True,
         help='AppRole secret_id for authentication with vault',
+    ),
+    cfg.StrOpt(
+        'token_role',
+        help='Vault role name for token-based auth. '
+        'Required when auth_method is jwt or kubernetes.',
+    ),
+    cfg.StrOpt(
+        'token_file',
+        help='Path to the token file used for Vault login. '
+        'Required when auth_method is jwt or kubernetes.',
+    ),
+    cfg.StrOpt(
+        'auth_path',
+        help='Mount path of the Vault auth backend, used in '
+        'the login URL /v1/auth/<auth_path>/login. '
+        'Defaults to the value of auth_method when not set. '
+        'Override this when the auth backend is mounted at '
+        'a non-default path '
+        '(e.g. "kubernetes-my-cluster" instead of '
+        '"kubernetes").',
     ),
     cfg.StrOpt(
         'kv_mountpoint',
@@ -126,9 +154,13 @@ class VaultKeyManager(key_manager.KeyManager):
     _root_token_id: str | None
     _approle_role_id: str | None
     _approle_secret_id: str | None
-    _cached_approle_token_id: str | None
-    _approle_token_ttl: int | None
-    _approle_token_issue: datetime.datetime | None
+    _auth_method: str
+    _token_role: str | None
+    _token_file: str
+    _auth_path: str
+    _cached_token_id: str | None
+    _cached_token_ttl: int | None
+    _cached_token_issue: datetime.datetime | None
     _kv_mountpoint: str
     _kv_path: str | None
     _kv_version: int
@@ -144,9 +176,13 @@ class VaultKeyManager(key_manager.KeyManager):
         self._root_token_id = self._conf.vault.root_token_id
         self._approle_role_id = self._conf.vault.approle_role_id
         self._approle_secret_id = self._conf.vault.approle_secret_id
-        self._cached_approle_token_id = None
-        self._approle_token_ttl = None
-        self._approle_token_issue = None
+        self._auth_method = self._conf.vault.auth_method
+        self._token_role = self._conf.vault.token_role
+        self._token_file = self._conf.vault.token_file
+        self._auth_path = self._conf.vault.auth_path or self._auth_method
+        self._cached_token_id = None
+        self._cached_token_ttl = None
+        self._cached_token_issue = None
         self._kv_mountpoint = self._conf.vault.kv_mountpoint
         self._kv_path = self._conf.vault.kv_path
         self._kv_version = self._conf.vault.kv_version
@@ -178,16 +214,16 @@ class VaultKeyManager(key_manager.KeyManager):
         )
 
     @property
-    def _approle_token_id(self) -> str | None:
+    def _cached_token(self) -> str | None:
         if (
-            self._approle_token_issue is not None
-            and self._approle_token_ttl is not None
+            self._cached_token_issue is not None
+            and self._cached_token_ttl is not None
             and timeutils.is_older_than(
-                self._approle_token_issue, self._approle_token_ttl
+                self._cached_token_issue, self._cached_token_ttl
             )
         ):
-            self._cached_approle_token_id = None
-        return self._cached_approle_token_id
+            self._cached_token_id = None
+        return self._cached_token_id
 
     def _set_namespace(self, headers: dict[str, str]) -> dict[str, str]:
         if self._namespace:
@@ -198,47 +234,84 @@ class VaultKeyManager(key_manager.KeyManager):
         if self._root_token_id:
             return self._set_namespace({'X-Vault-Token': self._root_token_id})
 
-        if self._approle_token_id:
-            return self._set_namespace(
-                {'X-Vault-Token': self._approle_token_id}
-            )
+        if self._cached_token:
+            return self._set_namespace({'X-Vault-Token': self._cached_token})
 
-        if self._approle_role_id:
+        if self._auth_method == 'approle':
+            if not self._approle_role_id:
+                return {}
             params: dict[str, str] = {'role_id': self._approle_role_id}
             if self._approle_secret_id:
                 params['secret_id'] = self._approle_secret_id
-            approle_login_url = f'{self._get_url()}v1/auth/approle/login'
-            token_issue_utc = timeutils.utcnow()
-            headers = self._set_namespace({})
-            try:
-                resp = self._session.post(
-                    url=approle_login_url,
-                    json=params,
-                    headers=headers,
-                    verify=self._verify_server,
-                    timeout=self._timeout,
+            login_url = f'{self._get_url()}v1/auth/approle/login'
+            return self._vault_login(login_url, params)
+
+        elif self._auth_method in ('jwt', 'kubernetes'):
+            if not self._token_role:
+                raise exception.KeyManagerError(
+                    "token_role is required when "
+                    f"auth_method={self._auth_method}"
                 )
-            except Exception as ex:
-                raise exception.KeyManagerError(str(ex))
+            if not self._token_file:
+                raise exception.KeyManagerError(
+                    "token_file is required when "
+                    f"auth_method={self._auth_method}"
+                )
+            try:
+                with open(self._token_file) as f:
+                    token = f.read().strip()
+            except OSError as ex:
+                raise exception.KeyManagerError(
+                    f"Failed to read token file from {self._token_file}: {ex}"
+                )
 
-            if resp.status_code in _EXCEPTIONS_BY_CODE:
-                raise exception.KeyManagerError(resp.reason)
-            if resp.status_code == requests.codes['forbidden']:
-                raise exception.Forbidden()
+            params = {
+                'role': self._token_role,
+                'jwt': token,
+            }
+            login_url = f'{self._get_url()}v1/auth/{self._auth_path}/login'
+            return self._vault_login(login_url, params)
 
-            resp_data = resp.json()
+        raise exception.KeyManagerError(
+            f"Unknown auth_method: {self._auth_method}"
+        )
 
-            if resp.status_code == requests.codes['bad_request']:
-                raise exception.KeyManagerError(', '.join(resp_data['errors']))
+    def _vault_login(
+        self,
+        login_url: str,
+        params: dict[str, str],
+    ) -> dict[str, str]:
+        """Authenticate with Vault and cache the resulting token.
 
-            self._cached_approle_token_id = resp_data['auth']['client_token']
-            self._approle_token_issue = token_issue_utc
-            self._approle_token_ttl = resp_data['auth']['lease_duration']
-            return self._set_namespace(
-                {'X-Vault-Token': self._cached_approle_token_id}
+        Shared by AppRole and token-based (Kubernetes, JWT/OIDC) auth methods.
+        """
+        token_issue_utc = timeutils.utcnow()
+        headers = self._set_namespace({})
+        try:
+            resp = self._session.post(
+                url=login_url,
+                json=params,
+                headers=headers,
+                verify=self._verify_server,
+                timeout=self._timeout,
             )
+        except Exception as ex:
+            raise exception.KeyManagerError(str(ex))
 
-        return {}
+        if resp.status_code in _EXCEPTIONS_BY_CODE:
+            raise exception.KeyManagerError(resp.reason)
+        if resp.status_code == requests.codes['forbidden']:
+            raise exception.Forbidden()
+
+        resp_data = resp.json()
+
+        if resp.status_code == requests.codes['bad_request']:
+            raise exception.KeyManagerError(', '.join(resp_data['errors']))
+
+        self._cached_token_id = resp_data['auth']['client_token']
+        self._cached_token_issue = token_issue_utc
+        self._cached_token_ttl = resp_data['auth']['lease_duration']
+        return self._set_namespace({'X-Vault-Token': self._cached_token_id})
 
     def _do_http_request(
         self,

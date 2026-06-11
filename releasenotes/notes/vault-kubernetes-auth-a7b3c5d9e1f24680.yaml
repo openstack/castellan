@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    Added token-based auth method support to the Vault key manager.
+    A new ``[vault] auth_method`` option (choices: ``approle``,
+    ``jwt`` and ``kubernetes``; default: ``approle``) controls how
+    castellan authenticates with Vault. The ``jwt`` and
+    ``kubernetes`` methods read a JWT from a file and present it
+    to a Vault auth backend. An optional ``auth_path`` option
+    allows overriding the auth backend mount path when it differs
+    from the default (e.g. ``kubernetes-my-cluster`` instead of
+    ``kubernetes``). New ``[vault]`` config options:
+    ``auth_method``, ``token_role``, ``token_file``, and
+    ``auth_path``. The ``root_token_id`` option continues to take
+    priority over any configured auth method when set.
