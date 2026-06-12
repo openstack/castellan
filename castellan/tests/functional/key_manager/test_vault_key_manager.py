@@ -17,6 +17,7 @@ Note: This requires local running instance of Vault.
 """
 
 import os
+from typing import Any
 import unittest
 import uuid
 
@@ -130,7 +131,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
     def _mount_kv(self, vault_mountpoint):
         backends = self.session.get(f'{self.vault_url}/v1/sys/mounts').json()
         if vault_mountpoint not in backends:
-            params = {
+            params: dict[str, Any] = {
                 'type': 'kv',
                 'options': {
                     'version': 2,
@@ -142,7 +143,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
             )
 
     def _enable_approle(self):
-        params = {'type': 'approle'}
+        params: dict[str, Any] = {'type': 'approle'}
         self.session.post(
             '{}/{}'.format(
                 self.vault_url, AUTH_ENDPOINT.format(auth_type='approle')
@@ -151,7 +152,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
         )
 
     def _create_policy(self, vault_policy):
-        params = {
+        params: dict[str, Any] = {
             'rules': TEST_POLICY.format(backend=self.mountpoint),
         }
         self.session.put(
@@ -160,7 +161,7 @@ class VaultKeyManagerAppRoleTestCase(VaultKeyManagerTestCase):
         )
 
     def _create_approle(self, vault_approle, vault_policy):
-        params = {
+        params: dict[str, Any] = {
             'token_ttl': '60s',
             'token_max_ttl': '60s',
             'policies': [vault_policy],

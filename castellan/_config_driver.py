@@ -60,9 +60,7 @@ from castellan.key_manager import key_manager as km
 LOG = log.getLogger(__name__)
 
 
-class CastellanConfigurationSourceDriver(
-    sources.ConfigurationSourceDriver  # type: ignore[misc]
-):
+class CastellanConfigurationSourceDriver(sources.ConfigurationSourceDriver):
     """A backend driver for configuration values served through castellan.
 
     Required options:
@@ -76,7 +74,7 @@ class CastellanConfigurationSourceDriver(
                       will be used to fetch the values through castellan.
     """
 
-    _castellan_driver_opts = [
+    _castellan_driver_opts: list[cfg.Opt] = [
         cfg.StrOpt(
             'config_file',
             required=True,
@@ -106,9 +104,7 @@ class CastellanConfigurationSourceDriver(
         )
 
 
-class CastellanConfigurationSource(
-    sources.ConfigurationSource  # type: ignore[misc]
-):
+class CastellanConfigurationSource(sources.ConfigurationSource):
     """A configuration source for values served through castellan.
 
     :param config_file: The path to a castellan configuration file.
@@ -146,7 +142,7 @@ class CastellanConfigurationSource(
         cfg.ConfigParser(mapping_file, self._mapping).parse()
 
     def get(
-        self, group_name: str, option_name: str, opt: cfg.Opt
+        self, group_name: str | None, option_name: str, opt: cfg.Opt
     ) -> tuple[Any, cfg.LocationInfo | None]:
         try:
             group_name = group_name or "DEFAULT"

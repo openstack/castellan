@@ -360,9 +360,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             self._delete_order(barbican_client, order_ref)
             return secret_ref
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error creating key: %s", e)
             raise exception.KeyManagerError(reason=e)
@@ -411,9 +410,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             self._delete_order(barbican_client, order_ref)
             return private_key_uuid, public_key_uuid
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error creating key pair: %s", e)
             raise exception.KeyManagerError(reason=e)
@@ -504,9 +502,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             secret_ref = secret.store()
             return self._retrieve_secret_uuid(secret_ref)
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error storing object: %s", e)
             raise exception.KeyManagerError(reason=e)
@@ -698,16 +695,13 @@ class BarbicanKeyManager(key_manager.KeyManager):
         try:
             return barbican_client.secrets.get(object_id)
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             with excutils.save_and_reraise_exception():
                 LOG.error("Error getting secret metadata: %s", e)
 
-    def _is_secret_not_found_error(
-        self, error: barbican_exceptions.HTTPClientError
-    ) -> bool:
+    def _is_secret_not_found_error(self, error: Exception) -> bool:
         if (
             isinstance(error, barbican_exceptions.HTTPClientError)
             and error.status_code == 404
@@ -736,9 +730,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             secret = self._get_secret(context, managed_object_id)
             return self._get_castellan_object(secret, metadata_only)
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error retrieving object: %s", e)
             if self._is_secret_not_found_error(e):
@@ -761,8 +754,6 @@ class BarbicanKeyManager(key_manager.KeyManager):
         :param managed_object_id: the UUID of the object to delete
         :param force: specifies if the secret must be deleted even when they
             have consumers.
-        :raises ValueError: if the secret has consumers but no force parameter
-            is provided or if force equals False.
         :raises KeyManagerError: if object deletion fails
         :raises ManagedObjectNotFoundError: if the object could not be found
         """
@@ -773,9 +764,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         try:
             barbican_client.secrets.delete(managed_object_id, force)
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error deleting object: %s", e)
             if self._is_secret_not_found_error(e):
@@ -811,9 +801,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
             )
 
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error adding consumer: %s", e)
             if self._is_secret_not_found_error(e):
@@ -835,9 +824,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 managed_object_id, **consumer_data
             )
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error removing consumer: %s", e)
             if self._is_secret_not_found_error(e):
@@ -876,9 +864,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
         try:
             secrets = barbican_client.secrets.list(secret_type=secret_type)
         except (
-            barbican_exceptions.HTTPAuthError,
-            barbican_exceptions.HTTPClientError,
-            barbican_exceptions.HTTPServerError,
+            barbican_exceptions.BarbicanException,
+            barbican_exceptions.HTTPError,
         ) as e:
             LOG.error("Error listing objects: %s", e)
             raise exception.KeyManagerError(reason=e)
@@ -888,9 +875,8 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 obj = self._get_castellan_object(secret, metadata_only)
                 objects.append(obj)
             except (
-                barbican_exceptions.HTTPAuthError,
-                barbican_exceptions.HTTPClientError,
-                barbican_exceptions.HTTPServerError,
+                barbican_exceptions.BarbicanException,
+                barbican_exceptions.HTTPError,
             ) as e:
                 LOG.warning(
                     "Error occurred while retrieving object "

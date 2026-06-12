@@ -79,7 +79,7 @@ _vault_opts = [
     cfg.URIOpt(
         'vault_url',
         default=_DEFAULT_VAULT_URL,
-        schemes=('http', 'https'),
+        schemes=['http', 'https'],
         help='Use this endpoint to connect to Vault',
     ),
     cfg.StrOpt('ssl_ca_crt_file', help='Absolute path to ca cert file'),

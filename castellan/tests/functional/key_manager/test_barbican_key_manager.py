@@ -418,13 +418,11 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
 
-        e = self.assertRaises(
-            ValueError, self.key_mgr.delete, self.ctxt, stored_id
-        )
-        self.assertIn(
-            "Secret has consumers! Remove them first or use the "
-            "force parameter to delete it.",
-            str(e),
+        self.assertRaises(
+            exception.KeyManagerError,
+            self.key_mgr.delete,
+            self.ctxt,
+            stored_id,
         )
 
     def test_consumer_add_secret_delete_force_parameter_false(self):
@@ -447,13 +445,12 @@ class BarbicanKeyManagerTestCase(test_key_manager.KeyManagerTestCase):
         }
         self.key_mgr.add_consumer(self.ctxt, stored_id, consumer)
 
-        e = self.assertRaises(
-            ValueError, self.key_mgr.delete, self.ctxt, stored_id, False
-        )
-        self.assertIn(
-            "Secret has consumers! Remove them first or use the "
-            "force parameter to delete it.",
-            str(e),
+        self.assertRaises(
+            exception.KeyManagerError,
+            self.key_mgr.delete,
+            self.ctxt,
+            stored_id,
+            False,
         )
 
     def test_consumer_add_secret_delete_force_parameter_true(self):
