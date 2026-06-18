@@ -237,13 +237,14 @@ class VaultKeyManager(key_manager.KeyManager):
         if self._cached_token:
             return self._set_namespace({'X-Vault-Token': self._cached_token})
 
+        login_url = f'{self._get_url()}v1/auth/{self._auth_path}/login'
+
         if self._auth_method == 'approle':
             if not self._approle_role_id:
                 return {}
             params: dict[str, str] = {'role_id': self._approle_role_id}
             if self._approle_secret_id:
                 params['secret_id'] = self._approle_secret_id
-            login_url = f'{self._get_url()}v1/auth/approle/login'
             return self._vault_login(login_url, params)
 
         elif self._auth_method in ('jwt', 'kubernetes'):
@@ -269,7 +270,6 @@ class VaultKeyManager(key_manager.KeyManager):
                 'role': self._token_role,
                 'jwt': token,
             }
-            login_url = f'{self._get_url()}v1/auth/{self._auth_path}/login'
             return self._vault_login(login_url, params)
 
         raise exception.KeyManagerError(
