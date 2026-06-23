@@ -1,3 +1,5 @@
+---
+
 - job:
     name: castellan-functional-vault
     parent: openstack-tox
@@ -52,6 +54,7 @@
     templates:
       - check-requirements
       - openstack-python3-jobs
+      - openstack-python3-next-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
