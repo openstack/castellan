@@ -9,14 +9,13 @@ authors = [
     {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 dynamic = ["version", "dependencies"]
 requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
@@ -42,10 +41,8 @@ castellan = "castellan._config_driver:CastellanConfigurationSourceDriver"
 barbican = "castellan.key_manager.barbican_key_manager:BarbicanKeyManager"
 vault = "castellan.key_manager.vault_key_manager:VaultKeyManager"
 
-[tool.setuptools]
-packages = [
-    "castellan"
-]
+[tool.setuptools.packages.find]
+include = ["castellan*"]
 
 [tool.ruff]
 line-length = 79
