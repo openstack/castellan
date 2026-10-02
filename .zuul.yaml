@@ -45,12 +45,24 @@
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - barbican-tempest-plugin-simple-crypto-castellan-src
+        - barbican-tempest-plugin-simple-crypto-castellan-src:
+            irrelevant-files: &tempest_irrelevant_files
+              - ^\.gitignore$
+              - ^\.gitreview$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - LICENSE
+              - ^releasenotes/.*$
+              - ^tools/.*$
+              - ^\.pre-commit-config\.yaml$
+              - ^test-requirements\.txt$
+              - ^castellan/tests/.*$
     gate:
       jobs:
         - castellan-functional-vault
         - castellan-functional-devstack
-        - barbican-tempest-plugin-simple-crypto-castellan-src
+        - barbican-tempest-plugin-simple-crypto-castellan-src:
+            irrelevant-files: *tempest_irrelevant_files
     templates:
       - check-requirements
       - openstack-python3-jobs
