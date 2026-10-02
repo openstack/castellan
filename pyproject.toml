@@ -45,6 +45,19 @@ vault = "castellan.key_manager.vault_key_manager:VaultKeyManager"
 [tool.setuptools.packages.find]
 include = ["castellan*"]
 
+[tool.coverage.run]
+source = [
+    "castellan"
+]
+branch = true
+omit = [
+    "castellan/tests/*"
+]
+
+[tool.coverage.report]
+ignore_errors = true
+show_missing = true
+
 [tool.ruff]
 line-length = 79
 
