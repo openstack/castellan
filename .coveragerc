@@ -1,7 +1,0 @@
-[run]
-branch = True
-source = castellan
-omit = castellan/tests/*
-
-[report]
-ignore_errors = True
