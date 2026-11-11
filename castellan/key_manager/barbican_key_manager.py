@@ -186,12 +186,11 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 session=sess,
                 endpoint=endpoint,
             )
-
-        # TODO(pbourke): more fine grained exception handling - we are eating
-        # tracebacks here
         except Exception as e:
             LOG.error("Error creating Barbican client: %s", e)
-            raise exception.KeyManagerError(reason=e)
+            raise exception.KeyManagerError(
+                reason="failed to create client"
+            ) from e
 
     def _get_keystone_auth(self, context: Context) -> Auth:
         auth: Auth
