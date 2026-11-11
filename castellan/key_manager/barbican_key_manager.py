@@ -46,6 +46,8 @@ from castellan.common import exception
 from castellan.common.objects import key as key_base_class
 from castellan.common.objects import managed_object
 from castellan.common.objects import opaque_data as op_data
+from castellan.common.objects import passphrase
+from castellan.common.objects import x_509
 from castellan.i18n import _
 from castellan.key_manager import key_manager
 from castellan.key_manager.key_manager import Context
@@ -666,14 +668,20 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 id=object_id,
                 consumers=secret.consumers,
             )
-        else:
-            # Opaque Data or Passphrase
-            return secret_type(  # type: ignore[misc]
-                secret_data,  # type: ignore[arg-type]
+        elif issubclass(
+            secret_type,
+            (op_data.OpaqueData, passphrase.Passphrase, x_509.X509),
+        ):
+            return secret_type(
+                secret_data,
                 name=secret.name,
                 created=created,
                 id=object_id,
                 consumers=secret.consumers,
+            )
+        else:
+            raise TypeError(
+                f'Unsupported managed object type: {secret_type.__name__}'
             )
 
     def _get_secret(self, context: Context | None, object_id: str) -> Any:
