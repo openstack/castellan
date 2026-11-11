@@ -19,10 +19,10 @@ Base Passphrase Class
 This module defines the Passphrase class.
 """
 
-from castellan.common.objects import managed_object
+from castellan.common.objects import data_object
 
 
-class Passphrase(managed_object.ManagedObject):
+class Passphrase(data_object.DataObject):
     """This class represents a passphrase."""
 
     def __init__(
@@ -39,7 +39,7 @@ class Passphrase(managed_object.ManagedObject):
         """
         self._passphrase = passphrase
         super().__init__(
-            name=name, created=created, id=id, consumers=consumers
+            passphrase, name=name, created=created, id=id, consumers=consumers
         )
 
     @classmethod

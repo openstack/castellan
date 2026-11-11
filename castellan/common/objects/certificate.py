@@ -19,10 +19,10 @@ Base Certificate Class
 This module defines the Certificate class.
 """
 
-from castellan.common.objects import managed_object
+from castellan.common.objects import data_object
 
 
-class Certificate(managed_object.ManagedObject):
+class Certificate(data_object.DataObject):
     """Base class to represent all certificates."""
 
     def __init__(
@@ -39,5 +39,5 @@ class Certificate(managed_object.ManagedObject):
         """
         self._data = data
         super().__init__(
-            name=name, created=created, id=id, consumers=consumers
+            data, name=name, created=created, id=id, consumers=consumers
         )

@@ -19,10 +19,10 @@ Base OpaqueData Class
 This module defines the OpaqueData class.
 """
 
-from castellan.common.objects import managed_object
+from castellan.common.objects import data_object
 
 
-class OpaqueData(managed_object.ManagedObject):
+class OpaqueData(data_object.DataObject):
     """This class represents opaque data."""
 
     def __init__(
@@ -39,7 +39,7 @@ class OpaqueData(managed_object.ManagedObject):
         """
         self._data = data
         super().__init__(
-            name=name, created=created, id=id, consumers=consumers
+            data, name=name, created=created, id=id, consumers=consumers
         )
 
     @classmethod

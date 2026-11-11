@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import abc
 import binascii
-from typing import Any
+from typing import Any, Self
 
 from castellan.common import exception
 from castellan.common.objects import managed_object
@@ -88,7 +88,7 @@ class Key(managed_object.ManagedObject):
         id: str | None = None,
         metadata_only: bool = False,
         consumers: list[dict[str, str]] | None = None,
-    ) -> Key:
+    ) -> Self:
         try:
             value = None
 
@@ -98,8 +98,6 @@ class Key(managed_object.ManagedObject):
             if not metadata_only and dict_fields["value"] is not None:
                 value = binascii.unhexlify(dict_fields["value"])
 
-            # NOTE: The from_dict is designed to be called on subclasses
-            # which have different __init__ signatures
             return cls(
                 algorithm=dict_fields["algorithm"],
                 bit_length=dict_fields["bit_length"],

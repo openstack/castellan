@@ -43,11 +43,10 @@ from oslo_utils import timeutils
 from castellan.common.credentials import keystone_password
 from castellan.common.credentials import keystone_token
 from castellan.common import exception
+from castellan.common.objects import data_object
 from castellan.common.objects import key as key_base_class
 from castellan.common.objects import managed_object
 from castellan.common.objects import opaque_data as op_data
-from castellan.common.objects import passphrase
-from castellan.common.objects import x_509
 from castellan.i18n import _
 from castellan.key_manager import key_manager
 from castellan.key_manager.key_manager import Context
@@ -668,10 +667,7 @@ class BarbicanKeyManager(key_manager.KeyManager):
                 id=object_id,
                 consumers=secret.consumers,
             )
-        elif issubclass(
-            secret_type,
-            (op_data.OpaqueData, passphrase.Passphrase, x_509.X509),
-        ):
+        elif issubclass(secret_type, data_object.DataObject):
             return secret_type(
                 secret_data,
                 name=secret.name,

@@ -24,9 +24,7 @@ from __future__ import annotations
 
 import abc
 import binascii
-from typing import Any
-
-from castellan.common import exception
+from typing import Any, Self
 
 
 class ManagedObject(metaclass=abc.ABCMeta):
@@ -134,13 +132,14 @@ class ManagedObject(metaclass=abc.ABCMeta):
         pass
 
     @classmethod
+    @abc.abstractmethod
     def from_dict(
         cls,
         dict_fields: dict[str, Any],
         id: str | None = None,
         metadata_only: bool = False,
         consumers: list[dict[str, str]] | None = None,
-    ) -> ManagedObject:
+    ) -> Self:
         """Returns an instance of this class based on a dict object.
 
         :param dict_fields: The dictionary containing all necessary params
@@ -150,31 +149,7 @@ class ManagedObject(metaclass=abc.ABCMeta):
                               only, without the secret itself.
         :param consumers: A list with object's consumers.
         """
-        if consumers is None:
-            consumers = []
-
-        try:
-            value = None
-
-            # NOTE(moguimar): the managed object's value is exported as
-            # a hex string. For now, this is a compatibility thing with
-            # the already existent vault_key_manager backend.
-            if not metadata_only and dict_fields["value"] is not None:
-                value = binascii.unhexlify(dict_fields["value"])
-
-            # NOTE: The base class from_dict is designed to be called on
-            # subclasses which have different __init__ signatures
-            # FIXME(stephenfin): name appears to be duplicated here (it's the
-            # first parameter?)
-            return cls(  # type: ignore[misc]
-                value,  # type: ignore[arg-type]
-                name=dict_fields["name"],
-                created=dict_fields["created"],
-                id=id,
-                consumers=consumers,
-            )
-        except KeyError as e:
-            raise exception.InvalidManagedObjectDictError(field=str(e))  # noqa
+        pass
 
     def to_dict(self, metadata_only: bool = False) -> dict[str, Any]:
         """Returns a dict that can be used with the from_dict() method.
